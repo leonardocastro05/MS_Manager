@@ -1,0 +1,865 @@
+<style>
+    .fade-anim {
+        opacity: 0;
+        transform: translateX(-40px);
+        transition: opacity 0.5s, transform 0.5s;
+    }
+
+    .fade-anim.visible {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .fade-anim.pulse {
+        animation: pulseAnim 0.5s;
+    }
+
+    @keyframes pulseAnim {
+        0% {
+            box-shadow: 0 0 0 0 #FFD70088;
+        }
+
+        50% {
+            box-shadow: 0 0 16px 8px #FFD700cc;
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 #FFD70088;
+        }
+    }
+</style>
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1 Manager - Joc de Gestió</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/libs/three.min.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <!-- Pantalla d'intro 3D -->
+        <div id="intro-screen" class="screen active">
+            <canvas id="intro-canvas"></canvas>
+        </div>
+
+        <!-- Pantalla de login/registre -->
+        <div id="auth-screen" class="screen">
+            <div class="auth-bg"></div>
+            <div class="auth-container">
+                <h1>🏎️ F1 Manager</h1>
+                <div class="auth-forms">
+                    <div id="login-form">
+                        <h2>Iniciar Sessió</h2>
+                        <input type="text" id="login-username" placeholder="Nom d'usuari">
+                        <input type="password" id="login-password" placeholder="Contrasenya">
+                        <button onclick="login()">Entrar</button>
+                    </div>
+                    <div id="register-form">
+                        <h2>Crear Compte</h2>
+                        <input type="text" id="register-username" placeholder="Nom d'usuari">
+                        <input type="text" id="register-team" placeholder="Nom de l'escuderia">
+                        <input type="password" id="register-password" placeholder="Contrasenya">
+                        <button onclick="register()">Registrar-se</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menú principal -->
+        <div id="main-menu" class="screen">
+            <nav class="top-nav">
+                <h1>🏎️ F1 Manager</h1>
+                <div class="user-info">
+                    <span id="team-name"></span>
+                    <span id="budget"></span>
+                    <div class="user-menu">
+                        <button id="user-menu-btn" class="user-menu-btn" onclick="toggleUserMenu()">
+                            <span class="menu-icon">⚙️</span>
+                            <span class="menu-label">Opcions</span>
+                        </button>
+                        <div id="user-menu-dropdown" class="user-menu-dropdown">
+                            <button id="logout-btn">Sortir</button>
+                            <button id="delete-account-btn">Esborrar compte</button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            <div class="menu-buttons">
+                <button onclick="showScreen('hq-screen')">🏢 HQ</button>
+                <button onclick="showScreen('shop-screen')">🛒 Tenda</button>
+                <button onclick="showScreen('race-screen')">🏁 Cursa</button>
+                <button onclick="showScreen('team-screen')">👥 Equip</button>
+                <button onclick="showScreen('career-screen')">🌟 Modo Carrera</button>
+            </div>
+        </div>
+
+        <!-- Pantalla Carrera (Modo Carrera) -->
+        <div id="career-screen" class="screen">
+            <button class="back-btn" onclick="showScreen('main-menu')">← Tornar</button>
+            <h2 class="career-title">🏆 Modo Carrera</h2>
+            <div class="career-cards-row">
+                <div class="career-card money-card">
+                    <div class="money-icon">💰</div>
+                    <div class="money-amount" id="career-money"></div>
+                    <div class="money-label">Pressupost</div>
+                </div>
+                <div class="career-card hq-card">
+                    <div class="hq-title">HQ</div>
+                    <div class="hq-upgrades">
+                        <div class="hq-upgrade"><span class="hq-icon">⚙️</span><span id="hq-engine-level"></span></div>
+                        <div class="hq-upgrade"><span class="hq-icon">✈️</span><span id="hq-aero-level"></span></div>
+                        <div class="hq-upgrade"><span class="hq-icon">🔧</span><span id="hq-chassis-level"></span></div>
+                    </div>
+                </div>
+                <div class="career-card season-card">
+                    <div class="season-label">Temporada</div>
+                    <div class="season-value"><span id="career-season"></span> / <span id="career-total-seasons"></span>
+                    </div>
+                    <div class="race-label">Cursa</div>
+                    <div class="race-value"><span id="career-current-race"></span> / <span
+                            id="career-total-races"></span></div>
+                    <div class="season-progress-bar">
+                        <div id="career-progress-bar" class="progress-bar-inner"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="career-calendar">
+                <h3>Calendari de Curses</h3>
+                <div id="career-calendar-list" class="calendar-list"></div>
+            </div>
+            <div class="career-standings">
+                <h3>Classificació</h3>
+                <div id="career-standings-list" class="standings-cards"></div>
+            </div>
+            <div class="career-next-actions">
+                <button class="career-btn" onclick="nextCareerRace()">Següent Cursa</button>
+                <button class="career-btn" onclick="showScreen('hq-screen')">Millorar HQ</button>
+            </div>
+        </div>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+
+            .f1-loader {
+                display: flex;
+                gap: 8px;
+                justify-content: center;
+                align-items: center;
+                margin: 32px 0 8px 0;
+            }
+
+            .f1-bar {
+                width: 18px;
+                height: 48px;
+                border-radius: 8px;
+                background: linear-gradient(180deg, #FFD700 0%, #D32F2F 100%);
+                box-shadow: 0 2px 12px #FFD70044;
+                animation: f1bar 1.2s infinite;
+            }
+
+            .f1-bar1 {
+                animation-delay: 0s;
+            }
+
+            .f1-bar2 {
+                animation-delay: 0.2s;
+            }
+
+            .f1-bar3 {
+                animation-delay: 0.4s;
+            }
+
+            .f1-bar4 {
+                animation-delay: 0.6s;
+            }
+
+            @keyframes f1bar {
+
+                0%,
+                100% {
+                    transform: scaleY(0.6);
+                    opacity: 0.7;
+                }
+
+                40% {
+                    transform: scaleY(1.2);
+                    opacity: 1;
+                }
+
+                80% {
+                    transform: scaleY(0.8);
+                    opacity: 0.8;
+                }
+            }
+
+            .f1-loading-text {
+                text-align: center;
+                font-family: 'Orbitron', Arial, sans-serif;
+                font-size: 1.1em;
+                color: #FFD700;
+                letter-spacing: 1px;
+                text-shadow: 0 1px 8px #000a;
+            }
+
+            .career-title {
+                text-align: center;
+                font-family: 'Orbitron', 'Arial Black', Arial, sans-serif;
+                letter-spacing: 2px;
+                font-size: 2.2em;
+                margin-bottom: 18px;
+            }
+
+            .career-cards-row {
+                display: flex;
+                gap: 18px;
+                justify-content: center;
+                margin-bottom: 24px;
+                flex-wrap: wrap;
+            }
+
+            .career-card {
+                background: linear-gradient(135deg, #232526 0%, #414345 100%);
+                border-radius: 18px;
+                box-shadow: 0 4px 18px #0006;
+                padding: 18px 24px;
+                min-width: 180px;
+                min-height: 120px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                position: relative;
+            }
+
+            .money-card {
+                border: 3px solid #2ecc40;
+                color: #2ecc40;
+            }
+
+            .money-icon {
+                font-size: 2.5em;
+                margin-bottom: 8px;
+            }
+
+            .money-amount {
+                font-size: 1.5em;
+                font-weight: bold;
+                color: #FFD700;
+                text-shadow: 0 0 8px #FFD70088;
+            }
+
+            .money-label {
+                font-size: 1em;
+                color: #fff;
+                margin-top: 4px;
+            }
+
+            .hq-card {
+                border: 3px solid #2980b9;
+                color: #2980b9;
+            }
+
+            .hq-title {
+                font-size: 1.1em;
+                font-weight: bold;
+                margin-bottom: 6px;
+                color: #fff;
+            }
+
+            .hq-upgrades {
+                display: flex;
+                gap: 16px;
+            }
+
+            .hq-upgrade {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                font-size: 1.2em;
+            }
+
+            .hq-icon {
+                font-size: 2em;
+                margin-bottom: 2px;
+            }
+
+            .season-card {
+                border: 3px solid #FFD700;
+                color: #FFD700;
+            }
+
+            .season-label,
+            .race-label {
+                font-size: 1em;
+                color: #fff;
+            }
+
+            .season-value,
+            .race-value {
+                font-size: 1.2em;
+                font-weight: bold;
+                margin-bottom: 2px;
+            }
+
+            .season-progress-bar {
+                width: 100%;
+                height: 12px;
+                background: #222;
+                border-radius: 8px;
+                margin-top: 8px;
+                overflow: hidden;
+            }
+
+            .progress-bar-inner {
+                height: 100%;
+                background: linear-gradient(90deg, #FFD700 0%, #2ecc40 100%);
+                border-radius: 8px;
+                transition: width 0.5s;
+            }
+
+            .calendar-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+                justify-content: center;
+            }
+
+            .calendar-race {
+                padding: 12px 18px;
+                border-radius: 14px;
+                background: linear-gradient(135deg, #232526 0%, #414345 100%);
+                color: #fff;
+                min-width: 120px;
+                text-align: center;
+                box-shadow: 0 2px 8px #0004;
+                font-size: 1.1em;
+                border: 3px solid #444;
+                position: relative;
+                font-family: 'Orbitron', Arial, sans-serif;
+                transition: border 0.2s, box-shadow 0.2s;
+            }
+
+            .calendar-race.current {
+                border: 3px solid #FFD700;
+                background: #333;
+                color: #FFD700;
+                box-shadow: 0 0 16px #FFD70088;
+            }
+
+            .calendar-race.completed {
+                opacity: 0.5;
+            }
+
+            .standings-cards {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 14px;
+                justify-content: center;
+            }
+
+            .standings-card {
+                background: linear-gradient(135deg, #232526 0%, #414345 100%);
+                border-radius: 14px;
+                box-shadow: 0 2px 8px #0004;
+                padding: 14px 22px;
+                min-width: 120px;
+                text-align: center;
+                color: #fff;
+                font-family: 'Orbitron', Arial, sans-serif;
+                border: 3px solid #444;
+                position: relative;
+                font-size: 1.1em;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .standings-card.gold {
+                border: 3px solid #FFD700;
+                color: #FFD700;
+                box-shadow: 0 0 16px #FFD70088;
+            }
+
+            .standings-card.silver {
+                border: 3px solid #C0C0C0;
+                color: #C0C0C0;
+            }
+
+            .standings-card.bronze {
+                border: 3px solid #CD7F32;
+                color: #CD7F32;
+            }
+
+            .standings-pos {
+                font-size: 2em;
+                font-weight: bold;
+                margin-bottom: 2px;
+            }
+
+            .standings-team {
+                font-size: 1.1em;
+                font-weight: bold;
+                margin-bottom: 2px;
+            }
+
+            .standings-points {
+                font-size: 1.2em;
+            }
+
+            .career-btn {
+                background: linear-gradient(90deg, #D32F2F 0%, #FFD700 100%);
+                color: #fff;
+                border: none;
+                border-radius: 8px;
+                padding: 10px 24px;
+                font-size: 1.1em;
+                margin-right: 10px;
+                cursor: pointer;
+                font-family: 'Orbitron', Arial, sans-serif;
+                font-weight: bold;
+                box-shadow: 0 2px 8px #0003;
+                transition: background 0.2s;
+            }
+
+            .career-btn:hover {
+                background: linear-gradient(90deg, #B71C1C 0%, #FFD700 100%);
+            }
+        </style>
+        <div id="hq-screen" class="screen">
+            <button class="back-btn" onclick="showScreen('main-menu')">← Tornar</button>
+            <h2>Headquarters - Millores</h2>
+            <div class="hq-container">
+                <div class="upgrade-section">
+                    <h3>⚙️ Motor</h3>
+                    <div id="engine-level">Nivell: 1</div>
+                    <progress id="engine-progress" max="100" value="50"></progress>
+                    <button onclick="upgradeComponent('engine')">Millorar (€500.000)</button>
+                </div>
+                <div class="upgrade-section">
+                    <h3>✈️ Aerodinàmica</h3>
+                    <div id="aero-level">Nivell: 1</div>
+                    <progress id="aero-progress" max="100" value="50"></progress>
+                    <button onclick="upgradeComponent('aero')">Millorar (€500.000)</button>
+                </div>
+                <div class="upgrade-section">
+                    <h3>🔧 Xassís</h3>
+                    <div id="chassis-level">Nivell: 1</div>
+                    <progress id="chassis-progress" max="100" value="50"></progress>
+                    <button onclick="upgradeComponent('chassis')">Millorar (€500.000)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla Tenda -->
+        <div id="shop-screen" class="screen">
+            <button class="back-btn" onclick="showScreen('main-menu')">← Tornar</button>
+            <h2 class="shop-title">🛒 Tenda - Contractar Personal</h2>
+            <div class="shop-tabs">
+                <button class="tab-btn active" onclick="showShopTab('drivers')">Pilots</button>
+                <button class="tab-btn" onclick="showShopTab('managers')">Mànagers</button>
+            </div>
+            <div id="shop-content" class="shop-cards-grid">
+                <!-- S'omplirà dinàmicament amb JavaScript -->
+            </div>
+        </div>
+        <style>
+            .shop-title {
+                text-align: center;
+                font-family: 'Orbitron', Arial, sans-serif;
+                font-size: 2em;
+                margin-bottom: 16px;
+            }
+
+            .shop-cards-grid {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 24px;
+                justify-content: center;
+                margin-top: 18px;
+            }
+
+            .shop-card {
+                background: linear-gradient(135deg, #232526 0%, #414345 100%);
+                border-radius: 16px;
+                box-shadow: 0 2px 12px #0007;
+                padding: 18px 18px 12px 18px;
+                min-width: 180px;
+                min-height: 220px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                position: relative;
+                border: 3px solid #FFD700;
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+
+            .shop-card:hover {
+                transform: scale(1.04);
+                box-shadow: 0 4px 24px #FFD70055;
+            }
+
+            .shop-card-img-wrap {
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                overflow: hidden;
+                margin-bottom: 8px;
+                border: 2px solid #fff;
+                box-shadow: 0 1px 8px #0006;
+                background: #222;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .shop-card-img {
+                width: 80px;
+                height: 80px;
+                object-fit: cover;
+            }
+
+            .shop-card-name {
+                font-size: 1.1em;
+                color: #FFD700;
+                font-weight: bold;
+                text-align: center;
+                margin-bottom: 2px;
+            }
+
+            .shop-card-team {
+                font-size: 0.95em;
+                color: #2ecc40;
+                margin-bottom: 2px;
+            }
+
+            .shop-card-skill {
+                font-size: 0.95em;
+                color: #00bcd4;
+                margin-bottom: 2px;
+            }
+
+            .shop-card-bonus {
+                font-size: 0.95em;
+                color: #FFD700;
+                margin-bottom: 2px;
+            }
+
+            .shop-card-price {
+                font-size: 1.1em;
+                color: #2ecc40;
+                font-weight: bold;
+                margin-bottom: 8px;
+            }
+
+            .shop-card-btn {
+                background: linear-gradient(90deg, #D32F2F 0%, #FFD700 100%);
+                color: #fff;
+                border: none;
+                border-radius: 8px;
+                padding: 8px 18px;
+                font-size: 1em;
+                margin-top: 6px;
+                cursor: pointer;
+                font-family: 'Orbitron', Arial, sans-serif;
+                font-weight: bold;
+                box-shadow: 0 2px 8px #0003;
+                transition: background 0.2s;
+            }
+
+            .shop-card-btn:hover {
+                background: linear-gradient(90deg, #B71C1C 0%, #FFD700 100%);
+            }
+        </style>
+
+        <!-- Pantalla Equip -->
+        <div id="team-screen" class="screen">
+            <button class="back-btn" onclick="showScreen('main-menu')">← Tornar</button>
+            <h2 class="team-title">👥 El Meu Equip</h2>
+            <div class="team-cards-row">
+                <div class="team-card manager-card">
+                    <div class="team-card-title">Mànager</div>
+                    <div class="team-card-img-wrap"><img id="manager-img" class="team-card-img"
+                            src="img/manager_placeholder.png" alt="Manager" /></div>
+                    <div id="current-manager" class="team-card-name">Cap mànager contractat</div>
+                </div>
+                <div class="team-card driver-card">
+                    <div class="team-card-title">Pilot 1</div>
+                    <div class="team-card-img-wrap"><img id="driver1-img" class="team-card-img"
+                            src="img/driver_placeholder.png" alt="Pilot 1" /></div>
+                    <div id="driver1-name" class="team-card-name">Cap pilot contractat</div>
+                </div>
+                <div class="team-card driver-card">
+                    <div class="team-card-title">Pilot 2</div>
+                    <div class="team-card-img-wrap"><img id="driver2-img" class="team-card-img"
+                            src="img/driver_placeholder.png" alt="Pilot 2" /></div>
+                    <div id="driver2-name" class="team-card-name">Cap pilot contractat</div>
+                </div>
+            </div>
+            <div class="team-stats-card">
+                <h3>📊 Estadístiques de l'Escuderia</h3>
+                <div id="team-stats"></div>
+            </div>
+        </div>
+        <style>
+            .team-title {
+                text-align: center;
+                font-family: 'Orbitron', Arial, sans-serif;
+                font-size: 2em;
+                margin-bottom: 16px;
+            }
+
+            .team-cards-row {
+                display: flex;
+                gap: 32px;
+                justify-content: center;
+                align-items: flex-start;
+                margin-bottom: 18px;
+                flex-wrap: wrap;
+            }
+
+            .team-card {
+                background: linear-gradient(135deg, #232526 0%, #414345 100%);
+                border-radius: 18px;
+                box-shadow: 0 2px 12px #0007;
+                padding: 18px 18px 12px 18px;
+                min-width: 160px;
+                min-height: 220px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                position: relative;
+                border: 3px solid #FFD700;
+            }
+
+            .manager-card {
+                border-color: #2980b9;
+            }
+
+            .driver-card {
+                border-color: #D32F2F;
+            }
+
+            .team-card-title {
+                font-size: 1.1em;
+                color: #fff;
+                font-weight: bold;
+                margin-bottom: 6px;
+            }
+
+            .team-card-img-wrap {
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                overflow: hidden;
+                margin-bottom: 8px;
+                border: 2px solid #fff;
+                box-shadow: 0 1px 8px #0006;
+                background: #222;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .team-card-img {
+                width: 80px;
+                height: 80px;
+                object-fit: cover;
+            }
+
+            .team-card-name {
+                font-size: 1.1em;
+                color: #FFD700;
+                font-weight: bold;
+                text-align: center;
+            }
+
+            .team-stats-card {
+                background: #181818;
+                border-radius: 14px;
+                box-shadow: 0 2px 8px #0004;
+                padding: 14px 22px;
+                min-width: 220px;
+                text-align: center;
+                color: #fff;
+                font-family: 'Orbitron', Arial, sans-serif;
+                border: 2px solid #444;
+                margin: 0 auto;
+                max-width: 400px;
+            }
+        </style>
+
+        <!-- Pantalla Cursa -->
+        <div id="race-screen" class="screen">
+            <button class="back-btn" onclick="showScreen('main-menu')">← Tornar</button>
+            <h2 class="race-title">🏁 Cursa</h2>
+            <div class="race-container">
+                <div class="race-top-row">
+                    <div class="race-circuit-card fade-anim" id="race-circuit-card" style="display:none;">
+                        <img id="race-circuit-img" src="" alt="Circuit" class="race-circuit-img" />
+                        <div class="race-circuit-name" id="race-circuit-name"></div>
+                    </div>
+                    <div class="race-pilots-cards" id="race-pilots-cards">
+                        <!-- Targetes de pilots es generaran amb JS -->
+                    </div>
+                </div>
+                <style>
+                    .fade-anim {
+                        opacity: 0;
+                        transform: translateX(-40px);
+                        transition: opacity 0.5s, transform 0.5s;
+                    }
+
+                    .fade-anim.visible {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                </style>
+                <div class="track-selection">
+                    <h3>Selecciona Circuit</h3>
+                    <div class="track-buttons">
+                        <button onclick="selectTrack('monaco', event)">🇲🇨 Monaco</button>
+                        <button onclick="selectTrack('spa', event)">🇧🇪 Spa-Francorchamps</button>
+                        <button onclick="selectTrack('monza', event)">🇮🇹 Monza</button>
+                        <button onclick="selectTrack('portimao', event)">🇵🇹 Portimão</button>
+                        <button onclick="selectTrack('interlagos', event)">🇧🇷 Interlagos</button>
+                    </div>
+                </div>
+                <div id="strategy-panel" class="strategy-panel">
+                    <h3>Estratègia de Neumàtics</h3>
+                    <div class="driver-strategy">
+                        <label>Pilot 1:</label>
+                        <select id="driver1-tyres">
+                            <option value="soft">🔴 Tous</option>
+                            <option value="medium" selected>🟡 Mitjans</option>
+                            <option value="hard">⚪ Durs</option>
+                        </select>
+                    </div>
+                    <div class="driver-strategy">
+                        <label>Pilot 2:</label>
+                        <select id="driver2-tyres">
+                            <option value="soft">🔴 Tous</option>
+                            <option value="medium" selected>🟡 Mitjans</option>
+                            <option value="hard">⚪ Durs</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="track-display" class="track-display">
+                    <!-- La pista es mostrarà aquí -->
+                </div>
+                <div class="race-controls">
+                    <button id="start-race-btn" onclick="startRace()">Començar Cursa</button>
+                    <button id="pause-race-btn" onclick="pauseRace()" style="display:none;">Pausar</button>
+                    <button id="toggle-path-btn" onclick="toggleTrackPathVisibility()">Mostrar traçat</button>
+                </div>
+                <div id="race-positions" class="race-positions">
+                    <h3>Classificació</h3>
+                    <div id="positions-list"></div>
+                </div>
+            </div>
+        </div>
+        <style>
+            .race-title {
+                text-align: center;
+                font-family: 'Orbitron', Arial, sans-serif;
+                font-size: 2em;
+                margin-bottom: 16px;
+            }
+
+            .race-top-row {
+                display: flex;
+                gap: 32px;
+                justify-content: center;
+                align-items: flex-start;
+                margin-bottom: 18px;
+                flex-wrap: wrap;
+            }
+
+            .race-circuit-card {
+                background: #181818;
+                border-radius: 18px;
+                box-shadow: 0 2px 12px #0007;
+                padding: 12px 18px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                min-width: 180px;
+            }
+
+            .race-circuit-img {
+                width: 180px;
+                height: 100px;
+                object-fit: cover;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px #0005;
+                margin-bottom: 8px;
+            }
+
+            .race-circuit-name {
+                font-family: 'Orbitron', Arial, sans-serif;
+                font-size: 1.1em;
+                color: #FFD700;
+                font-weight: bold;
+                text-align: center;
+            }
+
+            .race-pilots-cards {
+                display: flex;
+                gap: 16px;
+            }
+
+            .race-pilot-card {
+                background: linear-gradient(135deg, #232526 0%, #414345 100%);
+                border-radius: 14px;
+                box-shadow: 0 2px 8px #0004;
+                padding: 10px 16px;
+                min-width: 110px;
+                text-align: center;
+                color: #fff;
+                font-family: 'Orbitron', Arial, sans-serif;
+                border: 2px solid #FFD700;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .race-pilot-img {
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                object-fit: cover;
+                margin-bottom: 6px;
+                border: 2px solid #fff;
+                box-shadow: 0 1px 6px #0006;
+            }
+
+            .race-pilot-name {
+                font-size: 1em;
+                font-weight: bold;
+                margin-bottom: 2px;
+            }
+
+            .race-pilot-team {
+                font-size: 0.9em;
+                color: #FFD700;
+                margin-bottom: 2px;
+            }
+
+            .race-pilot-skill {
+                font-size: 0.9em;
+                color: #2ecc40;
+            }
+        </style>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/career.js"></script>
+    <script src="js/intro3d.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/race.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
