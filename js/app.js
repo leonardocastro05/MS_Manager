@@ -1,8 +1,25 @@
 // Mostra/amaga el menú d'opcions de l'usuari al header
 function toggleUserMenu() {
-    const userMenu = document.querySelector('.user-menu');
-    if (userMenu) {
-        userMenu.classList.toggle('open');
+    const dropdown = document.getElementById('user-menu-dropdown');
+    if (dropdown) {
+        dropdown.classList.toggle('active');
+        // Tancar si es fa clic fora
+        if (dropdown.classList.contains('active')) {
+            setTimeout(() => {
+                document.addEventListener('mousedown', closeUserMenuOnClickOutside);
+            }, 0);
+        } else {
+            document.removeEventListener('mousedown', closeUserMenuOnClickOutside);
+        }
+    }
+}
+
+function closeUserMenuOnClickOutside(e) {
+    const dropdown = document.getElementById('user-menu-dropdown');
+    const btn = document.getElementById('user-menu-btn');
+    if (dropdown && !dropdown.contains(e.target) && btn && !btn.contains(e.target)) {
+        dropdown.classList.remove('active');
+        document.removeEventListener('mousedown', closeUserMenuOnClickOutside);
     }
 }
 // Mostrar info del modo carrera

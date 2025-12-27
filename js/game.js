@@ -82,36 +82,24 @@ function loadShopItems() {
             ? user.data.drivers.some(d => d.id === item.id)
             : user.data.manager && user.data.manager.id === item.id;
 
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'shop-item';
-        
-        if (currentShopTab === 'drivers') {
-            itemDiv.innerHTML = `
-                <h4>🏎️ ${item.name}</h4>
-                <div class="stats">
-                    <div>Habilitat: ${item.skill}/100</div>
-                    <div>Equip actual: ${item.team}</div>
-                    <div>Preu: ${formatMoney(item.price)}</div>
-                </div>
-                <button onclick="buyDriver(${item.id})" ${!canBuy || alreadyOwned ? 'disabled' : ''}>
-                    ${alreadyOwned ? 'Ja contractat' : 'Contractar'}
-                </button>
-            `;
-        } else {
-            itemDiv.innerHTML = `
-                <h4>👤 ${item.name}</h4>
-                <div class="stats">
-                    <div>Bonus: +${item.bonus}%</div>
-                    <div>Experiència: ${item.team}</div>
-                    <div>Preu: ${formatMoney(item.price)}</div>
-                </div>
-                <button onclick="buyManager(${item.id})" ${!canBuy || alreadyOwned ? 'disabled' : ''}>
-                    ${alreadyOwned ? 'Ja contractat' : 'Contractar'}
-                </button>
-            `;
-        }
-        
-        shopContent.appendChild(itemDiv);
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'shop-card';
+
+        // Imatge o icona
+        let imgWrapClass = 'shop-card-img-wrap ' + (currentShopTab === 'drivers' ? 'pilot' : 'manager');
+        let icon = currentShopTab === 'drivers' ? '🏎️' : '👤';
+
+        cardDiv.innerHTML = `
+            <div class="${imgWrapClass}">${icon}</div>
+            <div class="shop-card-name">${item.name}</div>
+            <div class="shop-card-team">${item.team || ''}</div>
+            ${currentShopTab === 'drivers' ? `<div class="shop-card-skill">Habilitat: ${item.skill}/100</div>` : `<div class="shop-card-bonus">Bonus: +${item.bonus}%</div>`}
+            <div style="margin-bottom:10px;">Preu: ${formatMoney(item.price)}</div>
+            <button onclick="${currentShopTab === 'drivers' ? `buyDriver(${item.id})` : `buyManager(${item.id})`}" ${!canBuy || alreadyOwned ? 'disabled' : ''}>
+                ${alreadyOwned ? 'Ja contractat' : 'Contractar'}
+            </button>
+        `;
+        shopContent.appendChild(cardDiv);
     });
 }
 

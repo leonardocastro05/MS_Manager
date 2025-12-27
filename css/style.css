@@ -1,98 +1,155 @@
+/* --- MODERNITZACIÓ HQ I TENDA --- */
+.hq-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 36px;
+    margin-top: 40px;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+    min-height: 60vh;
+}
+
+.upgrade-section {
+    background: linear-gradient(120deg, #1a1a2e 60%, #e10600 100%);
+    box-shadow: 0 4px 32px #e1060033, 0 1.5px 0 #ffd70044 inset;
+    border-radius: 22px;
+    padding: 36px 32px 32px 32px;
+    text-align: center;
+    min-width: 320px;
+    max-width: 370px;
+    color: #fff;
+    position: relative;
+    transition: transform 0.18s, box-shadow 0.18s;
+}
+.upgrade-section:hover {
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 12px 40px #e1060055, 0 1.5px 0 #ffd70088 inset;
+}
+.upgrade-section h3 {
+    font-size: 2.1em;
+    margin-bottom: 24px;
+    color: #ffd700;
+    text-shadow: 0 2px 12px #e10600cc, 0 1px 0 #fff;
+}
+.upgrade-section progress {
+    width: 100%;
+    height: 22px;
+    margin: 18px 0 22px 0;
+    border-radius: 8px;
+    background: #222;
+}
+.upgrade-section button {
+    width: 100%;
+    padding: 16px 0;
+    background: linear-gradient(90deg, #ffd700 0%, #e10600 100%);
+    color: #222;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.15em;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 18px;
+    box-shadow: 0 2px 12px #e1060033;
+    letter-spacing: 1px;
+    transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+}
+.upgrade-section button:hover {
+    background: linear-gradient(90deg, #e10600 0%, #ffd700 100%);
+    color: #fff;
+    box-shadow: 0 8px 24px #ffd70055;
+}
+
+.shop-cards-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 36px;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+    min-height: 60vh;
+}
+.shop-card {
+    background: linear-gradient(120deg, #1a1a2e 60%, #e10600 100%);
+    border-radius: 22px;
+    box-shadow: 0 4px 32px #e1060033, 0 1.5px 0 #ffd70044 inset;
+    padding: 32px 22px 22px 22px;
+    text-align: center;
+    transition: box-shadow 0.18s, transform 0.18s, border 0.18s;
+    cursor: pointer;
+    min-width: 260px;
+    max-width: 320px;
+    color: #fff;
+    position: relative;
+    outline: none;
+    animation: shopCardIn 0.7s cubic-bezier(.34, 1.56, .64, 1);
+}
+.shop-card:hover {
+    box-shadow: 0 16px 48px #ffd70088, 0 1.5px 0 #ffd700cc inset;
+    transform: translateY(-10px) scale(1.05);
+    border: 2.5px solid #ffd700cc;
+}
+.shop-card:focus {
+    border: 2.5px solid #ffd700cc;
+    box-shadow: 0 0 0 4px #ffd70055, 0 16px 48px #ffd70088;
+}
+
+@keyframes shopCardIn {
+    0% { opacity: 0; transform: scale(0.95) translateY(40px); }
+    80% { opacity: 1; transform: scale(1.03) translateY(-8px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.shop-card-img-wrap.pilot {
+    background: linear-gradient(120deg, #ffd70044 0%, #e1060022 100%);
+    border: 2.5px solid #ffd700cc;
+}
+.shop-card-img-wrap.manager {
+    background: linear-gradient(120deg, #00d2be44 0%, #222 100%);
+    border: 2.5px solid #00d2becc;
+}
+.shop-card-img-wrap {
+    width: 110px;
+    height: 110px;
+    margin: 0 auto 18px auto;
+    border-radius: 50%;
+    background: linear-gradient(120deg, #ffd70044 0%, #e1060022 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px #ffd70033;
+}
+.shop-card-img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+}
+.shop-card-name {
+    font-size: 1.35em;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #ffd700;
+    text-shadow: 0 1px 8px #e10600cc, 0 1px 0 #fff;
+}
+.shop-card-team {
+    font-size: 1em;
+    color: #ffd700cc;
+    margin-bottom: 4px;
+}
+.shop-card-skill, .shop-card-bonus {
+    font-size: 1.1em;
+    margin-bottom: 8px;
+    color: #fff;
+}
 /* --- DECORACIÓ HEADER USER MENU --- */
 .user-menu {
     position: relative;
     display: flex;
     align-items: center;
+    gap: 8px;
+    z-index: 10;
 }
 
-.user-menu-btn {
-    background: linear-gradient(120deg, #222 60%, #e10600 100%);
-    border: 2px solid #ffd70088;
-    color: #ffd700;
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.6em;
-    cursor: pointer;
-    box-shadow: 0 2px 8px #e1060033;
-    transition: background 0.2s, box-shadow 0.2s, color 0.2s;
-    outline: none;
-    position: relative;
-    margin-left: 12px;
-}
-.user-menu-btn:hover, .user-menu-btn:focus {
-    background: linear-gradient(120deg, #ffd700 0%, #e10600 100%);
-    color: #222;
-    box-shadow: 0 4px 16px #ffd70055;
-    border-color: #ffd700cc;
-}
-.user-menu-btn .menu-label {
-    display: none;
-}
-
-.user-menu-dropdown {
-    display: none;
-    position: absolute;
-    top: 56px;
-    right: 0;
-    min-width: 180px;
-    background: rgba(20,20,30,0.98);
-    border: 2px solid #ffd70044;
-    border-radius: 14px;
-    box-shadow: 0 8px 32px #e1060033, 0 1.5px 0 #ffd70044 inset;
-    z-index: 100;
-    flex-direction: column;
-    padding: 10px 0;
-    animation: fadeIn 0.25s;
-}
-.user-menu.open .user-menu-dropdown {
-    display: flex;
-}
-.user-menu-dropdown button {
-    width: 100%;
-    background: none;
-    border: none;
-    color: #ffd700;
-    font-size: 1.1em;
-    font-weight: 600;
-    padding: 12px 24px;
-    text-align: left;
-    cursor: pointer;
-    border-radius: 8px;
-    transition: background 0.18s, color 0.18s;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.user-menu-dropdown button#logout-btn {
-    color: #ffd700;
-}
-.user-menu-dropdown button#logout-btn:hover {
-    background: linear-gradient(90deg, #ffd70033 0%, #e1060022 100%);
-    color: #fff;
-}
-.user-menu-dropdown button#delete-account-btn {
-    color: #e10600;
-}
-.user-menu-dropdown button#delete-account-btn:hover {
-    background: linear-gradient(90deg, #e1060033 0%, #ffd70022 100%);
-    color: #fff;
-}
-/* ANIMACIÓ F1 A LA INTRO */
-.f1-anim-bg {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 2;
-    pointer-events: none;
-    overflow: hidden;
-}
-.f1-track-line {
-    position: absolute;
-    left: 50%;
-    top: 0;
+.user-menu-deco {
     width: 8px;
     height: 100%;
     background: repeating-linear-gradient(
@@ -101,8 +158,69 @@
         transparent 16px 32px
     );
     opacity: 0.18;
-    transform: translateX(-50%);
-    z-index: 2;
+    border-radius: 4px;
+    margin-right: 8px;
+}
+
+.user-menu-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(90deg, #222 60%, #e10600 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 8px 18px 8px 14px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px #e1060033;
+    transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+    position: relative;
+    z-index: 11;
+}
+.user-menu-btn:hover, .user-menu-btn:focus {
+    background: linear-gradient(90deg, #e10600 0%, #ffd700 100%);
+    color: #222;
+    box-shadow: 0 6px 18px #ffd70055;
+}
+.menu-icon {
+    font-size: 1.3em;
+    margin-right: 4px;
+}
+.menu-label {
+    font-size: 1em;
+    letter-spacing: 0.04em;
+}
+.user-menu-dropdown {
+    display: none;
+    position: absolute;
+    top: 110%;
+    right: 0;
+    background: #1a1a2e;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px #e1060033;
+    min-width: 170px;
+    padding: 10px 0;
+    z-index: 100;
+}
+.user-menu-dropdown.active {
+    display: block;
+}
+.user-menu-dropdown button {
+    width: 100%;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1em;
+    padding: 12px 18px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.user-menu-dropdown button:hover {
+    background: #e10600;
+    color: #ffd700;
 }
 .f1-car {
     position: absolute;
@@ -572,6 +690,9 @@ body {
     padding: 30px;
     border-radius: 15px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .upgrade-section h3 {
