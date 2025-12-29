@@ -1,4 +1,4 @@
-// Sistema de curses
+// Sistema de curses MILLORAT
 
 let selectedTrack = null;
 let raceInterval = null;
@@ -25,6 +25,7 @@ function displayTrack(trackId) {
     const viewW = 1000;
     const viewH = 600;
     const imageClass = imagePath ? 'race-track image-track' : 'race-track';
+
     trackDisplay.innerHTML = `
         <div class="${imageClass}" id="race-track" style="background-image: url('${imagePath}'); background-size: cover; background-position: center;">
             <svg class="track-svg" viewBox="0 0 ${viewW} ${viewH}" preserveAspectRatio="xMidYMid meet">
@@ -38,18 +39,18 @@ function displayTrack(trackId) {
             </div>
         </div>
     `;
-    // Animació targeta circuit
+
+    // Animació targeta circuit amb slider
     const circuitCard = document.getElementById('race-circuit-card');
     const circuitImg = document.getElementById('race-circuit-img');
     const circuitName = document.getElementById('race-circuit-name');
+
     if (circuitCard && circuitImg && circuitName) {
-        // Si ja és visible i mateix circuit, pulse
         if (circuitCard.classList.contains('visible') && circuitImg.src.endsWith(imagePath)) {
             circuitCard.classList.remove('pulse');
-            void circuitCard.offsetWidth; // reflow
+            void circuitCard.offsetWidth;
             circuitCard.classList.add('pulse');
         } else {
-            // Fade out si visible
             if (circuitCard.classList.contains('visible')) {
                 circuitCard.classList.remove('visible');
                 setTimeout(() => {
@@ -85,12 +86,11 @@ function startRace() {
         return;
     }
 
-    // Preparar cursa
     isRacing = true;
     currentLap = 0;
     document.getElementById('start-race-btn').style.display = 'none';
     document.getElementById('pause-race-btn').style.display = 'inline-block';
-    
+
     initializeRace();
     runRace();
 }
@@ -98,16 +98,14 @@ function startRace() {
 function initializeRace() {
     const user = getCurrentUser();
     const track = gameData.tracks[selectedTrack];
-    
-    // Crear array de posicions amb els pilots de l'usuari
+
     racePositions = [];
-    
+
     // Afegir pilots de l'usuari
     user.data.drivers.forEach((driver, index) => {
         const tyreChoice = document.getElementById(`driver${index + 1}-tyres`).value;
         const tyreStats = gameData.tyreStrategies[tyreChoice];
 
-        // Obtenir upgrades i diners del modo carrera si està actiu
         let upgrades = typeof getTeamUpgrades === 'function' ? getTeamUpgrades(user.data.teamName) : user.data.upgrades;
         let base = driver.skill;
         let engine = upgrades.engine || 0;
@@ -126,35 +124,35 @@ function initializeRace() {
             team: user.data.teamName,
             performance: performance * tyreStats.speed,
             position: 0,
-            progress: Math.random() * 5, // Inici aleatori
-            color: '#' + Math.floor(Math.random()*16777215).toString(16),
+            progress: Math.random() * 2,
+            lapProgress: 0, // CLAU: Progrés dins de la volta actual
+            completedLaps: 0, // CLAU: Voltes completades
+            color: '#' + Math.floor(Math.random() * 16777215).toString(16),
             isPlayer: true
         });
     });
-    
+
     // Afegir equips IA
     aiTeams.forEach(team => {
-        // Obtenir upgrades del modo carrera si està actiu
-        let upgrades = typeof getTeamUpgrades === 'function' ? getTeamUpgrades(team.name) : (team.upgrades || {engine:0,aero:0,chassis:0});
+        let upgrades = typeof getTeamUpgrades === 'function' ? getTeamUpgrades(team.name) : (team.upgrades || { engine: 0, aero: 0, chassis: 0 });
         let engine = upgrades.engine || 0;
         let aero = upgrades.aero || 0;
         let chassis = upgrades.chassis || 0;
-        let manager = 0; // Pots afegir managers IA si vols
 
-        // Fórmula igual que el jugador
         let aiPerformance = team.skill
             * (1 + engine / 20)
             * (1 + aero / 25)
             * (1 + chassis / 25)
-            * (1 + manager / 100)
-            + (Math.random() * 10 - 5); // L'aleatorietat es manté
+            + (Math.random() * 10 - 5);
 
         racePositions.push({
             name: team.driver1,
             team: team.name,
             performance: aiPerformance,
             position: 0,
-            progress: Math.random() * 5,
+            progress: Math.random() * 2,
+            lapProgress: 0,
+            completedLaps: 0,
             color: team.color,
             isPlayer: false
         });
@@ -164,63 +162,70 @@ function initializeRace() {
             team: team.name,
             performance: aiPerformance - 2,
             position: 0,
-            progress: Math.random() * 5,
+            progress: Math.random() * 2,
+            lapProgress: 0,
+            completedLaps: 0,
             color: team.color,
             isPlayer: false
         });
     });
-    
-    // Ordenar per rendiment inicial
+
     updatePositions();
     updateDriverMarkers();
 }
 
 function runRace() {
     const track = gameData.tracks[selectedTrack];
-    
+
     raceInterval = setInterval(() => {
         if (!isRacing) return;
-        
+
         // Actualitzar progrés de cada pilot
         racePositions.forEach(driver => {
-            // Increment aleatori basat en el rendiment
             const increment = (driver.performance / 100) * (Math.random() * 0.5 + 0.75);
-            driver.progress += increment;
-        });
-        
-        // Comprovar si algú ha completat una volta
-        const maxProgress = Math.max(...racePositions.map(d => d.progress));
-        if (maxProgress >= 100) {
-            currentLap++;
-            document.getElementById('current-lap').textContent = currentLap;
-            
-            // Reset progrés però mantenint l'excés
-            racePositions.forEach(driver => {
-                if (driver.progress >= 100) {
-                    driver.progress -= 100;
+            driver.lapProgress += increment;
+
+            // Si completa una volta
+            if (driver.lapProgress >= 100) {
+                driver.completedLaps++;
+                driver.lapProgress -= 100; // Mantenir l'excés
+
+                // Actualitzar el comptador de voltes amb el líder
+                const maxLaps = Math.max(...racePositions.map(d => d.completedLaps));
+                currentLap = maxLaps;
+                const lapDisplay = document.getElementById('current-lap');
+                if (lapDisplay) lapDisplay.textContent = currentLap;
+
+                // Comprovar si la cursa ha acabat
+                if (driver.completedLaps >= track.laps) {
+                    driver.lapProgress = 100; // Mantenir a 100%
                 }
-            });
-            
-            // Comprovar si la cursa ha acabat
-            if (currentLap >= track.laps) {
-                endRace();
-                return;
             }
+        });
+
+        // Comprovar si tots han acabat
+        const allFinished = racePositions.every(d => d.completedLaps >= track.laps);
+        if (allFinished) {
+            endRace();
+            return;
         }
-        
+
+        // Calcular progrés total per ordenar correctament
+        racePositions.forEach(driver => {
+            driver.progress = (driver.completedLaps * 100) + driver.lapProgress;
+        });
+
         updatePositions();
         updateDriverMarkers();
         displayRacePositions();
-        
-    }, 100); // Actualitzar cada 100ms
+
+    }, 100);
 }
 
 function updatePositions() {
-    // Calcular posicions basades en volta actual i progrés
-    racePositions.sort((a, b) => {
-        return b.progress - a.progress;
-    });
-    
+    // Ordenar per progrés total (voltes completades + progrés volta actual)
+    racePositions.sort((a, b) => b.progress - a.progress);
+
     racePositions.forEach((driver, index) => {
         driver.position = index + 1;
     });
@@ -229,16 +234,14 @@ function updatePositions() {
 function updateDriverMarkers() {
     const raceTrack = document.getElementById('race-track');
     if (!raceTrack) return;
-    
-    // Esborrar marcadors anteriors
+
     const oldMarkers = raceTrack.querySelectorAll('.driver-marker');
     oldMarkers.forEach(marker => marker.remove());
-    
-    // Crear nous marcadors
-    // Use SVG path to position markers along the true racing line
+
     const svg = raceTrack.querySelector('svg.track-svg');
     const path = svg ? svg.querySelector('#track-path') : null;
     let totalLength = 0;
+
     if (path) {
         try {
             totalLength = path.getTotalLength();
@@ -254,10 +257,13 @@ function updateDriverMarkers() {
         marker.style.border = driver.isPlayer ? '3px solid gold' : '2px solid white';
 
         let x = 0, y = 0;
+
         if (path && totalLength > 0) {
-            const len = Math.max(0, Math.min(1, driver.progress / 100)) * totalLength;
+            // Usar lapProgress (0-100) per la posició dins de la volta
+            const progressInLap = Math.max(0, Math.min(100, driver.lapProgress));
+            const len = (progressInLap / 100) * totalLength;
             const pt = path.getPointAtLength(len);
-            // Convert SVG user coords to pixels relative to the svg element
+
             const svgPt = svg.createSVGPoint();
             svgPt.x = pt.x;
             svgPt.y = pt.y;
@@ -267,8 +273,8 @@ function updateDriverMarkers() {
             x = screenPt.x - svgRect.left;
             y = screenPt.y - svgRect.top;
         } else {
-            // fallback to simple oval
-            const angle = (driver.progress / 100) * Math.PI * 2;
+            // Fallback a oval
+            const angle = (driver.lapProgress / 100) * Math.PI * 2;
             const centerX = raceTrack.offsetWidth / 2;
             const centerY = raceTrack.offsetHeight / 2;
             const radiusX = centerX - 80;
@@ -277,7 +283,6 @@ function updateDriverMarkers() {
             y = centerY + radiusY * Math.sin(angle);
         }
 
-        // Center marker on the point
         marker.style.left = (x - 15) + 'px';
         marker.style.top = (y - 15) + 'px';
         marker.textContent = driver.position;
@@ -288,16 +293,21 @@ function updateDriverMarkers() {
 
 function displayRacePositions() {
     const positionsList = document.getElementById('positions-list');
-    
-    positionsList.innerHTML = racePositions.map(driver => `
-        <div class="position-item" style="border-left: 4px solid ${driver.color}">
-            <div class="position-number">${driver.position}</div>
-            <div class="driver-info">
-                <div class="driver-name">${driver.name} ${driver.isPlayer ? '⭐' : ''}</div>
-                <div class="team-name">${driver.team}</div>
+
+    positionsList.innerHTML = racePositions.map(driver => {
+        const track = gameData.tracks[selectedTrack];
+        const lapsText = `${driver.completedLaps}/${track.laps}`;
+
+        return `
+            <div class="position-item" style="border-left: 4px solid ${driver.color}">
+                <div class="position-number">${driver.position}</div>
+                <div class="driver-info">
+                    <div class="driver-name">${driver.name} ${driver.isPlayer ? '⭐' : ''}</div>
+                    <div class="team-name">${driver.team} • ${lapsText} voltes</div>
+                </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function pauseRace() {
@@ -316,36 +326,40 @@ function toggleTrackPathVisibility() {
 function endRace() {
     clearInterval(raceInterval);
     isRacing = false;
-    
+
     document.getElementById('start-race-btn').style.display = 'inline-block';
     document.getElementById('pause-race-btn').style.display = 'none';
-    
-    // Actualitzar estadístiques de l'usuari
+
     const user = getCurrentUser();
     const playerPositions = racePositions.filter(d => d.isPlayer).map(d => d.position);
     const bestPosition = Math.min(...playerPositions);
-    
+
+    // Sistema de punts F1 real
+    const pointsSystem = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
+    const points = bestPosition <= 10 ? pointsSystem[bestPosition - 1] : 0;
+
     if (bestPosition === 1) {
         user.data.wins++;
-        user.data.points += 25;
-        alert('🏆 VICTÒRIA! Has guanyat la cursa!');
+        user.data.points += points;
+        alert(`🏆 VICTÒRIA! Has guanyat la cursa!\n+${points} punts al campionat`);
     } else if (bestPosition <= 3) {
         user.data.podiums++;
-        const points = bestPosition === 2 ? 18 : 15;
         user.data.points += points;
-        alert(`🥈 Podi! Has quedat ${bestPosition}è i guanyat ${points} punts!`);
+        const medal = bestPosition === 2 ? '🥈' : '🥉';
+        alert(`${medal} Podi! Has quedat ${bestPosition}è!\n+${points} punts al campionat`);
+    } else if (bestPosition <= 10) {
+        user.data.points += points;
+        alert(`Has acabat ${bestPosition}è\n+${points} punts al campionat`);
     } else {
-        const points = Math.max(0, 11 - bestPosition);
-        user.data.points += points;
-        alert(`Has acabat ${bestPosition}è i guanyat ${points} punts.`);
+        alert(`Has acabat ${bestPosition}è\nFora dels punts`);
     }
-    
+
     // Premi en diners
-    const prize = Math.max(100000, 1000000 - (bestPosition * 50000));
+    const prize = Math.max(100000, 1500000 - (bestPosition * 80000));
     user.data.budget += prize;
-    
+
     saveUserData(user.data);
     updateUserInfo();
-    
+
     alert(`Has guanyat ${formatMoney(prize)} de premi!`);
 }

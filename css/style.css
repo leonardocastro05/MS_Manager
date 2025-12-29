@@ -22,16 +22,19 @@
     position: relative;
     transition: transform 0.18s, box-shadow 0.18s;
 }
+
 .upgrade-section:hover {
     transform: translateY(-8px) scale(1.03);
     box-shadow: 0 12px 40px #e1060055, 0 1.5px 0 #ffd70088 inset;
 }
+
 .upgrade-section h3 {
     font-size: 2.1em;
     margin-bottom: 24px;
     color: #ffd700;
     text-shadow: 0 2px 12px #e10600cc, 0 1px 0 #fff;
 }
+
 .upgrade-section progress {
     width: 100%;
     height: 22px;
@@ -39,6 +42,7 @@
     border-radius: 8px;
     background: #222;
 }
+
 .upgrade-section button {
     width: 100%;
     padding: 16px 0;
@@ -54,6 +58,7 @@
     letter-spacing: 1px;
     transition: background 0.18s, color 0.18s, box-shadow 0.18s;
 }
+
 .upgrade-section button:hover {
     background: linear-gradient(90deg, #e10600 0%, #ffd700 100%);
     color: #fff;
@@ -69,6 +74,7 @@
     width: 100%;
     min-height: 60vh;
 }
+
 .shop-card {
     background: linear-gradient(120deg, #1a1a2e 60%, #e10600 100%);
     border-radius: 22px;
@@ -84,29 +90,45 @@
     outline: none;
     animation: shopCardIn 0.7s cubic-bezier(.34, 1.56, .64, 1);
 }
+
 .shop-card:hover {
     box-shadow: 0 16px 48px #ffd70088, 0 1.5px 0 #ffd700cc inset;
     transform: translateY(-10px) scale(1.05);
     border: 2.5px solid #ffd700cc;
 }
+
 .shop-card:focus {
     border: 2.5px solid #ffd700cc;
     box-shadow: 0 0 0 4px #ffd70055, 0 16px 48px #ffd70088;
 }
 
 @keyframes shopCardIn {
-    0% { opacity: 0; transform: scale(0.95) translateY(40px); }
-    80% { opacity: 1; transform: scale(1.03) translateY(-8px); }
-    100% { opacity: 1; transform: scale(1) translateY(0); }
+    0% {
+        opacity: 0;
+        transform: scale(0.95) translateY(40px);
+    }
+
+    80% {
+        opacity: 1;
+        transform: scale(1.03) translateY(-8px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
+
 .shop-card-img-wrap.pilot {
     background: linear-gradient(120deg, #ffd70044 0%, #e1060022 100%);
     border: 2.5px solid #ffd700cc;
 }
+
 .shop-card-img-wrap.manager {
     background: linear-gradient(120deg, #00d2be44 0%, #222 100%);
     border: 2.5px solid #00d2becc;
 }
+
 .shop-card-img-wrap {
     width: 110px;
     height: 110px;
@@ -118,11 +140,13 @@
     justify-content: center;
     box-shadow: 0 2px 12px #ffd70033;
 }
+
 .shop-card-img {
     width: 80px;
     height: 80px;
     object-fit: contain;
 }
+
 .shop-card-name {
     font-size: 1.35em;
     font-weight: bold;
@@ -130,16 +154,20 @@
     color: #ffd700;
     text-shadow: 0 1px 8px #e10600cc, 0 1px 0 #fff;
 }
+
 .shop-card-team {
     font-size: 1em;
     color: #ffd700cc;
     margin-bottom: 4px;
 }
-.shop-card-skill, .shop-card-bonus {
+
+.shop-card-skill,
+.shop-card-bonus {
     font-size: 1.1em;
     margin-bottom: 8px;
     color: #fff;
 }
+
 /* --- DECORACIÓ HEADER USER MENU --- */
 .user-menu {
     position: relative;
@@ -152,11 +180,9 @@
 .user-menu-deco {
     width: 8px;
     height: 100%;
-    background: repeating-linear-gradient(
-        to bottom,
-        #fff 0 16px,
-        transparent 16px 32px
-    );
+    background: repeating-linear-gradient(to bottom,
+            #fff 0 16px,
+            transparent 16px 32px);
     opacity: 0.18;
     border-radius: 4px;
     margin-right: 8px;
@@ -179,19 +205,24 @@
     position: relative;
     z-index: 11;
 }
-.user-menu-btn:hover, .user-menu-btn:focus {
+
+.user-menu-btn:hover,
+.user-menu-btn:focus {
     background: linear-gradient(90deg, #e10600 0%, #ffd700 100%);
     color: #222;
     box-shadow: 0 6px 18px #ffd70055;
 }
+
 .menu-icon {
     font-size: 1.3em;
     margin-right: 4px;
 }
+
 .menu-label {
     font-size: 1em;
     letter-spacing: 0.04em;
 }
+
 .user-menu-dropdown {
     display: none;
     position: absolute;
@@ -204,9 +235,11 @@
     padding: 10px 0;
     z-index: 100;
 }
+
 .user-menu-dropdown.active {
     display: block;
 }
+
 .user-menu-dropdown button {
     width: 100%;
     background: none;
@@ -218,10 +251,12 @@
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
 }
+
 .user-menu-dropdown button:hover {
     background: #e10600;
     color: #ffd700;
 }
+
 .f1-car {
     position: absolute;
     width: 64px;
@@ -235,6 +270,7 @@
     animation: f1car-move 3.5s linear infinite;
     opacity: 0.92;
 }
+
 .f1-car.car2 {
     background: linear-gradient(90deg, #222 60%, #fff 100%);
     top: 68%;
@@ -243,6 +279,7 @@
     height: 24px;
     opacity: 0.7;
 }
+
 .f1-car.car3 {
     background: linear-gradient(90deg, #ffd700 60%, #fff 100%);
     top: 76%;
@@ -251,13 +288,30 @@
     height: 20px;
     opacity: 0.5;
 }
+
 @keyframes f1car-move {
-    0% { left: -80px; }
-    10% { opacity: 0.7; }
-    20% { opacity: 1; }
-    80% { opacity: 1; }
-    100% { left: 110vw; opacity: 0.2; }
+    0% {
+        left: -80px;
+    }
+
+    10% {
+        opacity: 0.7;
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    80% {
+        opacity: 1;
+    }
+
+    100% {
+        left: 110vw;
+        opacity: 0.2;
+    }
 }
+
 * {
     margin: 0;
     padding: 0;
@@ -561,12 +615,13 @@ body {
 #main-menu.screen.active {
     background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 60%, #e10600 100%);
     min-height: 100vh;
-        width: 100%;
-        height: 100%;
+    width: 100%;
+    height: 100%;
     border-radius: 0;
     box-shadow: none;
     position: fixed;
-    top: 0; left: 0;
+    top: 0;
+    left: 0;
     overflow: auto;
     display: flex;
     flex-direction: column;
@@ -579,12 +634,13 @@ body {
 #main-menu.screen.active::before {
     content: '';
     position: fixed;
-    top: 0; left: 0; width: 100vw; height: 100vh;
-    background: repeating-linear-gradient(
-        120deg,
-        #fff1 0 20px,
-        transparent 20px 60px
-    );
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: repeating-linear-gradient(120deg,
+            #fff1 0 20px,
+            transparent 20px 60px);
     opacity: 0.12;
     pointer-events: none;
     z-index: 0;
@@ -1280,4 +1336,271 @@ body {
         width: 80%;
         bottom: 20%;
     }
+}
+
+/* ESTILS MILLORATS - Afegeix això al teu style.css */
+
+/* === BOTONS DE TENDA MILLORATS === */
+.shop-card-btn {
+    width: 100%;
+    padding: 12px 18px;
+    background: linear-gradient(90deg, #2ecc40 0%, #00d084 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.05em;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 12px;
+    box-shadow: 0 2px 12px rgba(46, 204, 64, 0.3);
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+}
+
+.shop-card-btn:hover:not(.disabled) {
+    background: linear-gradient(90deg, #27ae60 0%, #00b876 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(46, 204, 64, 0.5);
+}
+
+.shop-card-btn.disabled {
+    background: linear-gradient(90deg, #666 0%, #888 100%);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.shop-card-btn:active:not(.disabled) {
+    transform: translateY(0);
+}
+
+/* === ESTADÍSTIQUES D'EQUIP === */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+    border-radius: 14px;
+    padding: 18px;
+    text-align: center;
+    border: 2px solid #ffd700;
+    box-shadow: 0 2px 12px rgba(255, 215, 0, 0.2);
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+}
+
+.stat-icon {
+    font-size: 2.5em;
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    font-size: 2em;
+    font-weight: 900;
+    color: #ffd700;
+    margin-bottom: 4px;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.stat-label {
+    font-size: 0.95em;
+    color: #ccc;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* === RENDIMENT DE L'EQUIP === */
+.performance-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+.performance-section h4 {
+    margin-bottom: 16px;
+    font-size: 1.3em;
+    color: #ffd700;
+}
+
+.performance-bar {
+    width: 100%;
+    height: 32px;
+    background: #222;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    border: 2px solid #ffd700;
+}
+
+.performance-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ffd700 0%, #2ecc40 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 1.1em;
+    color: #000;
+    transition: width 0.5s ease-out;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.performance-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.perf-detail {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.perf-label {
+    color: #bbb;
+}
+
+.perf-value {
+    color: #ffd700;
+    font-weight: 700;
+}
+
+/* === ESTADÍSTIQUES DE CURSES === */
+.race-stats-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 14px;
+    padding: 20px;
+    border: 2px solid rgba(225, 6, 0, 0.3);
+}
+
+.race-stats-section h4 {
+    margin-bottom: 16px;
+    font-size: 1.3em;
+    color: #e10600;
+}
+
+.race-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+}
+
+.race-stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    border-left: 4px solid #e10600;
+}
+
+.race-stat-label {
+    color: #bbb;
+    font-size: 0.95em;
+}
+
+.race-stat-value {
+    color: #fff;
+    font-weight: 900;
+    font-size: 1.1em;
+}
+
+/* === MEMBRES DE L'EQUIP === */
+.team-member-card {
+    background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    border: 2px solid #ffd700;
+    margin-bottom: 16px;
+}
+
+.team-member-icon {
+    font-size: 3em;
+    margin-bottom: 12px;
+}
+
+.team-member-card h4 {
+    font-size: 1.4em;
+    color: #ffd700;
+    margin-bottom: 6px;
+}
+
+.team-member-team {
+    color: #2ecc40;
+    margin-bottom: 8px;
+    font-size: 1.05em;
+}
+
+.team-member-stat {
+    color: #00bcd4;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.skill-bar {
+    width: 100%;
+    height: 12px;
+    background: #222;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.skill-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00bcd4 0%, #2ecc40 100%);
+    transition: width 0.5s ease-out;
+}
+
+.no-data {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 40px;
+}
+
+/* === ANIMACIONS === */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stat-card {
+    animation: fadeInUp 0.4s ease-out;
+}
+
+.stat-card:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.stat-card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.stat-card:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.stat-card:nth-child(4) {
+    animation-delay: 0.2s;
 }
