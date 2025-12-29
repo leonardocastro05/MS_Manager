@@ -434,24 +434,24 @@
         <div id="hq-screen" class="screen">
             <button class="back-btn" onclick="showScreen('main-menu')">← Tornar</button>
             <h2>Headquarters - Millores</h2>
-            <div class="hq-container">
+            <div class="hq-container" style="display: flex; justify-content: center; align-items: center; min-height: 60vh; gap: 48px;">
                 <div class="upgrade-section">
                     <h3>⚙️ Motor</h3>
                     <div id="engine-level">Nivell: 1</div>
                     <progress id="engine-progress" max="100" value="50"></progress>
-                    <button onclick="upgradeComponent('engine')">Millorar (€500.000)</button>
+                    <button onclick="upgradeComponent('engine')">Millorar (<span id="engine-upgrade-price">€500.000</span>)</button>
                 </div>
                 <div class="upgrade-section">
                     <h3>✈️ Aerodinàmica</h3>
                     <div id="aero-level">Nivell: 1</div>
                     <progress id="aero-progress" max="100" value="50"></progress>
-                    <button onclick="upgradeComponent('aero')">Millorar (€500.000)</button>
+                    <button onclick="upgradeComponent('aero')">Millorar (<span id="aero-upgrade-price">€500.000</span>)</button>
                 </div>
                 <div class="upgrade-section">
                     <h3>🔧 Xassís</h3>
                     <div id="chassis-level">Nivell: 1</div>
                     <progress id="chassis-progress" max="100" value="50"></progress>
-                    <button onclick="upgradeComponent('chassis')">Millorar (€500.000)</button>
+                    <button onclick="upgradeComponent('chassis')">Millorar (<span id="chassis-upgrade-price">€500.000</span>)</button>
                 </div>
             </div>
         </div>

@@ -44,12 +44,19 @@ function updateHQDisplay() {
 
     document.getElementById('engine-level').textContent = `Nivell: ${user.data.upgrades.engine}`;
     document.getElementById('engine-progress').value = user.data.upgrades.engine * 10;
-    
     document.getElementById('aero-level').textContent = `Nivell: ${user.data.upgrades.aero}`;
     document.getElementById('aero-progress').value = user.data.upgrades.aero * 10;
-    
     document.getElementById('chassis-level').textContent = `Nivell: ${user.data.upgrades.chassis}`;
     document.getElementById('chassis-progress').value = user.data.upgrades.chassis * 10;
+
+    // Actualitza el preu dels botons de millora
+    if (typeof updateHQUpgradePrices === 'function') {
+        updateHQUpgradePrices({
+            engine: user.data.upgrades.engine,
+            aero: user.data.upgrades.aero,
+            chassis: user.data.upgrades.chassis
+        });
+    }
 }
 
 // Tenda
