@@ -94,7 +94,8 @@
                 <button onclick="showScreen('shop-screen')">🛒 Tenda</button>
                 <button onclick="showScreen('race-screen')">🏁 Cursa</button>
                 <button onclick="showScreen('team-screen')">👥 Equip</button>
-                <button onclick="showScreen('career-screen')">🌟 Modo Carrera</button>
+                    <button onclick="window.location.href='online.html'">🌐 Modo Online</button>
+                    <button onclick="showScreen('career-screen')">🌟 Modo Carrera</button>
             </div>
         </div>
 
@@ -141,6 +142,71 @@
                 <button class="career-btn" onclick="showScreen('hq-screen')">Millorar HQ</button>
             </div>
         </div>
+            <!-- Pantalla Online (Nou Modo Online) -->
+            <div id="online-screen" class="screen">
+                <button class="back-btn" onclick="showScreen('main-menu')">← Tornar</button>
+                <h2 class="career-title">🌐 Modo Online</h2>
+                <div id="online-hq-warning" style="display:none; color:#FFD700; background:#222; border:2px solid #D32F2F; border-radius:10px; padding:16px; margin:18px auto; max-width:420px; text-align:center; font-weight:bold;">
+                    Per accedir al modo online, cal tenir els 3 apartats del HQ al nivell 5 o superior.
+                </div>
+                <div class="online-content">
+                    <div id="online-user-info"></div>
+                    <section class="online-leagues">
+                        <h3>Lligues Online</h3>
+                        <button class="career-btn" id="create-league-btn" style="margin-bottom:12px;">Crear nova lliga</button>
+                        <div id="leagues-list" class="leagues-list"></div>
+                    </section>
+                    <section class="online-shop">
+                        <h3>Tenda Online</h3>
+                        <div class="shop-card" style="margin-bottom:8px;">En producció fins a Gener</div>
+                        <div id="online-shop-coins" class="shop-cards-grid"></div>
+                        <h4 style="margin-top:18px;">Comprar diners amb coins</h4>
+                        <div id="online-shop-money" class="shop-cards-grid"></div>
+                        <div id="online-starter-pack" class="shop-cards-grid"></div>
+                    </section>
+                    <section class="online-sponsors">
+                        <h3>Patrocinadors</h3>
+                        <div id="online-sponsors-list" class="shop-cards-grid"></div>
+                    </section>
+                    <section class="online-car-upgrades">
+                        <h3>Millores del Monoplaza</h3>
+                        <div id="online-car-upgrades-list" class="shop-cards-grid"></div>
+                    </section>
+                    <section class="online-xp">
+                        <h3>Sistema d'XP i recompenses</h3>
+                        <div id="online-xp-rewards"></div>
+                    </section>
+                </div>
+                    <script>
+                    // Comprova si el jugador pot accedir al modo online
+                    function enterOnlineMode() {
+                        if (typeof canAccessOnline === 'function' && !canAccessOnline()) {
+                            document.getElementById('online-hq-warning').style.display = 'block';
+                            showScreen('online-screen');
+                            return;
+                        }
+                        document.getElementById('online-hq-warning').style.display = 'none';
+                        showScreen('online-screen');
+                        if (typeof loadOnlineScreen === 'function') loadOnlineScreen();
+                    }
+                    </script>
+            </div>
+            <script>
+            // Comprova si el jugador pot accedir al modo online
+            function enterOnlineMode() {
+                // Aquesta funció hauria de comprovar el nivell del HQ de l'usuari
+                // Aquí posem un exemple bàsic, substitueix per la teva lògica real
+                var hqLevels = window.getHQLevels ? window.getHQLevels() : [5,5,5]; // [hq1, hq2, hq3]
+                var allowed = hqLevels.every(function(lvl){ return lvl >= 5; });
+                if (!allowed) {
+                    document.getElementById('online-hq-warning').style.display = 'block';
+                    showScreen('online-screen');
+                } else {
+                    document.getElementById('online-hq-warning').style.display = 'none';
+                    showScreen('online-screen');
+                }
+            }
+            </script>
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
 

@@ -27,7 +27,7 @@ function upgradeComponent(component) {
 
     // Calcular cost (augmenta amb cada nivell)
     const baseCost = gameData.upgradeCosts[component];
-    const cost = baseCost + (currentLevel - 1) * 50000;
+    const cost = baseCost + (currentLevel - 1) * 100000;
 
     // Comprovar si té diners
     if (user.data.budget < cost) {
@@ -74,12 +74,11 @@ function updateHQDisplay() {
  * Actualitza els preus mostrats als botons de millora
  */
 function updateUpgradePrices(engineLvl, aeroLvl, chassisLvl) {
-    const baseCost = 500000;
+    const baseCost = 1000000;
     
-    const enginePrice = baseCost + (engineLvl - 1) * 50000;
-    const aeroPrice = baseCost + (aeroLvl - 1) * 50000;
-    const chassisPrice = baseCost + (chassisLvl - 1) * 50000;
-
+    const enginePrice = baseCost + (engineLvl - 1) * 150000;
+    const aeroPrice = baseCost + (aeroLvl - 1) * 100000;
+    const chassisPrice = baseCost + (chassisLvl - 1) * 100000;
     document.getElementById('engine-upgrade-price').textContent = formatMoney(enginePrice);
     document.getElementById('aero-upgrade-price').textContent = formatMoney(aeroPrice);
     document.getElementById('chassis-upgrade-price').textContent = formatMoney(chassisPrice);

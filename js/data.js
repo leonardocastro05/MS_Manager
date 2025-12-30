@@ -81,9 +81,9 @@ const gameData = {
 
     // Costos de millores
     upgradeCosts: {
-        engine: 500000,
-        aero: 500000,
-        chassis: 500000
+        engine: 1500000,
+        aero: 1500000,
+        chassis: 1000000
     }
 };
 

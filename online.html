@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1 Manager - Modo Online</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/libs/three.min.js"></script>
+</head>
+<body>
+    <div id="online-app">
+        <nav class="top-nav" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <h1 style="margin:0;">🌐 F1 Manager Online</h1>
+            <div id="online-header-balances" style="display:flex;gap:18px;align-items:center;">
+                <span id="online-header-money" class="shop-card" style="min-width:110px;padding:6px 14px;font-size:1.08em;"></span>
+                <span id="online-header-coins" class="shop-card" style="min-width:90px;padding:6px 14px;font-size:1.08em;"></span>
+            </div>
+            <button class="back-btn" onclick="window.location.href='index.html'">← Tornar al menú principal</button>
+        </nav>
+        <div class="online-menu-buttons" id="online-menu-buttons" style="display:flex;gap:16px;justify-content:center;margin:18px 0 18px 0;flex-wrap:wrap;">
+            <button id="btn-shop" onclick="showOnlineSection('shop')">🛒 Tenda</button>
+            <button id="btn-leagues" onclick="showOnlineSection('leagues')">🏆 Lligues</button>
+            <button id="btn-car" onclick="showOnlineSection('car')">🏎️ Monoplaza</button>
+            <button id="btn-sponsors" onclick="showOnlineSection('sponsors')">💼 Patrocinadors</button>
+            <button id="btn-xp" onclick="showOnlineSection('xp')">⭐ XP & Recompenses</button>
+        </div>
+        <div class="online-content">
+            <section id="online-section-shop" class="online-section" style="display:none;">
+                <h3>Tenda Online</h3>
+                <div class="shop-card" style="margin-bottom:8px;">En producció fins a Gener</div>
+                <div id="online-shop-coins" class="shop-cards-grid"></div>
+                <h4 style="margin-top:18px;">Comprar diners amb coins</h4>
+                <div id="online-shop-money" class="shop-cards-grid"></div>
+                <div id="online-starter-pack" class="shop-cards-grid"></div>
+            </section>
+            <section id="online-section-leagues" class="online-section" style="display:none;">
+                <h3>Lligues Online</h3>
+                <button class="career-btn" id="create-league-btn" style="margin-bottom:12px;">Crear nova lliga</button>
+                <div id="leagues-list" class="leagues-list"></div>
+            </section>
+            <section id="online-section-car" class="online-section" style="display:none;">
+                <h3>Personalitza el teu Monoplaza</h3>
+                <div id="online-car-upgrades-list" class="shop-cards-grid"></div>
+            </section>
+            <section id="online-section-sponsors" class="online-section" style="display:none;">
+                <h3>Patrocinadors</h3>
+                <div id="online-sponsors-list" class="shop-cards-grid"></div>
+            </section>
+            <section id="online-section-xp" class="online-section" style="display:none;">
+                <h3>Sistema d'XP i recompenses</h3>
+                <div id="online-xp-rewards"></div>
+            </section>
+        </div>
+    </div>
+    <div id="game-message-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;background:rgba(0,0,0,0.25);align-items:center;justify-content:center;">
+        <div id="game-message-content" style="background:#232526;border-radius:18px;box-shadow:0 2px 24px #FFD70033;max-width:420px;padding:32px 24px;color:#FFD700;font-family:Orbitron,Arial,sans-serif;text-align:center;font-size:1.15em;position:relative;">
+            <span id="game-message-text"></span>
+            <button onclick="document.getElementById('game-message-modal').style.display='none'" style="margin-top:18px;padding:10px 24px;font-size:1em;border-radius:8px;background:linear-gradient(90deg,#FFD700,#D32F2F);color:#232526;font-weight:bold;cursor:pointer;">Tancar</button>
+        </div>
+    </div>
+    <script src="js/data.js"></script>
+    <script src="js/online-data.js"></script>
+    <script src="js/online.js"></script>
+    <script src="js/online-leagues.js"></script>
+    <script src="js/online-car.js"></script>
+    <script>
+        function showOnlineSection(section) {
+            // Amaga totes les seccions
+            const sections = document.querySelectorAll('.online-section');
+            sections.forEach(s => s.style.display = 'none');
+            // Mostra la secció seleccionada
+            const el = document.getElementById('online-section-' + section);
+            if (el) el.style.display = '';
+            // Destaca el botó actiu
+            const btns = document.querySelectorAll('#online-menu-buttons button');
+            btns.forEach(b => b.classList.remove('active'));
+            const btn = document.getElementById('btn-' + section);
+            if (btn) btn.classList.add('active');
+            // Recarrega contingut específic si cal
+            if (section === 'shop' && typeof loadOnlineScreen === 'function') loadOnlineScreen();
+            if (section === 'car' && typeof loadCarCustomization === 'function') loadCarCustomization();
+            if (section === 'leagues' && typeof loadLeaguesList === 'function') loadLeaguesList();
+            if (section === 'sponsors' && typeof loadOnlineScreen === 'function') loadOnlineScreen();
+            if (section === 'xp' && typeof loadOnlineScreen === 'function') loadOnlineScreen();
+            // Força la càrrega del header
+            setTimeout(updateOnlineHeaderBalances, 0);
+        }
+        function updateOnlineHeaderBalances() {
+            const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+            const moneyEl = document.getElementById('online-header-money');
+            const coinsEl = document.getElementById('online-header-coins');
+            if (!user || !user.data) {
+                if (moneyEl) moneyEl.innerHTML = '💰 --';
+                if (coinsEl) coinsEl.innerHTML = '🪙 --';
+                return;
+            }
+            if (moneyEl) moneyEl.innerHTML = '💰 ' + (typeof formatMoney === 'function' ? formatMoney(user.data.budget) : user.data.budget + ' €');
+            if (coinsEl) coinsEl.innerHTML = '🪙 ' + (user.data.online && typeof user.data.online.coins !== 'undefined' ? user.data.online.coins : '--');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof loadOnlineScreen === 'function') loadOnlineScreen();
+            if (typeof loadCarCustomization === 'function') loadCarCustomization();
+            updateOnlineHeaderBalances();
+            showOnlineSection('shop');
+        });
+        // Estil per al botó actiu
+        const style = document.createElement('style');
+        style.innerHTML = '.online-menu-buttons button.active { background: linear-gradient(90deg, #FFD700 0%, #232526 100%) !important; color: #232526 !important; border:2px solid #FFD700; }';
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
