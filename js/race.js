@@ -1,169 +1,217 @@
-// Sistema de curses MILLORAT
+// ============================================
+// SISTEMA DE CURSES - VERSIÓ NETA I OPTIMITZADA
+// ============================================
 
-let selectedTrack = null;
-let raceInterval = null;
-let isRacing = false;
-let currentLap = 0;
-let racePositions = [];
+// Variables globals del sistema de curses
+const raceState = {
+    selectedTrack: null,    // Circuit seleccionat
+    interval: null,         // Interval de la simulació
+    isRunning: false,       // Si la cursa està en marxa
+    positions: [],          // Array de pilots amb la seva info
+    currentLap: 0          // Volta actual (del líder)
+};
 
-function selectTrack(trackId, ev) {
-    selectedTrack = trackId;
+// --------------------------------------------
+// SELECCIÓ DE CIRCUIT
+// --------------------------------------------
 
-    // Marcar botó seleccionat
+/**
+ * Selecciona un circuit i el mostra
+ */
+function selectTrack(trackId, event) {
+    raceState.selectedTrack = trackId;
+
+    // Marcar visualment el botó seleccionat
     document.querySelectorAll('.track-buttons button').forEach(btn => {
         btn.classList.remove('selected');
     });
-    if (ev && ev.target) ev.target.classList.add('selected');
+    
+    if (event && event.target) {
+        event.target.classList.add('selected');
+    }
 
     displayTrack(trackId);
 }
 
+/**
+ * Mostra el circuit seleccionat amb la seva pista
+ */
 function displayTrack(trackId) {
     const track = gameData.tracks[trackId];
     const trackDisplay = document.getElementById('track-display');
+    
+    // Preparar imatge de fons si existeix
     const imagePath = track.image ? `img/${track.image}` : '';
-    const viewW = 1000;
-    const viewH = 600;
-    const imageClass = imagePath ? 'race-track image-track' : 'race-track';
+    const hasImage = imagePath !== '';
+    const trackClass = hasImage ? 'race-track image-track' : 'race-track';
 
+    // Crear el HTML de la pista
     trackDisplay.innerHTML = `
-        <div class="${imageClass}" id="race-track" style="background-image: url('${imagePath}'); background-size: cover; background-position: center;">
-            <svg class="track-svg" viewBox="0 0 ${viewW} ${viewH}" preserveAspectRatio="xMidYMid meet">
+        <div class="${trackClass}" id="race-track" 
+             style="background-image: url('${imagePath}');">
+            
+            <!-- SVG amb el traçat del circuit (invisible per defecte) -->
+            <svg class="track-svg" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet">
                 <path id="track-path" d="${track.path || ''}" class="track-path-visible"></path>
             </svg>
-            <div style="position: absolute; top: 20px; left: 20px; font-size: 2em; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); z-index: 20;">
+            
+            <!-- Informació del circuit -->
+            <div style="position: absolute; top: 20px; left: 20px; 
+                        font-size: 2em; color: white; 
+                        text-shadow: 2px 2px 4px rgba(0,0,0,0.8); z-index: 20;">
                 ${track.flag} ${track.name}
             </div>
-            <div style="position: absolute; top: 60px; left: 20px; font-size: 1.2em; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); z-index: 20;">
+            
+            <!-- Comptador de voltes -->
+            <div style="position: absolute; top: 60px; left: 20px; 
+                        font-size: 1.2em; color: white; 
+                        text-shadow: 2px 2px 4px rgba(0,0,0,0.8); z-index: 20;">
                 Voltes: <span id="current-lap">0</span> / ${track.laps}
             </div>
         </div>
     `;
 
-    // Animació targeta circuit amb slider
-    const circuitCard = document.getElementById('race-circuit-card');
-    const circuitImg = document.getElementById('race-circuit-img');
-    const circuitName = document.getElementById('race-circuit-name');
+    // Animació de la targeta del circuit
+    animateCircuitCard(track, imagePath);
+}
 
-    if (circuitCard && circuitImg && circuitName) {
-        if (circuitCard.classList.contains('visible') && circuitImg.src.endsWith(imagePath)) {
-            circuitCard.classList.remove('pulse');
-            void circuitCard.offsetWidth;
-            circuitCard.classList.add('pulse');
+/**
+ * Anima l'aparició de la targeta del circuit
+ */
+function animateCircuitCard(track, imagePath) {
+    const card = document.getElementById('race-circuit-card');
+    const img = document.getElementById('race-circuit-img');
+    const name = document.getElementById('race-circuit-name');
+
+    if (!card || !img || !name) return;
+
+    const isSameTrack = img.src.endsWith(imagePath);
+
+    if (card.classList.contains('visible') && isSameTrack) {
+        // Si ja està visible i és el mateix, fer pulse
+        card.classList.remove('pulse');
+        void card.offsetWidth; // Force reflow
+        card.classList.add('pulse');
+    } else {
+        // Transició suau a nou circuit
+        if (card.classList.contains('visible')) {
+            card.classList.remove('visible');
+            setTimeout(() => {
+                img.src = imagePath;
+                name.textContent = `${track.flag} ${track.name}`;
+                card.style.display = 'flex';
+                setTimeout(() => card.classList.add('visible'), 10);
+            }, 350);
         } else {
-            if (circuitCard.classList.contains('visible')) {
-                circuitCard.classList.remove('visible');
-                setTimeout(() => {
-                    circuitImg.src = imagePath;
-                    circuitName.textContent = `${track.flag} ${track.name}`;
-                    circuitCard.style.display = 'flex';
-                    setTimeout(() => circuitCard.classList.add('visible'), 10);
-                }, 350);
-            } else {
-                circuitImg.src = imagePath;
-                circuitName.textContent = `${track.flag} ${track.name}`;
-                circuitCard.style.display = 'flex';
-                setTimeout(() => circuitCard.classList.add('visible'), 10);
-            }
+            img.src = imagePath;
+            name.textContent = `${track.flag} ${track.name}`;
+            card.style.display = 'flex';
+            setTimeout(() => card.classList.add('visible'), 10);
         }
     }
 }
 
+// --------------------------------------------
+// INICIAR CURSA
+// --------------------------------------------
+
+/**
+ * Comença la cursa amb les validacions necessàries
+ */
 function startRace() {
     const user = getCurrentUser();
+
+    // Validacions
     if (!user) {
-        alert('Primer has de iniciar sessió!');
+        alert('⚠️ Primer has d\'iniciar sessió!');
         return;
     }
 
     if (user.data.drivers.length < 2) {
-        alert('Necessites 2 pilots per córrer!');
+        alert('⚠️ Necessites 2 pilots per córrer!');
         return;
     }
 
-    if (!selectedTrack) {
-        alert('Selecciona un circuit primer!');
+    if (!raceState.selectedTrack) {
+        alert('⚠️ Selecciona un circuit primer!');
         return;
     }
 
-    isRacing = true;
-    currentLap = 0;
+    // Preparar la cursa
+    raceState.isRunning = true;
+    raceState.currentLap = 0;
+    
     document.getElementById('start-race-btn').style.display = 'none';
     document.getElementById('pause-race-btn').style.display = 'inline-block';
 
     initializeRace();
-    runRace();
+    runRaceLoop();
 }
 
+/**
+ * Inicialitza tots els pilots de la cursa amb les seves estadístiques
+ */
 function initializeRace() {
     const user = getCurrentUser();
-    const track = gameData.tracks[selectedTrack];
+    const track = gameData.tracks[raceState.selectedTrack];
 
-    racePositions = [];
+    raceState.positions = [];
 
     // Afegir pilots de l'usuari
     user.data.drivers.forEach((driver, index) => {
         const tyreChoice = document.getElementById(`driver${index + 1}-tyres`).value;
         const tyreStats = gameData.tyreStrategies[tyreChoice];
 
-        let upgrades = typeof getTeamUpgrades === 'function' ? getTeamUpgrades(user.data.teamName) : user.data.upgrades;
-        let base = driver.skill;
-        let engine = upgrades.engine || 0;
-        let aero = upgrades.aero || 0;
-        let chassis = upgrades.chassis || 0;
-        let manager = user.data.manager ? user.data.manager.bonus : 0;
+        // Calcular rendiment del pilot
+        const performance = calculateDriverPerformance(
+            driver.skill,
+            user.data.upgrades,
+            user.data.manager,
+            tyreStats
+        );
 
-        let performance = base
-            * (1 + engine / 20)
-            * (1 + aero / 25)
-            * (1 + chassis / 25)
-            * (1 + manager / 100);
-
-        racePositions.push({
+        raceState.positions.push({
             name: driver.name,
             team: user.data.teamName,
-            performance: performance * tyreStats.speed,
+            performance: performance,
             position: 0,
-            progress: Math.random() * 2,
-            lapProgress: 0, // CLAU: Progrés dins de la volta actual
-            completedLaps: 0, // CLAU: Voltes completades
-            color: '#' + Math.floor(Math.random() * 16777215).toString(16),
+            lapProgress: Math.random() * 2, // Posició inicial lleugerament aleatòria
+            completedLaps: 0,
+            color: '#FFD700', // Daurat per pilots del jugador
             isPlayer: true
         });
     });
 
     // Afegir equips IA
     aiTeams.forEach(team => {
-        let upgrades = typeof getTeamUpgrades === 'function' ? getTeamUpgrades(team.name) : (team.upgrades || { engine: 0, aero: 0, chassis: 0 });
-        let engine = upgrades.engine || 0;
-        let aero = upgrades.aero || 0;
-        let chassis = upgrades.chassis || 0;
+        const upgrades = getTeamUpgrades(team.name);
+        
+        // Pilot 1 de l'equip
+        const aiPerformance1 = calculateDriverPerformance(
+            team.skill,
+            upgrades,
+            null, // Els IA no tenen mànager
+            gameData.tyreStrategies.medium
+        ) + (Math.random() * 10 - 5); // Variació aleatòria
 
-        let aiPerformance = team.skill
-            * (1 + engine / 20)
-            * (1 + aero / 25)
-            * (1 + chassis / 25)
-            + (Math.random() * 10 - 5);
-
-        racePositions.push({
+        raceState.positions.push({
             name: team.driver1,
             team: team.name,
-            performance: aiPerformance,
+            performance: aiPerformance1,
             position: 0,
-            progress: Math.random() * 2,
-            lapProgress: 0,
+            lapProgress: Math.random() * 2,
             completedLaps: 0,
             color: team.color,
             isPlayer: false
         });
 
-        racePositions.push({
+        // Pilot 2 de l'equip (lleugerament més lent)
+        raceState.positions.push({
             name: team.driver2,
             team: team.name,
-            performance: aiPerformance - 2,
+            performance: aiPerformance1 - 2,
             position: 0,
-            progress: Math.random() * 2,
-            lapProgress: 0,
+            lapProgress: Math.random() * 2,
             completedLaps: 0,
             color: team.color,
             isPlayer: false
@@ -174,135 +222,186 @@ function initializeRace() {
     updateDriverMarkers();
 }
 
-function runRace() {
-    const track = gameData.tracks[selectedTrack];
+/**
+ * Calcula el rendiment d'un pilot basant-se en múltiples factors
+ */
+function calculateDriverPerformance(baseSkill, upgrades, manager, tyreStats) {
+    const engineBonus = 1 + (upgrades.engine || 0) / 20;
+    const aeroBonus = 1 + (upgrades.aero || 0) / 25;
+    const chassisBonus = 1 + (upgrades.chassis || 0) / 25;
+    const managerBonus = manager ? 1 + manager.bonus / 100 : 1;
+    const tyreBonus = tyreStats.speed;
 
-    raceInterval = setInterval(() => {
-        if (!isRacing) return;
+    return baseSkill * engineBonus * aeroBonus * chassisBonus * managerBonus * tyreBonus;
+}
 
-        // Actualitzar progrés de cada pilot
-        racePositions.forEach(driver => {
-            const increment = (driver.performance / 100) * (Math.random() * 0.5 + 0.75);
-            driver.lapProgress += increment;
+// --------------------------------------------
+// BUCLE PRINCIPAL DE LA CURSA
+// --------------------------------------------
 
-            // Si completa una volta
-            if (driver.lapProgress >= 100) {
-                driver.completedLaps++;
-                driver.lapProgress -= 100; // Mantenir l'excés
+/**
+ * Executa la simulació de la cursa frame a frame
+ */
+function runRaceLoop() {
+    const track = gameData.tracks[raceState.selectedTrack];
 
-                // Actualitzar el comptador de voltes amb el líder
-                const maxLaps = Math.max(...racePositions.map(d => d.completedLaps));
-                currentLap = maxLaps;
-                const lapDisplay = document.getElementById('current-lap');
-                if (lapDisplay) lapDisplay.textContent = currentLap;
+    raceState.interval = setInterval(() => {
+        if (!raceState.isRunning) return;
 
-                // Comprovar si la cursa ha acabat
-                if (driver.completedLaps >= track.laps) {
-                    driver.lapProgress = 100; // Mantenir a 100%
+        // Actualitzar cada pilot
+        let raceFinished = true;
+        
+        raceState.positions.forEach(driver => {
+            // Si encara no ha acabat
+            if (driver.completedLaps < track.laps) {
+                raceFinished = false;
+                
+                // Incrementar progrés (més rendiment = més ràpid)
+                const increment = (driver.performance / 100) * (Math.random() * 0.5 + 0.75);
+                driver.lapProgress += increment;
+
+                // Comprovar si completa una volta
+                if (driver.lapProgress >= 100) {
+                    driver.completedLaps++;
+                    driver.lapProgress -= 100; // Mantenir l'excés
                 }
+            } else {
+                // Pilot acabat, mantenir al 100%
+                driver.lapProgress = 100;
             }
         });
 
-        // Comprovar si tots han acabat
-        const allFinished = racePositions.every(d => d.completedLaps >= track.laps);
-        if (allFinished) {
+        // Actualitzar comptador de voltes amb el líder
+        const maxLaps = Math.max(...raceState.positions.map(d => d.completedLaps));
+        raceState.currentLap = maxLaps;
+        const lapDisplay = document.getElementById('current-lap');
+        if (lapDisplay) lapDisplay.textContent = raceState.currentLap;
+
+        // Si tots han acabat, finalitzar
+        if (raceFinished) {
             endRace();
             return;
         }
 
-        // Calcular progrés total per ordenar correctament
-        racePositions.forEach(driver => {
-            driver.progress = (driver.completedLaps * 100) + driver.lapProgress;
-        });
-
+        // Actualitzar visualitzacions
         updatePositions();
         updateDriverMarkers();
         displayRacePositions();
 
-    }, 100);
+    }, 100); // 10 fps per eficiència
 }
 
+/**
+ * Ordena els pilots per posició basant-se en voltes i progrés
+ */
 function updatePositions() {
-    // Ordenar per progrés total (voltes completades + progrés volta actual)
-    racePositions.sort((a, b) => b.progress - a.progress);
+    // Calcular progrés total (voltes * 100 + progrés actual)
+    raceState.positions.forEach(driver => {
+        driver.progress = (driver.completedLaps * 100) + driver.lapProgress;
+    });
 
-    racePositions.forEach((driver, index) => {
+    // Ordenar de major a menor progrés
+    raceState.positions.sort((a, b) => b.progress - a.progress);
+
+    // Assignar posicions
+    raceState.positions.forEach((driver, index) => {
         driver.position = index + 1;
     });
 }
 
+/**
+ * Actualitza els marcadors visuals dels pilots a la pista
+ */
 function updateDriverMarkers() {
     const raceTrack = document.getElementById('race-track');
     if (!raceTrack) return;
 
-    const oldMarkers = raceTrack.querySelectorAll('.driver-marker');
-    oldMarkers.forEach(marker => marker.remove());
+    // Eliminar marcadors anteriors
+    raceTrack.querySelectorAll('.driver-marker').forEach(m => m.remove());
 
+    // Obtenir el path SVG
     const svg = raceTrack.querySelector('svg.track-svg');
     const path = svg ? svg.querySelector('#track-path') : null;
-    let totalLength = 0;
+    let pathLength = 0;
 
     if (path) {
         try {
-            totalLength = path.getTotalLength();
+            pathLength = path.getTotalLength();
         } catch (e) {
-            totalLength = 0;
+            console.warn('No es pot calcular la longitud del path');
         }
     }
 
-    racePositions.forEach(driver => {
-        const marker = document.createElement('div');
-        marker.className = 'driver-marker';
-        marker.style.backgroundColor = driver.color;
-        marker.style.border = driver.isPlayer ? '3px solid gold' : '2px solid white';
-
-        let x = 0, y = 0;
-
-        if (path && totalLength > 0) {
-            // Usar lapProgress (0-100) per la posició dins de la volta
-            const progressInLap = Math.max(0, Math.min(100, driver.lapProgress));
-            const len = (progressInLap / 100) * totalLength;
-            const pt = path.getPointAtLength(len);
-
-            const svgPt = svg.createSVGPoint();
-            svgPt.x = pt.x;
-            svgPt.y = pt.y;
-            const ctm = svg.getScreenCTM();
-            const screenPt = svgPt.matrixTransform(ctm);
-            const svgRect = svg.getBoundingClientRect();
-            x = screenPt.x - svgRect.left;
-            y = screenPt.y - svgRect.top;
-        } else {
-            // Fallback a oval
-            const angle = (driver.lapProgress / 100) * Math.PI * 2;
-            const centerX = raceTrack.offsetWidth / 2;
-            const centerY = raceTrack.offsetHeight / 2;
-            const radiusX = centerX - 80;
-            const radiusY = centerY - 80;
-            x = centerX + radiusX * Math.cos(angle);
-            y = centerY + radiusY * Math.sin(angle);
-        }
-
-        marker.style.left = (x - 15) + 'px';
-        marker.style.top = (y - 15) + 'px';
-        marker.textContent = driver.position;
-
+    // Crear marcador per cada pilot
+    raceState.positions.forEach(driver => {
+        const marker = createDriverMarker(driver, path, pathLength, svg, raceTrack);
         raceTrack.appendChild(marker);
     });
 }
 
+/**
+ * Crea un marcador visual per un pilot
+ */
+function createDriverMarker(driver, path, pathLength, svg, container) {
+    const marker = document.createElement('div');
+    marker.className = 'driver-marker';
+    marker.style.backgroundColor = driver.color;
+    marker.style.border = driver.isPlayer ? '3px solid gold' : '2px solid white';
+    marker.textContent = driver.position;
+
+    // Calcular posició
+    let x = 0, y = 0;
+
+    if (path && pathLength > 0) {
+        // Usar el path SVG per posicionar
+        const progressPercent = Math.max(0, Math.min(100, driver.lapProgress));
+        const distance = (progressPercent / 100) * pathLength;
+        const point = path.getPointAtLength(distance);
+
+        // Convertir coordenades SVG a píxels de pantalla
+        const svgPt = svg.createSVGPoint();
+        svgPt.x = point.x;
+        svgPt.y = point.y;
+        const screenPt = svgPt.matrixTransform(svg.getScreenCTM());
+        const svgRect = svg.getBoundingClientRect();
+        
+        x = screenPt.x - svgRect.left;
+        y = screenPt.y - svgRect.top;
+    } else {
+        // Fallback: òrbita el·líptica
+        const angle = (driver.lapProgress / 100) * Math.PI * 2;
+        const centerX = container.offsetWidth / 2;
+        const centerY = container.offsetHeight / 2;
+        const radiusX = centerX - 80;
+        const radiusY = centerY - 80;
+        
+        x = centerX + radiusX * Math.cos(angle);
+        y = centerY + radiusY * Math.sin(angle);
+    }
+
+    // Centrar el marcador (30x30px)
+    marker.style.left = (x - 15) + 'px';
+    marker.style.top = (y - 15) + 'px';
+
+    return marker;
+}
+
+/**
+ * Mostra la classificació actual a la llista
+ */
 function displayRacePositions() {
     const positionsList = document.getElementById('positions-list');
+    const track = gameData.tracks[raceState.selectedTrack];
 
-    positionsList.innerHTML = racePositions.map(driver => {
-        const track = gameData.tracks[selectedTrack];
+    positionsList.innerHTML = raceState.positions.map(driver => {
         const lapsText = `${driver.completedLaps}/${track.laps}`;
+        const playerStar = driver.isPlayer ? ' ⭐' : '';
 
         return `
             <div class="position-item" style="border-left: 4px solid ${driver.color}">
                 <div class="position-number">${driver.position}</div>
                 <div class="driver-info">
-                    <div class="driver-name">${driver.name} ${driver.isPlayer ? '⭐' : ''}</div>
+                    <div class="driver-name">${driver.name}${playerStar}</div>
                     <div class="team-name">${driver.team} • ${lapsText} voltes</div>
                 </div>
             </div>
@@ -310,56 +409,120 @@ function displayRacePositions() {
     }).join('');
 }
 
+// --------------------------------------------
+// CONTROLS DE LA CURSA
+// --------------------------------------------
+
+/**
+ * Pausa o reprèn la cursa
+ */
 function pauseRace() {
-    isRacing = !isRacing;
-    document.getElementById('pause-race-btn').textContent = isRacing ? 'Pausar' : 'Continuar';
+    raceState.isRunning = !raceState.isRunning;
+    const btn = document.getElementById('pause-race-btn');
+    btn.textContent = raceState.isRunning ? 'Pausar' : 'Continuar';
 }
 
+/**
+ * Mostra/oculta el traçat del circuit (per debug)
+ */
 function toggleTrackPathVisibility() {
-    const rt = document.getElementById('race-track');
-    if (!rt) return;
-    rt.classList.toggle('show-path');
+    const track = document.getElementById('race-track');
+    if (!track) return;
+    
+    track.classList.toggle('show-path');
     const btn = document.getElementById('toggle-path-btn');
-    if (btn) btn.textContent = rt.classList.contains('show-path') ? 'Ocultar traçat' : 'Mostrar traçat';
+    btn.textContent = track.classList.contains('show-path') 
+        ? 'Ocultar traçat' 
+        : 'Mostrar traçat';
 }
 
+// --------------------------------------------
+// FINALITZAR CURSA
+// --------------------------------------------
+
+/**
+ * Finalitza la cursa i calcula resultats
+ */
 function endRace() {
-    clearInterval(raceInterval);
-    isRacing = false;
+    clearInterval(raceState.interval);
+    raceState.isRunning = false;
 
     document.getElementById('start-race-btn').style.display = 'inline-block';
     document.getElementById('pause-race-btn').style.display = 'none';
 
     const user = getCurrentUser();
-    const playerPositions = racePositions.filter(d => d.isPlayer).map(d => d.position);
+    
+    // Trobar la millor posició dels pilots del jugador
+    const playerPositions = raceState.positions
+        .filter(d => d.isPlayer)
+        .map(d => d.position);
     const bestPosition = Math.min(...playerPositions);
 
-    // Sistema de punts F1 real
+    // Sistema de punts F1 oficial
     const pointsSystem = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
     const points = bestPosition <= 10 ? pointsSystem[bestPosition - 1] : 0;
 
+    // Actualitzar estadístiques
     if (bestPosition === 1) {
         user.data.wins++;
-        user.data.points += points;
-        alert(`🏆 VICTÒRIA! Has guanyat la cursa!\n+${points} punts al campionat`);
-    } else if (bestPosition <= 3) {
-        user.data.podiums++;
-        user.data.points += points;
-        const medal = bestPosition === 2 ? '🥈' : '🥉';
-        alert(`${medal} Podi! Has quedat ${bestPosition}è!\n+${points} punts al campionat`);
-    } else if (bestPosition <= 10) {
-        user.data.points += points;
-        alert(`Has acabat ${bestPosition}è\n+${points} punts al campionat`);
-    } else {
-        alert(`Has acabat ${bestPosition}è\nFora dels punts`);
     }
+    if (bestPosition <= 3) {
+        user.data.podiums++;
+    }
+    user.data.points += points;
 
-    // Premi en diners
+    // Premi econòmic (més alt com millor posició)
     const prize = Math.max(100000, 1500000 - (bestPosition * 80000));
     user.data.budget += prize;
 
     saveUserData(user.data);
     updateUserInfo();
 
-    alert(`Has guanyat ${formatMoney(prize)} de premi!`);
+    // Mostrar resultats
+    showRaceResults(bestPosition, points, prize);
+}
+
+/**
+ * Mostra els resultats de la cursa
+ */
+function showRaceResults(position, points, prize) {
+    let message = '';
+    
+    if (position === 1) {
+        message = `🏆 VICTÒRIA!\n\nHas guanyat la cursa!`;
+    } else if (position === 2) {
+        message = `🥈 Segon lloc!\n\nGran cursa!`;
+    } else if (position === 3) {
+        message = `🥉 Tercer lloc!\n\nPodi!`;
+    } else if (position <= 10) {
+        message = `Posició: ${position}è\n\nDins dels punts!`;
+    } else {
+        message = `Posició: ${position}è\n\nFora dels punts`;
+    }
+
+    message += `\n\n📊 Punts: +${points}`;
+    message += `\n💰 Premi: ${formatMoney(prize)}`;
+
+    alert(message);
+}
+
+// --------------------------------------------
+// UTILITATS
+// --------------------------------------------
+
+/**
+ * Obté les millores d'un equip (jugador o IA)
+ */
+function getTeamUpgrades(teamName) {
+    if (typeof careerMode !== 'undefined' && teamName === careerMode.playerTeam) {
+        return careerMode.hq;
+    }
+    
+    if (typeof careerMode !== 'undefined') {
+        const aiTeam = careerMode.aiTeams.find(t => t.name === teamName);
+        if (aiTeam) return aiTeam.upgrades;
+    }
+    
+    const aiTeam = aiTeams.find(t => t.name === teamName);
+    return aiTeam ? (aiTeam.upgrades || { engine: 0, aero: 0, chassis: 0 }) : { engine: 0, aero: 0, chassis: 0 };
 }

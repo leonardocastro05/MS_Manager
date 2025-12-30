@@ -1,4 +1,390 @@
-/* --- MODERNITZACIÓ HQ I TENDA --- */
+/* ============================================
+   F1 MANAGER - ESTILS PRINCIPALS
+   Versió neta i organitzada
+   ============================================ */
+
+/* --- BASE --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #000;
+    color: #fff;
+    min-height: 100vh;
+}
+
+#app {
+    width: 100vw;
+    height: 100vh;
+}
+
+/* --- PANTALLES --- */
+.screen {
+    display: none;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.screen.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- BOTÓ TORNAR --- */
+.back-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    font-size: 1em;
+    margin-bottom: 20px;
+    transition: background 0.2s;
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================
+   INTRO 3D
+   ============================================ */
+
+#intro-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(to bottom, #0a0a1a 0%, #1a1a2e 100%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.intro-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 5;
+}
+
+/* ============================================
+   AUTENTICACIÓ (LOGIN/REGISTRE)
+   ============================================ */
+
+.auth-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at 60% 40%, #e10600 0%, #1e3c72 60%, #222 100%);
+    opacity: 0.25;
+    z-index: 2;
+    pointer-events: none;
+    animation: authBgMove 8s linear infinite alternate;
+}
+
+@keyframes authBgMove {
+    0% {
+        background-position: 60% 40%;
+    }
+
+    100% {
+        background-position: 40% 60%;
+    }
+}
+
+.auth-container {
+    max-width: 900px;
+    margin: 100px auto;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+}
+
+.auth-container h1 {
+    font-size: 3.5em;
+    margin-bottom: 40px;
+    text-shadow: 0 8px 32px #e10600, 0 2px 8px #000;
+    letter-spacing: 6px;
+    background: linear-gradient(90deg, #fff, #e10600 60%, #fff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.auth-forms {
+    display: flex;
+    gap: 50px;
+    justify-content: center;
+    align-items: flex-start;
+    position: relative;
+    z-index: 3;
+}
+
+.auth-forms>div {
+    background: rgba(30, 60, 114, 0.25);
+    box-shadow: 0 8px 32px rgba(225, 6, 0, 0.15);
+    backdrop-filter: blur(12px);
+    padding: 38px 32px;
+    border-radius: 18px;
+    min-width: 320px;
+    transition: transform 0.3s cubic-bezier(.34, 1.56, .64, 1);
+    border: 2px solid #e10600;
+}
+
+.auth-forms>div:hover {
+    transform: scale(1.04) translateY(-4px);
+}
+
+.auth-forms h2 {
+    margin-bottom: 24px;
+    font-size: 1.5em;
+    color: #fff;
+    text-shadow: 0 2px 8px #e10600;
+    letter-spacing: 2px;
+}
+
+.auth-forms input {
+    width: 100%;
+    padding: 14px 18px;
+    margin: 12px 0;
+    border: 2px solid #e10600;
+    border-radius: 10px;
+    font-size: 1.1em;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    outline: none;
+    transition: border 0.2s;
+}
+
+.auth-forms input:focus {
+    border: 2px solid #fff;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.auth-forms button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 18px;
+    background: linear-gradient(90deg, #e10600 60%, #ff4444 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    letter-spacing: 2px;
+}
+
+.auth-forms button:hover {
+    background: linear-gradient(90deg, #b00500 60%, #e10600 100%);
+    transform: scale(1.04);
+}
+
+/* ============================================
+   MENÚ PRINCIPAL
+   ============================================ */
+
+#main-menu.screen.active {
+    background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 60%, #e10600 100%);
+    min-height: 100vh;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+}
+
+/* Ratlles decoratives de pista */
+#main-menu.screen.active::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: repeating-linear-gradient(120deg,
+            #fff1 0 20px,
+            transparent 20px 60px);
+    opacity: 0.12;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.top-nav {
+    background: rgba(0, 0, 0, 0.55);
+    padding: 24px 48px;
+    width: 100vw;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 16px 0 #e1060033;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+.top-nav h1 {
+    font-size: 2.6em;
+    letter-spacing: 2px;
+    color: #ffd700;
+    text-shadow: 0 2px 12px #e10600cc, 0 1px 0 #fff;
+    font-weight: 900;
+}
+
+.user-info {
+    display: flex;
+    gap: 30px;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 1px 0 #e10600cc;
+}
+
+.menu-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    margin-top: 48px;
+    z-index: 2;
+    position: relative;
+    justify-content: center;
+}
+
+.menu-buttons button {
+    padding: 32px 36px;
+    font-size: 1.3em;
+    background: linear-gradient(120deg, #e10600cc 0%, #ffd70044 100%);
+    border: 2.5px solid #ffd70088;
+    border-radius: 18px;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s;
+    letter-spacing: 1px;
+}
+
+.menu-buttons button:hover {
+    background: linear-gradient(120deg, #ffd700cc 0%, #e10600 100%);
+    color: #222;
+    transform: translateY(-7px) scale(1.04);
+    box-shadow: 0 12px 32px 0 #e1060055;
+    border-color: #ffd700cc;
+}
+
+/* ============================================
+   MENÚ D'USUARI (HEADER)
+   ============================================ */
+
+.user-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 10;
+}
+
+.user-menu-deco {
+    width: 8px;
+    height: 100%;
+    background: repeating-linear-gradient(to bottom,
+            #fff 0 16px,
+            transparent 16px 32px);
+    opacity: 0.18;
+    border-radius: 4px;
+    margin-right: 8px;
+}
+
+.user-menu-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(90deg, #222 60%, #e10600 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 8px 18px 8px 14px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px #e1060033;
+    transition: all 0.18s;
+    position: relative;
+    z-index: 11;
+}
+
+.user-menu-btn:hover {
+    background: linear-gradient(90deg, #e10600 0%, #ffd700 100%);
+    color: #222;
+    box-shadow: 0 6px 18px #ffd70055;
+}
+
+.user-menu-dropdown {
+    display: none;
+    position: absolute;
+    top: 110%;
+    right: 0;
+    background: #1a1a2e;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px #e1060033;
+    min-width: 170px;
+    padding: 10px 0;
+    z-index: 100;
+}
+
+.user-menu-dropdown.active {
+    display: block;
+}
+
+.user-menu-dropdown button {
+    width: 100%;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1em;
+    padding: 12px 18px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.user-menu-dropdown button:hover {
+    background: #e10600;
+    color: #ffd700;
+}
+
+/* ============================================
+   HQ (HEADQUARTERS)
+   ============================================ */
+
 .hq-container {
     display: flex;
     flex-wrap: wrap;
@@ -14,12 +400,11 @@
     background: linear-gradient(120deg, #1a1a2e 60%, #e10600 100%);
     box-shadow: 0 4px 32px #e1060033, 0 1.5px 0 #ffd70044 inset;
     border-radius: 22px;
-    padding: 36px 32px 32px 32px;
+    padding: 36px 32px;
     text-align: center;
     min-width: 320px;
     max-width: 370px;
     color: #fff;
-    position: relative;
     transition: transform 0.18s, box-shadow 0.18s;
 }
 
@@ -56,7 +441,7 @@
     margin-top: 18px;
     box-shadow: 0 2px 12px #e1060033;
     letter-spacing: 1px;
-    transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+    transition: all 0.18s;
 }
 
 .upgrade-section button:hover {
@@ -65,13 +450,37 @@
     box-shadow: 0 8px 24px #ffd70055;
 }
 
+/* ============================================
+   TENDA
+   ============================================ */
+
+.shop-tabs {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+    justify-content: center;
+}
+
+.tab-btn {
+    padding: 15px 30px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    font-size: 1em;
+    transition: all 0.2s;
+}
+
+.tab-btn.active {
+    background: #e10600;
+}
+
 .shop-cards-grid {
     display: flex;
     flex-wrap: wrap;
     gap: 36px;
     justify-content: center;
-    align-items: flex-start;
-    width: 100%;
     min-height: 60vh;
 }
 
@@ -81,13 +490,11 @@
     box-shadow: 0 4px 32px #e1060033, 0 1.5px 0 #ffd70044 inset;
     padding: 32px 22px 22px 22px;
     text-align: center;
-    transition: box-shadow 0.18s, transform 0.18s, border 0.18s;
+    transition: all 0.18s;
     cursor: pointer;
     min-width: 260px;
     max-width: 320px;
     color: #fff;
-    position: relative;
-    outline: none;
     animation: shopCardIn 0.7s cubic-bezier(.34, 1.56, .64, 1);
 }
 
@@ -95,11 +502,6 @@
     box-shadow: 0 16px 48px #ffd70088, 0 1.5px 0 #ffd700cc inset;
     transform: translateY(-10px) scale(1.05);
     border: 2.5px solid #ffd700cc;
-}
-
-.shop-card:focus {
-    border: 2.5px solid #ffd700cc;
-    box-shadow: 0 0 0 4px #ffd70055, 0 16px 48px #ffd70088;
 }
 
 @keyframes shopCardIn {
@@ -119,16 +521,6 @@
     }
 }
 
-.shop-card-img-wrap.pilot {
-    background: linear-gradient(120deg, #ffd70044 0%, #e1060022 100%);
-    border: 2.5px solid #ffd700cc;
-}
-
-.shop-card-img-wrap.manager {
-    background: linear-gradient(120deg, #00d2be44 0%, #222 100%);
-    border: 2.5px solid #00d2becc;
-}
-
 .shop-card-img-wrap {
     width: 110px;
     height: 110px;
@@ -139,12 +531,17 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 12px #ffd70033;
+    font-size: 3em;
 }
 
-.shop-card-img {
-    width: 80px;
-    height: 80px;
-    object-fit: contain;
+.shop-card-img-wrap.pilot {
+    background: linear-gradient(120deg, #ffd70044 0%, #e1060022 100%);
+    border: 2.5px solid #ffd700cc;
+}
+
+.shop-card-img-wrap.manager {
+    background: linear-gradient(120deg, #00d2be44 0%, #222 100%);
+    border: 2.5px solid #00d2becc;
 }
 
 .shop-card-name {
@@ -152,7 +549,7 @@
     font-weight: bold;
     margin-bottom: 8px;
     color: #ffd700;
-    text-shadow: 0 1px 8px #e10600cc, 0 1px 0 #fff;
+    text-shadow: 0 1px 8px #e10600cc;
 }
 
 .shop-card-team {
@@ -162,1185 +559,13 @@
 }
 
 .shop-card-skill,
-.shop-card-bonus {
+.shop-card-bonus,
+.shop-card-price {
     font-size: 1.1em;
     margin-bottom: 8px;
     color: #fff;
 }
 
-/* --- DECORACIÓ HEADER USER MENU --- */
-.user-menu {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    z-index: 10;
-}
-
-.user-menu-deco {
-    width: 8px;
-    height: 100%;
-    background: repeating-linear-gradient(to bottom,
-            #fff 0 16px,
-            transparent 16px 32px);
-    opacity: 0.18;
-    border-radius: 4px;
-    margin-right: 8px;
-}
-
-.user-menu-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: linear-gradient(90deg, #222 60%, #e10600 100%);
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    padding: 8px 18px 8px 14px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 2px 8px #e1060033;
-    transition: background 0.18s, color 0.18s, box-shadow 0.18s;
-    position: relative;
-    z-index: 11;
-}
-
-.user-menu-btn:hover,
-.user-menu-btn:focus {
-    background: linear-gradient(90deg, #e10600 0%, #ffd700 100%);
-    color: #222;
-    box-shadow: 0 6px 18px #ffd70055;
-}
-
-.menu-icon {
-    font-size: 1.3em;
-    margin-right: 4px;
-}
-
-.menu-label {
-    font-size: 1em;
-    letter-spacing: 0.04em;
-}
-
-.user-menu-dropdown {
-    display: none;
-    position: absolute;
-    top: 110%;
-    right: 0;
-    background: #1a1a2e;
-    border-radius: 12px;
-    box-shadow: 0 8px 32px #e1060033;
-    min-width: 170px;
-    padding: 10px 0;
-    z-index: 100;
-}
-
-.user-menu-dropdown.active {
-    display: block;
-}
-
-.user-menu-dropdown button {
-    width: 100%;
-    background: none;
-    border: none;
-    color: #fff;
-    font-size: 1em;
-    padding: 12px 18px;
-    text-align: left;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-}
-
-.user-menu-dropdown button:hover {
-    background: #e10600;
-    color: #ffd700;
-}
-
-.f1-car {
-    position: absolute;
-    width: 64px;
-    height: 28px;
-    border-radius: 12px 12px 10px 10px;
-    background: linear-gradient(90deg, #e10600 60%, #fff 100%);
-    box-shadow: 0 2px 16px 2px #e1060055;
-    top: 60%;
-    left: -80px;
-    z-index: 3;
-    animation: f1car-move 3.5s linear infinite;
-    opacity: 0.92;
-}
-
-.f1-car.car2 {
-    background: linear-gradient(90deg, #222 60%, #fff 100%);
-    top: 68%;
-    animation-delay: 1.2s;
-    width: 54px;
-    height: 24px;
-    opacity: 0.7;
-}
-
-.f1-car.car3 {
-    background: linear-gradient(90deg, #ffd700 60%, #fff 100%);
-    top: 76%;
-    animation-delay: 2.1s;
-    width: 48px;
-    height: 20px;
-    opacity: 0.5;
-}
-
-@keyframes f1car-move {
-    0% {
-        left: -80px;
-    }
-
-    10% {
-        opacity: 0.7;
-    }
-
-    20% {
-        opacity: 1;
-    }
-
-    80% {
-        opacity: 1;
-    }
-
-    100% {
-        left: 110vw;
-        opacity: 0.2;
-    }
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #000;
-    color: #fff;
-    min-height: 100vh;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-#app {
-    width: 100vw;
-    height: 100vh;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-/* Pantalles */
-.screen {
-    display: none;
-    animation: fadeIn 0.3s ease-in;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-.screen.active {
-    display: block;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Pantalla d'intro 3D */
-#intro-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: linear-gradient(to bottom, #0a0a1a 0%, #1a1a2e 100%);
-    z-index: 0;
-    pointer-events: none;
-}
-
-.intro-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    z-index: 5;
-    background: none;
-}
-
-.loading-bar.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.loading-progress {
-    height: 100%;
-    background: linear-gradient(90deg, #e10600, #ff4444, #e10600);
-    background-size: 200% 100%;
-    border-radius: 10px;
-    animation: loadingProgress 1.8s ease-out forwards,
-        loadingGradient 1s linear infinite;
-    width: 0;
-    box-shadow: 0 0 20px rgba(225, 6, 0, 0.8);
-
-    @keyframes loadingGradient {
-        0% {
-            background-position: 0% 0%;
-        }
-
-        100% {
-            background-position: 200% 0%;
-        }
-    }
-}
-
-/* Pantalla d'autenticació */
-
-/* Fons dinàmic per login/registre */
-.auth-container {
-    max-width: 900px;
-    margin: 100px auto;
-    text-align: center;
-    position: relative;
-    z-index: 2;
-}
-
-.auth-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    background: radial-gradient(circle at 60% 40%, #e10600 0%, #1e3c72 60%, #222 100%);
-    opacity: 0.25;
-    z-index: 2;
-    pointer-events: none;
-    animation: authBgMove 8s linear infinite alternate;
-}
-
-@keyframes authBgMove {
-    0% {
-        background-position: 60% 40%;
-    }
-
-    100% {
-        background-position: 40% 60%;
-    }
-}
-
-.auth-container h1 {
-    font-size: 3.5em;
-    margin-bottom: 40px;
-    text-shadow: 0 8px 32px #e10600, 0 2px 8px #000;
-    letter-spacing: 6px;
-    font-family: 'Formula1', 'Segoe UI', sans-serif;
-    background: linear-gradient(90deg, #fff, #e10600 60%, #fff);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: titleGradient 3s ease infinite;
-}
-
-.auth-forms {
-    display: flex;
-    gap: 50px;
-    justify-content: center;
-    align-items: flex-start;
-    position: relative;
-    z-index: 3;
-}
-
-.auth-forms>div {
-    background: rgba(30, 60, 114, 0.25);
-    box-shadow: 0 8px 32px rgba(225, 6, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.15);
-    backdrop-filter: blur(12px);
-    padding: 38px 32px 32px 32px;
-    border-radius: 18px;
-    min-width: 320px;
-    transition: transform 0.3s cubic-bezier(.34, 1.56, .64, 1);
-    border: 2px solid #e10600;
-    position: relative;
-    overflow: hidden;
-}
-
-.auth-forms>div:hover {
-    transform: scale(1.04) translateY(-4px);
-    box-shadow: 0 16px 48px rgba(225, 6, 0, 0.18), 0 4px 16px rgba(0, 0, 0, 0.18);
-}
-
-.auth-forms h2 {
-    margin-bottom: 24px;
-    font-size: 1.5em;
-    color: #fff;
-    text-shadow: 0 2px 8px #e10600, 0 1px 4px #000;
-    font-family: 'Formula1', 'Segoe UI', sans-serif;
-    letter-spacing: 2px;
-}
-
-.auth-forms input {
-    width: 100%;
-    padding: 14px 18px;
-    margin: 12px 0;
-    border: 2px solid #e10600;
-    border-radius: 10px;
-    font-size: 1.1em;
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
-    font-family: 'Formula1', 'Segoe UI', sans-serif;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    outline: none;
-    transition: border 0.2s;
-}
-
-.auth-forms input:focus {
-    border: 2px solid #fff;
-    background: rgba(255, 255, 255, 0.15);
-}
-
-.auth-forms button {
-    width: 100%;
-    padding: 14px;
-    margin-top: 18px;
-    background: linear-gradient(90deg, #e10600 60%, #ff4444 100%);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-size: 1.2em;
-    font-family: 'Formula1', 'Segoe UI', sans-serif;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(225, 6, 0, 0.12);
-    transition: 0.3s, transform 0.2s;
-    letter-spacing: 2px;
-}
-
-.auth-forms button:hover {
-    background: linear-gradient(90deg, #b00500 60%, #e10600 100%);
-    transform: scale(1.04);
-}
-
-.auth-forms button:active {
-    transform: scale(0.98);
-}
-
-/* Icones decoratives */
-.auth-forms h2::before {
-    content: '🔒';
-    margin-right: 8px;
-    font-size: 1.1em;
-    vertical-align: middle;
-    opacity: 0.7;
-}
-
-#register-form h2::before {
-    content: '📝';
-}
-
-/* Missatges d'error */
-.auth-error {
-    color: #ff4444;
-    background: rgba(225, 6, 0, 0.08);
-    border-radius: 8px;
-    padding: 8px 0;
-    margin-bottom: 10px;
-    font-size: 1em;
-    font-family: 'Formula1', 'Segoe UI', sans-serif;
-    letter-spacing: 1px;
-    box-shadow: 0 2px 8px rgba(225, 6, 0, 0.08);
-    display: none;
-}
-
-/* Animació d'entrada */
-.screen.active .auth-container {
-    animation: fadeInUp 0.7s cubic-bezier(.34, 1.56, .64, 1);
-}
-
-@keyframes fadeInUp {
-    0% {
-        opacity: 0;
-        transform: translateY(60px) scale(0.95);
-    }
-
-    80% {
-        opacity: 1;
-        transform: translateY(-8px) scale(1.03);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-/* Navegació */
-.top-nav {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 20px;
-    border-radius: 15px;
-    margin-bottom: 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.user-info {
-    display: flex;
-    gap: 30px;
-    font-size: 1.2em;
-    font-weight: bold;
-}
-
-
-/* Fons especial per al menú principal */
-#main-menu.screen.active {
-    background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 60%, #e10600 100%);
-    min-height: 100vh;
-    width: 100%;
-    height: 100%;
-    border-radius: 0;
-    box-shadow: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    overflow: auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    z-index: 10;
-}
-
-/* Detall de ratlles de pista F1 al fons */
-#main-menu.screen.active::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: repeating-linear-gradient(120deg,
-            #fff1 0 20px,
-            transparent 20px 60px);
-    opacity: 0.12;
-    pointer-events: none;
-    z-index: 0;
-}
-
-.top-nav {
-    background: rgba(0, 0, 0, 0.55);
-    padding: 24px 48px 20px 48px;
-    border-radius: 0;
-    margin-bottom: 0;
-    width: 100vw;
-    max-width: 100vw;
-    box-sizing: border-box;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 16px 0 #e1060033;
-    position: sticky;
-    top: 0;
-    left: 0;
-    z-index: 20;
-}
-
-.top-nav h1 {
-    font-size: 2.6em;
-    letter-spacing: 2px;
-    color: #ffd700;
-    text-shadow: 0 2px 12px #e10600cc, 0 1px 0 #fff;
-    font-weight: 900;
-}
-
-.user-info {
-    display: flex;
-    gap: 30px;
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #fff;
-    text-shadow: 0 1px 0 #e10600cc;
-}
-
-.menu-buttons {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 32px;
-    margin-top: 48px;
-    z-index: 2;
-    position: relative;
-    justify-content: center;
-    align-items: center;
-}
-
-.menu-buttons button {
-    padding: 32px 36px;
-    font-size: 1.3em;
-    background: linear-gradient(120deg, #e10600cc 0%, #ffd70044 100%);
-    border: 2.5px solid #ffd70088;
-    border-radius: 18px;
-    color: #fff;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.25s, box-shadow 0.2s;
-    box-shadow: 0 2px 12px 0 #e1060033;
-    letter-spacing: 1px;
-    position: relative;
-    overflow: hidden;
-}
-
-.menu-buttons button:hover {
-    background: linear-gradient(120deg, #ffd700cc 0%, #e10600 100%);
-    color: #222;
-    transform: translateY(-7px) scale(1.04);
-    box-shadow: 0 12px 32px 0 #e1060055, 0 1.5px 0 #ffd70044 inset;
-    border-color: #ffd700cc;
-}
-
-/* Botó tornar */
-.back-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    color: white;
-    cursor: pointer;
-    font-size: 1em;
-    margin-bottom: 20px;
-}
-
-.back-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-/* HQ - Millores */
-.hq-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    margin-top: 30px;
-}
-
-.upgrade-section {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 30px;
-    border-radius: 15px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.upgrade-section h3 {
-    font-size: 2em;
-    margin-bottom: 20px;
-}
-
-.upgrade-section progress {
-    width: 100%;
-    height: 25px;
-    margin: 20px 0;
-}
-
-.upgrade-section button {
-    width: 100%;
-    padding: 15px;
-    background: #e10600;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1em;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-.upgrade-section button:hover {
-    background: #b00500;
-}
-
-/* Tenda */
-.shop-tabs {
-    display: flex;
-    gap: 10px;
-    margin: 20px 0;
-}
-
-.tab-btn {
-    padding: 15px 30px;
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    border-radius: 8px;
-    color: white;
-    cursor: pointer;
-    font-size: 1em;
-}
-
-.tab-btn.active {
-    background: #e10600;
-}
-
-.shop-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    margin-top: 30px;
-}
-
-.shop-item {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 20px;
-    border-radius: 15px;
-    text-align: center;
-}
-
-.shop-item h4 {
-    font-size: 1.3em;
-    margin-bottom: 10px;
-}
-
-.shop-item .stats {
-    margin: 15px 0;
-    text-align: left;
-}
-
-.shop-item .stats div {
-    margin: 5px 0;
-}
-
-.shop-item button {
-    width: 100%;
-    padding: 12px;
-    background: #00a000;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.shop-item button:hover {
-    background: #008000;
-}
-
-.shop-item button:disabled {
-    background: #666;
-    cursor: not-allowed;
-}
-
-/* Equip */
-.team-container {
-    display: grid;
-    gap: 30px;
-    margin-top: 30px;
-}
-
-.team-section {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 30px;
-    border-radius: 15px;
-}
-
-.team-section h3 {
-    font-size: 1.5em;
-    margin-bottom: 20px;
-}
-
-/* Cursa */
-.race-container {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.track-selection {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 20px;
-    border-radius: 15px;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.track-buttons {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    margin-top: 20px;
-}
-
-.track-buttons button {
-    padding: 20px 30px;
-    font-size: 1.2em;
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 10px;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.track-buttons button:hover,
-.track-buttons button.selected {
-    background: #e10600;
-    border-color: #e10600;
-}
-
-.strategy-panel {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 20px;
-    border-radius: 15px;
-    margin-bottom: 20px;
-}
-
-.driver-strategy {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    margin: 15px 0;
-}
-
-.driver-strategy label {
-    font-size: 1.1em;
-    min-width: 100px;
-}
-
-.driver-strategy select {
-    padding: 10px;
-    font-size: 1em;
-    border-radius: 8px;
-    border: none;
-    flex: 1;
-}
-
-.track-display {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 15px;
-    min-height: 500px;
-    margin: 20px 0;
-    position: relative;
-    overflow: hidden;
-}
-
-.track-image {
-    width: 100%;
-    height: 500px;
-    object-fit: cover;
-    opacity: 0.6;
-}
-
-.race-track {
-    position: relative;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1000 / 600;
-    min-height: 300px;
-    max-height: 700px;
-    background: linear-gradient(45deg, #2d5a27 0%, #4a7c59 50%, #2d5a27 100%);
-    border-radius: 15px;
-    overflow: hidden;
-}
-
-.track-svg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 5;
-}
-
-.track-path-visible {
-    stroke: rgba(255, 255, 255, 0.12);
-    stroke-width: 6;
-    fill: none;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
-
-/* When using the real track image, hide the decorative central circle
-   and make the SVG path invisible while keeping it available for math. */
-.race-track.image-track {
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-color: #000;
-}
-
-/* Hide decorative central circle when using an image */
-.race-track.image-track::before,
-.race-track.image-track::after {
-    display: none;
-}
-
-/* Make the path transparent by default when using an image (kept for math)
-   Use the .show-path modifier to reveal it for debugging */
-.race-track.image-track svg .track-path-visible {
-    stroke: transparent;
-    stroke-width: 0;
-    opacity: 0;
-}
-
-.race-track.show-path svg .track-path-visible {
-    stroke: rgba(255, 255, 255, 0.7);
-    stroke-width: 6;
-    opacity: 1;
-}
-
-.race-track::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 80%;
-    height: 60%;
-    border: 8px solid #666;
-    border-radius: 50%;
-    background: linear-gradient(45deg, #666 0%, #999 50%, #666 100%);
-}
-
-.race-track::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 75%;
-    height: 55%;
-    border: 4px dashed #fff;
-    border-radius: 50%;
-    opacity: 0.7;
-}
-
-.driver-marker {
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 0.8em;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-    transition: all 0.5s ease;
-    z-index: 10;
-}
-
-.race-controls {
-    text-align: center;
-    margin: 20px 0;
-}
-
-.race-controls button {
-    padding: 15px 50px;
-    font-size: 1.3em;
-    background: #00a000;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: bold;
-    margin: 0 10px;
-}
-
-.race-controls button:hover {
-    background: #008000;
-}
-
-.race-positions {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 20px;
-    border-radius: 15px;
-    margin-top: 20px;
-}
-
-.position-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px;
-    margin: 10px 0;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-}
-
-.position-number {
-    font-size: 1.5em;
-    font-weight: bold;
-    min-width: 40px;
-}
-
-.driver-info {
-    flex: 1;
-    margin-left: 20px;
-}
-
-.driver-name {
-    font-size: 1.2em;
-    font-weight: bold;
-}
-
-.team-name {
-    font-size: 0.9em;
-    opacity: 0.8;
-}
-
-/* Responsiu */
-@media (max-width: 768px) {
-    .auth-forms {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .menu-buttons {
-        grid-template-columns: 1fr;
-    }
-
-    .track-buttons {
-        flex-direction: column;
-    }
-}
-
-/* AFEGEIX AIXÒ AL TEU style.css */
-
-/* Animació explosiva del títol */
-@keyframes titleExplosion {
-    0% {
-        opacity: 0;
-        transform: scale(0.3) translateY(100px);
-        filter: blur(20px);
-    }
-
-    60% {
-        opacity: 1;
-        transform: scale(1.15) translateY(-20px);
-        filter: blur(0px);
-    }
-
-    80% {
-        transform: scale(0.95) translateY(10px);
-    }
-
-    100% {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-        filter: blur(0px);
-    }
-}
-
-/* Animació del loading bar */
-@keyframes slideInBottom {
-    0% {
-        opacity: 0;
-        transform: translateY(100px) scale(0.8);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-/* Millores al títol de la intro */
-.intro-title {
-    position: relative;
-    top: 0;
-    left: 0;
-    transform: none;
-    text-align: center;
-    z-index: 10;
-    opacity: 0;
-    display: none;
-    pointer-events: none;
-    margin-top: 0;
-    margin-bottom: 0;
-    width: 100vw;
-    max-width: 100vw;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-.intro-title h1 {
-    font-size: 6em;
-    font-weight: 900;
-    letter-spacing: 0.15em;
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(135deg, #ffffff 0%, #e10600 50%, #ffffff 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 80px rgba(225, 6, 0, 0.8),
-        0 0 40px rgba(225, 6, 0, 0.6),
-        0 10px 30px rgba(0, 0, 0, 0.9);
-    animation: titleGlow 2s ease-in-out infinite;
-    filter: drop-shadow(0 0 20px rgba(225, 6, 0, 0.9));
-}
-
-.intro-title p {
-    font-size: 1.8em;
-    font-weight: 300;
-    letter-spacing: 0.3em;
-    margin-top: 20px;
-    color: rgba(255, 255, 255, 0.9);
-    text-shadow: 0 0 30px rgba(225, 6, 0, 0.6),
-        0 2px 10px rgba(0, 0, 0, 0.8);
-    font-style: italic;
-}
-
-@keyframes titleGlow {
-
-    0%,
-    100% {
-        filter: drop-shadow(0 0 20px rgba(225, 6, 0, 0.9)) drop-shadow(0 0 40px rgba(225, 6, 0, 0.5));
-    }
-
-    50% {
-        filter: drop-shadow(0 0 30px rgba(225, 6, 0, 1)) drop-shadow(0 0 60px rgba(225, 6, 0, 0.7));
-    }
-}
-
-/* Loading bar cinematogràfic */
-.loading-bar {
-    position: fixed;
-    bottom: 15%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60%;
-    max-width: 600px;
-    height: 12px;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
-    overflow: hidden;
-    border: 2px solid rgba(225, 6, 0, 0.6);
-    box-shadow: 0 0 30px rgba(225, 6, 0, 0.4),
-        inset 0 2px 10px rgba(0, 0, 0, 0.8);
-    opacity: 0;
-    display: none;
-}
-
-.loading-bar.visible {
-    opacity: 1;
-}
-
-.loading-progress {
-    height: 100%;
-    background: linear-gradient(90deg,
-            #e10600 0%,
-            #ff4444 25%,
-            #ffffff 50%,
-            #ff4444 75%,
-            #e10600 100%);
-    background-size: 200% 100%;
-    border-radius: 10px;
-    animation: loadingProgress 2s ease-out forwards,
-        loadingShine 1.5s linear infinite;
-    width: 0;
-    box-shadow: 0 0 30px rgba(225, 6, 0, 1),
-        0 0 60px rgba(225, 6, 0, 0.6),
-        inset 0 -2px 10px rgba(255, 255, 255, 0.4);
-}
-
-@keyframes loadingProgress {
-    0% {
-        width: 0%;
-    }
-
-    100% {
-        width: 100%;
-    }
-}
-
-@keyframes loadingShine {
-    0% {
-        background-position: 200% 0%;
-    }
-
-    100% {
-        background-position: -200% 0%;
-    }
-}
-
-/* Millores visuals addicionals */
-.intro-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    z-index: 5;
-}
-
-/* Efecte de vinyeta cinematogràfica */
-#intro-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #000;
-}
-
-#intro-canvas::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(ellipse at center,
-            transparent 0%,
-            transparent 60%,
-            rgba(0, 0, 0, 0.4) 100%);
-    pointer-events: none;
-}
-
-/* Responsiu per mòbils */
-@media (max-width: 768px) {
-    .intro-title h1 {
-        font-size: 3.5em;
-        letter-spacing: 0.1em;
-    }
-
-    .intro-title p {
-        font-size: 1.2em;
-        letter-spacing: 0.2em;
-    }
-
-    .loading-bar {
-        width: 80%;
-        bottom: 20%;
-    }
-}
-
-/* ESTILS MILLORATS - Afegeix això al teu style.css */
-
-/* === BOTONS DE TENDA MILLORATS === */
 .shop-card-btn {
     width: 100%;
     padding: 12px 18px;
@@ -1354,7 +579,6 @@ body {
     margin-top: 12px;
     box-shadow: 0 2px 12px rgba(46, 204, 64, 0.3);
     transition: all 0.2s;
-    letter-spacing: 0.5px;
 }
 
 .shop-card-btn:hover:not(.disabled) {
@@ -1369,11 +593,10 @@ body {
     opacity: 0.6;
 }
 
-.shop-card-btn:active:not(.disabled) {
-    transform: translateY(0);
-}
+/* ============================================
+   EQUIP
+   ============================================ */
 
-/* === ESTADÍSTIQUES D'EQUIP === */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -1416,19 +639,13 @@ body {
     letter-spacing: 1px;
 }
 
-/* === RENDIMENT DE L'EQUIP === */
-.performance-section {
+.performance-section,
+.race-stats-section {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 14px;
     padding: 20px;
     margin-bottom: 20px;
     border: 2px solid rgba(255, 215, 0, 0.3);
-}
-
-.performance-section h4 {
-    margin-bottom: 16px;
-    font-size: 1.3em;
-    color: #ffd700;
 }
 
 .performance-bar {
@@ -1448,121 +665,181 @@ body {
     align-items: center;
     justify-content: center;
     font-weight: 900;
-    font-size: 1.1em;
     color: #000;
     transition: width 0.5s ease-out;
-    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
 }
 
-.performance-details {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+/* ============================================
+   CURSES
+   ============================================ */
+
+.track-selection {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    text-align: center;
 }
 
-.perf-detail {
+.track-buttons {
     display: flex;
-    justify-content: space-between;
-    padding: 8px 12px;
-    background: rgba(255, 255, 255, 0.05);
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.track-buttons button {
+    padding: 20px 30px;
+    font-size: 1.2em;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.track-buttons button:hover,
+.track-buttons button.selected {
+    background: #e10600;
+    border-color: #e10600;
+    transform: scale(1.05);
+}
+
+.race-track {
+    position: relative;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1000 / 600;
+    min-height: 300px;
+    max-height: 700px;
+    background: linear-gradient(45deg, #2d5a27 0%, #4a7c59 50%, #2d5a27 100%);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.race-track.image-track {
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: #000;
+}
+
+.track-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.track-path-visible {
+    stroke: rgba(255, 255, 255, 0.12);
+    stroke-width: 6;
+    fill: none;
+}
+
+.race-track.image-track .track-path-visible {
+    stroke: transparent;
+    opacity: 0;
+}
+
+.race-track.show-path .track-path-visible {
+    stroke: rgba(255, 255, 255, 0.7) !important;
+    opacity: 1 !important;
+}
+
+.driver-marker {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.8em;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    transition: all 0.5s ease;
+    z-index: 10;
+}
+
+.race-controls {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.race-controls button {
+    padding: 15px 50px;
+    font-size: 1.3em;
+    background: #00a000;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    margin: 0 10px;
+    transition: all 0.2s;
+}
+
+.race-controls button:hover {
+    background: #008000;
+    transform: scale(1.05);
+}
+
+.race-positions {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 15px;
+    margin-top: 20px;
+}
+
+.position-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    margin: 10px 0;
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
 }
 
-.perf-label {
-    color: #bbb;
+.position-number {
+    font-size: 1.5em;
+    font-weight: bold;
+    min-width: 40px;
 }
 
-.perf-value {
-    color: #ffd700;
-    font-weight: 700;
+.driver-info {
+    flex: 1;
+    margin-left: 20px;
 }
 
-/* === ESTADÍSTIQUES DE CURSES === */
-.race-stats-section {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 14px;
-    padding: 20px;
-    border: 2px solid rgba(225, 6, 0, 0.3);
+.driver-name {
+    font-size: 1.2em;
+    font-weight: bold;
 }
 
-.race-stats-section h4 {
-    margin-bottom: 16px;
-    font-size: 1.3em;
-    color: #e10600;
+.team-name {
+    font-size: 0.9em;
+    opacity: 0.8;
 }
 
-.race-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 12px;
+/* ============================================
+   ANIMACIONS I UTILITATS
+   ============================================ */
+
+.fade-anim {
+    opacity: 0;
+    transform: translateX(-40px);
+    transition: opacity 0.5s, transform 0.5s;
 }
 
-.race-stat {
-    display: flex;
-    justify-content: space-between;
-    padding: 12px 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-    border-left: 4px solid #e10600;
-}
-
-.race-stat-label {
-    color: #bbb;
-    font-size: 0.95em;
-}
-
-.race-stat-value {
-    color: #fff;
-    font-weight: 900;
-    font-size: 1.1em;
-}
-
-/* === MEMBRES DE L'EQUIP === */
-.team-member-card {
-    background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
-    border-radius: 14px;
-    padding: 20px;
-    text-align: center;
-    border: 2px solid #ffd700;
-    margin-bottom: 16px;
-}
-
-.team-member-icon {
-    font-size: 3em;
-    margin-bottom: 12px;
-}
-
-.team-member-card h4 {
-    font-size: 1.4em;
-    color: #ffd700;
-    margin-bottom: 6px;
-}
-
-.team-member-team {
-    color: #2ecc40;
-    margin-bottom: 8px;
-    font-size: 1.05em;
-}
-
-.team-member-stat {
-    color: #00bcd4;
-    font-weight: 700;
-    margin-bottom: 12px;
-}
-
-.skill-bar {
-    width: 100%;
-    height: 12px;
-    background: #222;
-    border-radius: 6px;
-    overflow: hidden;
-    margin-top: 8px;
-}
-
-.skill-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #00bcd4 0%, #2ecc40 100%);
-    transition: width 0.5s ease-out;
+.fade-anim.visible {
+    opacity: 1;
+    transform: translateX(0);
 }
 
 .no-data {
@@ -1572,35 +849,29 @@ body {
     padding: 40px;
 }
 
-/* === ANIMACIONS === */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
+/* ============================================
+   RESPONSIU
+   ============================================ */
+
+@media (max-width: 768px) {
+    .auth-forms {
+        flex-direction: column;
+        align-items: center;
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    .menu-buttons {
+        flex-direction: column;
     }
-}
 
-.stat-card {
-    animation: fadeInUp 0.4s ease-out;
-}
+    .track-buttons {
+        flex-direction: column;
+    }
 
-.stat-card:nth-child(1) {
-    animation-delay: 0.05s;
-}
+    .top-nav h1 {
+        font-size: 2em;
+    }
 
-.stat-card:nth-child(2) {
-    animation-delay: 0.1s;
-}
-
-.stat-card:nth-child(3) {
-    animation-delay: 0.15s;
-}
-
-.stat-card:nth-child(4) {
-    animation-delay: 0.2s;
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
