@@ -14,6 +14,7 @@ const leagueRaceState = {
 /**
  * Inicialitza tots els pilots de la cursa de lliga
  * Utilitza el pilot i mànager ONLINE, no els contractats offline
+ * ARREGLAT: Permet córrer amb UN SOL PILOT al modo online
  */
 function initializeLeagueRace() {
     const user = getCurrentUser();
@@ -26,7 +27,7 @@ function initializeLeagueRace() {
 
     leagueRaceState.positions = [];
 
-    // Pilot 1 Online (sempre disponible)
+    // Pilot Online (sempre disponible)
     const tyreChoice1 = document.getElementById('driver1-tyres').value;
     const tyreStats1 = gameData.tyreStrategies[tyreChoice1];
 
@@ -43,32 +44,9 @@ function initializeLeagueRace() {
     );
 
     leagueRaceState.positions.push({
-        name: `${user.username} #1`,
+        name: `${user.username}`,
         team: user.data.teamName,
         performance: performance1,
-        position: 0,
-        lapProgress: Math.random() * 2,
-        completedLaps: 0,
-        color: user.data.online.carConfig?.color || '#FFD700',
-        isPlayer: true
-    });
-
-    // Pilot 2 Online (opcional, lleugerament més lent)
-    const tyreChoice2 = document.getElementById('driver2-tyres').value;
-    const tyreStats2 = gameData.tyreStrategies[tyreChoice2];
-
-    const performance2 = calculateLeagueDriverPerformance(
-        onlineDriverSkill - 3, // Lleugerament més lent
-        user.data.upgrades,
-        user.data.online.carUpgrades,
-        user.data.online.managerLevel,
-        tyreStats2
-    );
-
-    leagueRaceState.positions.push({
-        name: `${user.username} #2`,
-        team: user.data.teamName,
-        performance: performance2,
         position: 0,
         lapProgress: Math.random() * 2,
         completedLaps: 0,
