@@ -62,7 +62,7 @@ function loadLeague() {
 function updateLeagueHeader() {
     const header = document.getElementById('league-header');
     if (!header) return;
-    
+
     header.innerHTML = `
         <div style="font-size:3em; margin-bottom:12px;">${getFlagEmoji(currentLeague.country)}</div>
         <h1>${currentLeague.name}</h1>
@@ -84,7 +84,7 @@ function updateUserInfo() {
 
     const coinsEl = document.getElementById('league-user-coins');
     const xpEl = document.getElementById('league-user-xp');
-    
+
     if (coinsEl) coinsEl.textContent = `🪙 ${user.data.online.coins}`;
     if (xpEl) xpEl.textContent = `⭐ Nv.${user.data.online.level}`;
 }
@@ -108,7 +108,7 @@ function generateDefaultCalendar() {
 function loadCalendar() {
     const grid = document.getElementById('calendar-grid');
     if (!grid) return;
-    
+
     grid.innerHTML = currentLeague.calendar.map((race, i) => {
         const track = gameData.tracks[race.trackId];
         const isCurrent = i === currentLeague.currentRace;
@@ -119,12 +119,12 @@ function loadCalendar() {
                 <div style="font-size:3em; margin-bottom:12px;">${track.flag}</div>
                 <h3 style="color:#ffd700; font-size:1.5em; margin-bottom:8px;">${track.name}</h3>
                 <p style="font-size:1.1em; margin-bottom:16px;">Cursa ${race.raceNumber}</p>
-                ${race.completed 
-                    ? '<p style="color:#2ecc40; font-weight:bold;">✅ Completada</p>'
-                    : isCurrent 
-                        ? `<button class="btn-primary" onclick="openRaceModal(${i})">🏁 Córrer Ara</button>`
-                        : '<p style="opacity:0.6;">⏳ Pendent</p>'
-                }
+                ${race.completed
+                ? '<p style="color:#2ecc40; font-weight:bold;">✅ Completada</p>'
+                : isCurrent
+                    ? `<button class="btn-primary" onclick="openRaceModal(${i})">🏁 Córrer Ara</button>`
+                    : '<p style="opacity:0.6;">⏳ Pendent</p>'
+            }
             </div>
         `;
     }).join('');
@@ -136,7 +136,7 @@ function loadCalendar() {
 function loadStandings() {
     const table = document.getElementById('standings-table');
     if (!table) return;
-    
+
     const standings = Object.entries(currentLeague.standings || {})
         .map(([user, points]) => ({ user, points }))
         .sort((a, b) => b.points - a.points);
@@ -166,7 +166,7 @@ function loadStandings() {
 function loadLeagueConfig() {
     const content = document.getElementById('league-config-content');
     if (!content) return;
-    
+
     const user = getCurrentUser();
     const isOwner = currentLeague.owner === user.username;
 
@@ -269,23 +269,16 @@ function closeRaceModal() {
  */
 function startLeagueRace() {
     const race = currentLeague.calendar[currentRaceIndex];
-    const trackId = race.trackId;
 
     // Guardar info de la lliga per usar-la després de la cursa
     sessionStorage.setItem('leagueRaceInfo', JSON.stringify({
         leagueId: currentLeague.id,
-        raceIndex: currentRaceIndex
+        raceIndex: currentRaceIndex,
+        trackId: race.trackId
     }));
 
-    // Redirigir a la pantalla de cursa
-    window.location.href = `index.html#race-screen`;
-    
-    // Després de carregar, seleccionar el circuit automàticament
-    setTimeout(() => {
-        if (typeof selectTrack === 'function') {
-            selectTrack(trackId);
-        }
-    }, 500);
+    // Redirigir a la pàgina dedicada de curses de lliga
+    window.location.href = `league-race.html`;
 }
 
 /**
@@ -340,13 +333,13 @@ function showLeagueTab(tabName) {
  */
 function getCountryOptions(selected) {
     const countries = [
-        {code:'ES',name:'Espanya'},{code:'FR',name:'França'},{code:'IT',name:'Itàlia'},
-        {code:'GB',name:'Regne Unit'},{code:'DE',name:'Alemanya'},{code:'PT',name:'Portugal'},
-        {code:'US',name:'Estats Units'},{code:'BR',name:'Brasil'},{code:'AR',name:'Argentina'},
-        {code:'JP',name:'Japó'},{code:'AU',name:'Austràlia'},{code:'CA',name:'Canadà'}
+        { code: 'ES', name: 'Espanya' }, { code: 'FR', name: 'França' }, { code: 'IT', name: 'Itàlia' },
+        { code: 'GB', name: 'Regne Unit' }, { code: 'DE', name: 'Alemanya' }, { code: 'PT', name: 'Portugal' },
+        { code: 'US', name: 'Estats Units' }, { code: 'BR', name: 'Brasil' }, { code: 'AR', name: 'Argentina' },
+        { code: 'JP', name: 'Japó' }, { code: 'AU', name: 'Austràlia' }, { code: 'CA', name: 'Canadà' }
     ];
-    return countries.map(c => 
-        `<option value="${c.code}" ${c.code===selected?'selected':''}>${c.name}</option>`
+    return countries.map(c =>
+        `<option value="${c.code}" ${c.code === selected ? 'selected' : ''}>${c.name}</option>`
     ).join('');
 }
 

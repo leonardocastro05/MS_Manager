@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursa de Lliga - F1 Manager</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 60%, #e10600 100%);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        #league-race-container {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .race-header {
+            background: linear-gradient(135deg, rgba(35, 37, 38, 0.95) 0%, rgba(26, 26, 46, 0.95) 100%);
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            text-align: center;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 8px 32px rgba(255, 215, 0, 0.2);
+        }
+
+        .race-header h1 {
+            color: #ffd700;
+            font-size: 2.2em;
+            margin-bottom: 12px;
+            font-family: 'Orbitron', Arial, sans-serif;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .race-header p {
+            color: #fff;
+            font-size: 1.3em;
+            margin-top: 10px;
+            font-family: 'Orbitron', Arial, sans-serif;
+        }
+
+        .strategy-panel {
+            background: linear-gradient(135deg, rgba(35, 37, 38, 0.9) 0%, rgba(26, 26, 46, 0.9) 100%);
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            border: 2px solid rgba(255, 215, 0, 0.2);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .strategy-panel h3 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            font-family: 'Orbitron', Arial, sans-serif;
+            text-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+        }
+
+        .driver-strategy {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .driver-strategy label {
+            color: #fff;
+            min-width: 80px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .driver-strategy select {
+            padding: 10px 15px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 2px solid #ffd700;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Orbitron', Arial, sans-serif;
+        }
+
+        .driver-strategy select:hover {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: #ffeb3b;
+        }
+
+        .driver-strategy select:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Opcions del select */
+        .driver-strategy select option {
+            background: #1a1a2e;
+            color: #fff;
+            padding: 10px;
+        }
+
+        .race-controls {
+            text-align: center;
+            margin: 24px 0;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .race-controls button {
+            padding: 15px 40px;
+            font-size: 1.3em;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Orbitron', Arial, sans-serif;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        #start-race-btn {
+            background: linear-gradient(90deg, #00a000 0%, #2ecc40 100%);
+            color: white;
+        }
+
+        #start-race-btn:hover {
+            background: linear-gradient(90deg, #008000 0%, #27ae60 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 204, 64, 0.4);
+        }
+
+        #pause-race-btn {
+            background: linear-gradient(90deg, #ff9800 0%, #ff6b00 100%);
+            color: white;
+        }
+
+        #pause-race-btn:hover {
+            background: linear-gradient(90deg, #f57c00 0%, #e65100 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+        }
+
+        .race-controls button:last-child {
+            background: linear-gradient(90deg, #666 0%, #888 100%);
+            color: white;
+        }
+
+        .race-controls button:last-child:hover {
+            background: linear-gradient(90deg, #555 0%, #777 100%);
+            transform: translateY(-2px);
+        }
+
+        .race-positions {
+            background: linear-gradient(135deg, rgba(35, 37, 38, 0.9) 0%, rgba(26, 26, 46, 0.9) 100%);
+            padding: 24px;
+            border-radius: 16px;
+            margin-top: 24px;
+            border: 2px solid rgba(255, 215, 0, 0.2);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .race-positions h3 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            font-family: 'Orbitron', Arial, sans-serif;
+            text-align: center;
+            text-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+        }
+
+        #positions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .position-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .position-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .position-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #ffd700;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .driver-info {
+            flex: 1;
+            margin-left: 20px;
+        }
+
+        .driver-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .team-name {
+            font-size: 0.9em;
+            color: #aaa;
+        }
+
+        /* Track display hereta dels estils globals */
+        .track-display {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="league-race-container">
+        <!-- HEADER -->
+        <div class="race-header">
+            <h1 id="league-race-title">🏆 Cursa de Lliga</h1>
+            <p id="league-race-info"></p>
+        </div>
+
+        <!-- ESTRATÈGIA -->
+        <div class="strategy-panel">
+            <h3>🎯 Estratègia de Neumàtics</h3>
+            <div class="driver-strategy">
+                <label>Pilot 1:</label>
+                <select id="driver1-tyres">
+                    <option value="soft">🔴 Tous (Ràpids)</option>
+                    <option value="medium" selected>🟡 Mitjans (Equilibrats)</option>
+                    <option value="hard">⚪ Durs (Resistents)</option>
+                </select>
+            </div>
+            <div class="driver-strategy">
+                <label>Pilot 2:</label>
+                <select id="driver2-tyres">
+                    <option value="soft">🔴 Tous (Ràpids)</option>
+                    <option value="medium" selected>🟡 Mitjans (Equilibrats)</option>
+                    <option value="hard">⚪ Durs (Resistents)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- PISTA -->
+        <div id="track-display" class="track-display">
+            <!-- La pista es generarà aquí -->
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="race-controls">
+            <button id="start-race-btn" onclick="startLeagueRaceNow()">
+                🏁 Començar Cursa
+            </button>
+            <button id="pause-race-btn" onclick="pauseRace()" style="display:none;">
+                ⏸️ Pausar
+            </button>
+            <button onclick="window.location.href='liga.html?id=' + getLeagueIdFromSession()">
+                ← Tornar a la Lliga
+            </button>
+        </div>
+
+        <!-- CLASSIFICACIÓ -->
+        <div id="race-positions" class="race-positions">
+            <h3>📊 Classificació en Directe</h3>
+            <div id="positions-list"></div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/online.js"></script>
+    <script src="js/league-race-system.js"></script>
+    <script>
+        // Obtenir info de la lliga des de sessionStorage
+        function getLeagueRaceInfo() {
+            const info = sessionStorage.getItem('leagueRaceInfo');
+            return info ? JSON.parse(info) : null;
+        }
+
+        function getLeagueIdFromSession() {
+            const info = getLeagueRaceInfo();
+            return info ? info.leagueId : '';
+        }
+
+        // Inicialitzar la cursa
+        function initLeagueRace() {
+            const info = getLeagueRaceInfo();
+            if (!info) {
+                alert('⚠️ No hi ha informació de la cursa!');
+                window.location.href = 'online.html';
+                return;
+            }
+
+            const user = getCurrentUser();
+            if (!user || !user.data.onlineLeagues) {
+                window.location.href = 'online.html';
+                return;
+            }
+
+            const league = user.data.onlineLeagues.find(l => l.id === info.leagueId);
+            if (!league || !league.calendar[info.raceIndex]) {
+                alert('⚠️ Lliga o cursa no trobada!');
+                window.location.href = 'online.html';
+                return;
+            }
+
+            const race = league.calendar[info.raceIndex];
+            const track = gameData.tracks[race.trackId];
+
+            // Mostrar info
+            document.getElementById('league-race-title').textContent = `🏆 ${league.name}`;
+            document.getElementById('league-race-info').innerHTML = `
+                ${track.flag} <b>${track.name}</b> • Cursa ${race.raceNumber} • ${track.laps} voltes
+            `;
+
+            // Seleccionar el circuit automàticament
+            raceState.selectedTrack = race.trackId;
+            displayTrack(race.trackId);
+        }
+
+        // Començar la cursa
+        function startLeagueRaceNow() {
+            const user = getCurrentUser();
+            if (!user || user.data.drivers.length < 2) {
+                alert('⚠️ Necessites 2 pilots per córrer!');
+                return;
+            }
+
+            if (!raceState.selectedTrack) {
+                alert('⚠️ Error carregant el circuit!');
+                return;
+            }
+
+            // Amagar botó començar, mostrar pausar
+            document.getElementById('start-race-btn').style.display = 'none';
+            document.getElementById('pause-race-btn').style.display = 'inline-block';
+
+            raceState.isRunning = true;
+            raceState.currentLap = 0;
+
+            initializeRace();
+            runRaceLoop();
+        }
+
+        // Sobreescriure endRace per guardar resultats a la lliga
+        const originalEndRace = endRace;
+        endRace = function () {
+            clearInterval(raceState.interval);
+            raceState.isRunning = false;
+
+            document.getElementById('start-race-btn').style.display = 'inline-block';
+            document.getElementById('pause-race-btn').style.display = 'none';
+
+            const user = getCurrentUser();
+            const info = getLeagueRaceInfo();
+
+            if (!user || !info) {
+                alert('⚠️ Error guardant els resultats!');
+                return;
+            }
+
+            // Trobar millor posició
+            const playerPositions = raceState.positions
+                .filter(d => d.isPlayer)
+                .map(d => d.position);
+            const bestPosition = Math.min(...playerPositions);
+
+            // Sistema de punts F1
+            const pointsSystem = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
+            const points = bestPosition <= 10 ? pointsSystem[bestPosition - 1] : 0;
+
+            // Actualitzar estadístiques
+            if (bestPosition === 1) user.data.wins++;
+            if (bestPosition <= 3) user.data.podiums++;
+            user.data.points += points;
+
+            const prize = Math.max(100000, 1500000 - (bestPosition * 80000));
+            user.data.budget += prize;
+
+            // Actualitzar lliga
+            const league = user.data.onlineLeagues.find(l => l.id === info.leagueId);
+            if (league) {
+                if (!league.standings) league.standings = {};
+
+                if (!league.standings[user.username]) {
+                    league.standings[user.username] = 0;
+                }
+                league.standings[user.username] += points;
+
+                // Marcar cursa com completada
+                if (league.calendar[info.raceIndex]) {
+                    league.calendar[info.raceIndex].completed = true;
+                    league.calendar[info.raceIndex].results = {
+                        position: bestPosition,
+                        points
+                    };
+                }
+
+                // Avançar a la següent cursa
+                league.currentRace = Math.min(
+                    (league.currentRace || 0) + 1,
+                    league.calendar.length - 1
+                );
+            }
+
+            saveUserData(user.data);
+            updateUserInfo();
+
+            // Mostrar resultats
+            let message = '';
+            if (bestPosition === 1) {
+                message = `🏆 VICTÒRIA!\n\nHas guanyat la cursa!`;
+            } else if (bestPosition === 2) {
+                message = `🥈 Segon lloc!\n\nGran cursa!`;
+            } else if (bestPosition === 3) {
+                message = `🥉 Tercer lloc!\n\nPodi!`;
+            } else if (bestPosition <= 10) {
+                message = `Posició: ${bestPosition}è\n\nDins dels punts!`;
+            } else {
+                message = `Posició: ${bestPosition}è\n\nFora dels punts`;
+            }
+
+            message += `\n\n📊 Punts: +${points}`;
+            message += `\n💰 Premi: ${formatMoney(prize)}`;
+            message += `\n\n🏆 Punts a la lliga: ${league.standings[user.username]} pts`;
+
+            alert(message);
+
+            // Preguntar si vol tornar a la lliga
+            setTimeout(() => {
+                if (confirm('✅ Cursa completada!\n\nVols tornar a la lliga?')) {
+                    window.location.href = `liga.html?id=${info.leagueId}`;
+                }
+            }, 500);
+        };
+
+        // Inicialitzar quan carrega la pàgina
+        window.addEventListener('DOMContentLoaded', () => {
+            initLeagueRace();
+        });
+    </script>
+</body>
+
+</html>
