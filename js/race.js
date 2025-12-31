@@ -480,6 +480,50 @@ function endRace() {
 
     // Mostrar resultats
     showRaceResults(bestPosition, points, prize);
+
+    // If this race was started from a league, update league data
+    try {
+        const lr = sessionStorage.getItem('leagueRaceInfo');
+        if (lr) {
+            const info = JSON.parse(lr);
+            const leagueId = info.leagueId;
+            const raceIndex = info.raceIndex;
+            const u = getCurrentUser();
+            if (u && u.data && Array.isArray(u.data.onlineLeagues)) {
+                const league = u.data.onlineLeagues.find(l => l.id === leagueId);
+                if (league) {
+                    // Ensure calendar exists
+                    if (!league.calendar) league.calendar = [];
+                    if (!league.standings) league.standings = [];
+
+                    // Ensure standings array contains the user
+                    let standing = league.standings.find(s => s.name === u.username);
+                    if (!standing) {
+                        standing = { name: u.username, points: 0 };
+                        league.standings.push(standing);
+                    }
+
+                    standing.points = (standing.points || 0) + points;
+
+                    // Mark race completed and store results
+                    if (league.calendar[raceIndex]) {
+                        league.calendar[raceIndex].completed = true;
+                        league.calendar[raceIndex].results = { position: bestPosition, points };
+                    }
+
+                    league.currentRace = (league.currentRace || 0) + 1;
+
+                    // Persist
+                    saveUserData(u.data);
+
+                    // Clear the session flag so it doesn't apply again
+                    sessionStorage.removeItem('leagueRaceInfo');
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('Error updating league after race', e);
+    }
 }
 
 /**

@@ -1,232 +1,692 @@
-/* ========================= */
-/* MODO ONLINE - MENÚ I CAPÇALERA */
-/* ========================= */
+/* ============================================
+   ESTILS MODO ONLINE - COMPLETS I PRESENTABLES
+   ============================================ */
 
+/* MENÚ DE NAVEGACIÓ ONLINE */
 .online-menu-buttons {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     justify-content: center;
-    margin: 18px 0 18px 0;
+    margin: 24px auto;
     flex-wrap: wrap;
+    max-width: 1200px;
+    padding: 0 16px;
 }
 
 .online-menu-buttons button {
-    background: linear-gradient(90deg, #232526 0%, #FFD700 100%);
-    color: #FFD700;
-    border: 2px solid #FFD70055;
-    border-radius: 8px;
-    padding: 10px 24px;
+    background: linear-gradient(135deg, #232526 0%, #414345 100%);
+    color: #ffd700;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    border-radius: 12px;
+    padding: 12px 24px;
     font-size: 1.08em;
     font-family: 'Orbitron', Arial, sans-serif;
     font-weight: bold;
-    box-shadow: 0 2px 8px #FFD70022;
     cursor: pointer;
-    transition: background 0.18s, color 0.18s, border 0.18s, box-shadow 0.18s;
-    outline: none;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 2px 12px rgba(255, 215, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.online-menu-buttons button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 215, 0, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.online-menu-buttons button:hover::before {
+    width: 300px;
+    height: 300px;
 }
 
 .online-menu-buttons button:hover {
-    background: linear-gradient(90deg, #FFD700 0%, #232526 100%);
+    background: linear-gradient(135deg, #ffd700 0%, #e10600 100%);
     color: #232526;
-    border: 2px solid #FFD700;
-    box-shadow: 0 4px 18px #FFD70055;
+    border-color: #ffd700;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(255, 215, 0, 0.4);
 }
 
 .online-menu-buttons button.active {
-    background: linear-gradient(90deg, #FFD700 0%, #232526 100%) !important;
-    color: #232526 !important;
-    border: 2px solid #FFD700;
-    box-shadow: 0 4px 18px #FFD70099;
+    background: linear-gradient(135deg, #ffd700 0%, #e10600 100%);
+    color: #232526;
+    border-color: #ffd700;
+    box-shadow: 0 4px 24px rgba(255, 215, 0, 0.6);
+    transform: scale(1.05);
 }
 
-#online-header-balances {
-    display: flex;
-    gap: 18px;
-    align-items: center;
-}
-
-#online-header-money, #online-header-coins {
-    background: linear-gradient(135deg, #232526 0%, #FFD700 100%);
-    color: #FFD700;
-    border-radius: 12px;
-    border: 2px solid #FFD70099;
-    font-family: 'Orbitron', Arial, sans-serif;
-    font-size: 1.08em;
-    font-weight: bold;
-    box-shadow: 0 2px 8px #FFD70033;
-    padding: 6px 14px;
-    min-width: 90px;
-    text-align: center;
-    display: inline-block;
-}
-
-@media (max-width: 700px) {
-    .online-menu-buttons {
-        gap: 8px;
-    }
-    #online-header-money, #online-header-coins {
-        font-size: 0.98em;
-        min-width: 60px;
-        padding: 4px 8px;
-    }
-}
-/* ========================= */
-/* MODO ONLINE - DISSENY NOU */
-/* ========================= */
-
+/* CONTINGUT ONLINE */
 .online-content {
-    background: linear-gradient(120deg, #181a1b 0%, #232526 100%);
-    border-radius: 18px;
-    box-shadow: 0 6px 32px #000a;
-    padding: 32px 18px 24px 18px;
-    margin: 24px auto 0 auto;
-    max-width: 1100px;
-    min-width: 320px;
+    background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(35, 37, 38, 0.95) 100%);
+    border-radius: 24px;
+    box-shadow: 0 8px 48px rgba(0, 0, 0, 0.6);
+    padding: 40px 24px;
+    margin: 24px auto;
+    max-width: 1400px;
+    min-height: 60vh;
+    border: 2px solid rgba(255, 215, 0, 0.2);
 }
 
-#online-user-info {
-    display: flex;
-    gap: 18px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-bottom: 18px;
+.online-section {
+    animation: fadeInSection 0.5s ease-out;
 }
 
+@keyframes fadeInSection {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* TARGETES DE LA TENDA ONLINE */
 .online-content .shop-card {
     background: linear-gradient(135deg, #232526 0%, #313233 100%);
-    border-radius: 16px;
-    box-shadow: 0 2px 12px #FFD70033, 0 1.5px 8px #0007;
-    border: 2.5px solid #FFD70099;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(255, 215, 0, 0.15);
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    padding: 24px 20px;
+    min-width: 180px;
     color: #fff;
-    padding: 18px 16px 14px 16px;
-    min-width: 170px;
-    min-height: 120px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
     font-family: 'Orbitron', Arial, sans-serif;
-    font-size: 1.08em;
-    transition: transform 0.18s, box-shadow 0.18s, border 0.18s;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.online-content .shop-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
+.online-content .shop-card:hover::before {
+    opacity: 1;
 }
 
 .online-content .shop-card:hover {
-    transform: scale(1.045);
-    box-shadow: 0 6px 32px #FFD70055, 0 2px 16px #000a;
-    border: 2.5px solid #FFD700;
-    z-index: 2;
+    transform: translateY(-8px) scale(1.04);
+    box-shadow: 0 12px 40px rgba(255, 215, 0, 0.35);
+    border-color: #ffd700;
 }
 
-.online-content .shop-cards-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 18px;
-    justify-content: center;
-    margin-top: 10px;
-    margin-bottom: 10px;
+/* BADGE PER MILLOR OFERTA */
+.badge {
+    background: linear-gradient(135deg, #ffd700 0%, #ff8700 100%);
+    color: #232526;
+    border-radius: 8px;
+    padding: 4px 12px;
+    font-size: 0.85em;
+    font-weight: bold;
+    margin: 8px auto;
+    display: inline-block;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+    animation: pulse 2s ease-in-out infinite;
 }
 
-.online-content .league-card {
-    background: linear-gradient(120deg, #FFD70022 0%, #232526 100%);
-    border: 2px solid #FFD70099;
-    border-radius: 14px;
-    color: #FFD700;
-    font-family: 'Orbitron', Arial, sans-serif;
-    font-size: 1.1em;
-    padding: 16px 24px;
-    margin: 0 auto 12px auto;
-    box-shadow: 0 2px 12px #FFD70033, 0 1.5px 8px #0007;
-    text-align: center;
-    max-width: 420px;
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+    }
+
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 4px 16px rgba(255, 215, 0, 0.6);
+    }
 }
 
-.online-content section {
-    margin-bottom: 32px;
-    padding-bottom: 12px;
-    border-bottom: 1.5px solid #FFD70033;
-}
-
-.online-content section:last-child {
-    border-bottom: none;
-}
-
-.online-content h3, .online-content h4 {
-    color: #FFD700;
-    font-family: 'Orbitron', Arial, sans-serif;
-    letter-spacing: 1.5px;
-    margin-bottom: 8px;
-    margin-top: 0;
-}
-
-.online-content button, .online-content .shop-card button {
-    background: linear-gradient(90deg, #FFD700 0%, #D32F2F 100%);
+/* BOTONS DE LES TARGETES */
+.online-content button {
+    background: linear-gradient(90deg, #ffd700 0%, #e10600 100%);
     color: #232526;
     border: none;
-    border-radius: 8px;
-    padding: 7px 18px;
+    border-radius: 10px;
+    padding: 10px 20px;
     font-size: 1em;
     font-family: 'Orbitron', Arial, sans-serif;
     font-weight: bold;
-    margin-top: 8px;
-    margin-bottom: 2px;
-    box-shadow: 0 2px 8px #FFD70033;
     cursor: pointer;
-    transition: background 0.18s, color 0.18s;
+    margin-top: 12px;
+    box-shadow: 0 4px 16px rgba(255, 215, 0, 0.3);
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
 }
 
-.online-content button:hover, .online-content .shop-card button:hover {
-    background: linear-gradient(90deg, #FFD700 0%, #B71C1C 100%);
-    color: #fff;
+.online-content button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
 }
 
-.online-content ul {
-    color: #FFD700;
-    font-family: 'Orbitron', Arial, sans-serif;
-    font-size: 1.05em;
-    margin: 0 0 0 18px;
-    padding: 0;
+.online-content button:hover::after {
+    width: 300px;
+    height: 300px;
 }
 
-.online-content li {
-    margin-bottom: 4px;
+.online-content button:hover {
+    background: linear-gradient(90deg, #ffeb3b 0%, #ff6b00 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(255, 215, 0, 0.5);
 }
 
-.online-content .shop-card b {
-    color: #FFD700;
-    font-weight: bold;
-    font-size: 1.1em;
+.online-content button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
-.online-content .shop-card span {
-    color: #fff;
-    font-size: 0.98em;
-}
-
-.online-content .shop-card .badge {
-    background: #FFD700;
-    color: #232526;
-    border-radius: 6px;
-    padding: 2px 8px;
-    font-size: 0.92em;
-    margin-top: 4px;
-    display: inline-block;
-}
-
-.online-content .shop-card[disabled], .online-content .shop-card.disabled {
+.online-content button.disabled,
+.online-content button:disabled {
+    background: linear-gradient(90deg, #666 0%, #888 100%);
+    cursor: not-allowed;
     opacity: 0.5;
-    pointer-events: none;
 }
 
-@media (max-width: 700px) {
-    .online-content {
-        padding: 12px 2px 12px 2px;
-        max-width: 99vw;
+.online-content button.disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* ============================================
+   ESTILS PER A LES LLIGUES ONLINE
+   ============================================ */
+
+/* HEADER DE LA LLIGA */
+.league-header {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 24px;
+    border-radius: 16px;
+    margin: 24px auto;
+    max-width: 1200px;
+    text-align: center;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    box-shadow: 0 8px 32px rgba(255, 215, 0, 0.2);
+}
+
+.league-header h1 {
+    color: #ffd700;
+    font-size: 2.5em;
+    margin-bottom: 12px;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+/* TABS DE NAVEGACIÓ */
+.league-tabs {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin: 24px auto;
+    flex-wrap: wrap;
+    max-width: 1200px;
+}
+
+.league-tab {
+    background: linear-gradient(135deg, #232526 0%, #414345 100%);
+    color: #ffd700;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    padding: 12px 24px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-weight: bold;
+    box-shadow: 0 2px 12px rgba(255, 215, 0, 0.1);
+}
+
+.league-tab:hover {
+    background: linear-gradient(135deg, #ffd700 0%, #e10600 100%);
+    color: #232526;
+    transform: translateY(-4px);
+    box-shadow: 0 6px 24px rgba(255, 215, 0, 0.4);
+}
+
+.league-tab.active {
+    background: linear-gradient(135deg, #ffd700 0%, #e10600 100%);
+    color: #232526;
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.5);
+}
+
+/* CONTINGUT DE LA LLIGA */
+.league-content {
+    max-width: 1400px;
+    margin: 24px auto;
+    padding: 24px;
+}
+
+.league-section {
+    display: none;
+    animation: fadeIn 0.5s;
+}
+
+.league-section.active {
+    display: block;
+}
+
+/* CALENDARI DE CURSES */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 24px;
+}
+
+.race-card {
+    background: linear-gradient(135deg, #232526 0%, #414345 100%);
+    border-radius: 18px;
+    padding: 24px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    transition: all 0.3s;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.race-card:hover {
+    transform: translateY(-4px);
+    border-color: #ffd700;
+    box-shadow: 0 8px 24px rgba(255, 215, 0, 0.3);
+}
+
+.race-card.completed {
+    opacity: 0.6;
+    border-color: #2ecc40;
+}
+
+.race-card.current {
+    border: 3px solid #ffd700;
+    box-shadow: 0 0 24px rgba(255, 215, 0, 0.5);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 24px rgba(255, 215, 0, 0.5);
     }
-    .online-content .shop-card {
-        min-width: 120px;
-        font-size: 0.98em;
+
+    50% {
+        box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
     }
 }
+
+/* CLASSIFICACIÓ */
+.standings-table {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 24px;
+}
+
+.standings-row {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    margin: 8px 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border-left: 4px solid #666;
+    transition: all 0.3s;
+}
+
+.standings-row:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(8px);
+}
+
+.standings-row.gold {
+    border-left-color: #ffd700;
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.standings-row.silver {
+    border-left-color: #c0c0c0;
+    background: rgba(192, 192, 192, 0.1);
+}
+
+.standings-row.bronze {
+    border-left-color: #cd7f32;
+    background: rgba(205, 127, 50, 0.1);
+}
+
+/* FORMULARIS DE CONFIGURACIÓ */
+.config-form {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 32px;
+    border-radius: 16px;
+    max-width: 800px;
+    margin: 24px auto;
+}
+
+.config-form label {
+    display: block;
+    margin: 16px 0 8px 0;
+    color: #ffd700;
+    font-weight: bold;
+}
+
+.config-form input,
+.config-form select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 2px solid #ffd700;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 1em;
+}
+
+.config-form input[type="range"] {
+    cursor: pointer;
+}
+
+/* BOTONS */
+.btn-primary {
+    background: linear-gradient(90deg, #ffd700 0%, #e10600 100%);
+    color: #232526;
+    padding: 14px 32px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin: 8px;
+    box-shadow: 0 4px 16px rgba(255, 215, 0, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255, 215, 0, 0.4);
+}
+
+.btn-danger {
+    background: linear-gradient(90deg, #e10600 0%, #8b0000 100%);
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(90deg, #ff1a1a 0%, #b00000 100%);
+}
+
+/* MODALS */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #232526 0%, #414345 100%);
+    padding: 40px;
+    border-radius: 20px;
+    max-width: 500px;
+    border: 3px solid #ffd700;
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.5);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .league-tabs {
+        gap: 8px;
+        padding: 0 8px;
+    }
+
+    .league-tab {
+        padding: 10px 16px;
+        font-size: 0.95em;
+    }
+
+    .calendar-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .config-form {
+        padding: 20px;
+    }
+}
+
+/* LLIGUES */
+.leagues-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 24px;
+}
+
+.league-card {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(35, 37, 38, 0.9) 100%);
+    border: 2px solid rgba(255, 215, 0, 0.5);
+    border-radius: 16px;
+    padding: 24px;
+    min-width: 280px;
+    max-width: 400px;
+    font-family: 'Orbitron', Arial, sans-serif;
+    transition: all 0.3s;
+    box-shadow: 0 4px 16px rgba(255, 215, 0, 0.2);
+}
+
+.league-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(255, 215, 0, 0.4);
+    border-color: #ffd700;
+}
+
+/* BALANCES DEL HEADER */
+#online-header-balances span {
+    background: linear-gradient(135deg, #232526 0%, #414345 100%);
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 1.1em;
+    font-weight: bold;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s;
+}
+
+#online-header-money {
+    border: 2px solid #2ecc40 !important;
+    color: #2ecc40;
+}
+
+#online-header-coins {
+    border: 2px solid #ffd700 !important;
+    color: #ffd700;
+}
+
+#online-header-balances span:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 24px rgba(255, 215, 0, 0.4);
+}
+
+/* TITOLS DE SECCIONS */
+.online-content h3 {
+    color: #ffd700;
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 2em;
+    text-align: center;
+    margin-bottom: 32px;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    letter-spacing: 2px;
+    animation: titleGlow 3s ease-in-out infinite;
+}
+
+@keyframes titleGlow {
+
+    0%,
+    100% {
+        text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    }
+
+    50% {
+        text-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 0 40px rgba(225, 6, 0, 0.4);
+    }
+}
+
+.online-content h4 {
+    color: #ffd700;
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 1.5em;
+    text-align: center;
+    margin: 32px 0 20px 0;
+    letter-spacing: 1px;
+}
+
+/* GRID DE TARGETES */
+.shop-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 24px;
+    margin: 24px 0;
+}
+
+/* ADVERTÈNCIA HQ */
+#online-hq-warning {
+    max-width: 800px;
+    margin: 24px auto;
+    background: linear-gradient(135deg, rgba(225, 6, 0, 0.2) 0%, rgba(35, 37, 38, 0.95) 100%);
+    border: 3px solid #e10600;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(225, 6, 0, 0.4);
+    animation: warningPulse 2s ease-in-out infinite;
+}
+
+@keyframes warningPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 8px 32px rgba(225, 6, 0, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 12px 48px rgba(225, 6, 0, 0.6);
+    }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .online-menu-buttons {
+        gap: 8px;
+        padding: 0 8px;
+    }
+
+    .online-menu-buttons button {
+        padding: 10px 16px;
+        font-size: 0.95em;
+    }
+
+    .online-content {
+        padding: 24px 12px;
+        margin: 16px 8px;
+    }
+
+    .shop-cards-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 16px;
+    }
+
+    #online-header-balances {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    #online-header-balances span {
+        font-size: 0.95em;
+        padding: 6px 12px;
+    }
+}
+
+/* ANIMACIONS ADDICIONALS */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.shop-card {
+    animation: slideInUp 0.5s ease-out;
+}
+
+.shop-card:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.shop-card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.shop-card:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.shop-card:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.shop-card:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+.shop-card:nth-child(6) {
+    animation-delay: 0.3s;
+}
+
 /* ============================================
    F1 MANAGER - ESTILS PRINCIPALS
    Versió neta i organitzada

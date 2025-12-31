@@ -1,113 +1,214 @@
 <!DOCTYPE html>
 <html lang="ca">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>F1 Manager - Modo Online</title>
     <link rel="stylesheet" href="css/style.css">
-    <script src="js/libs/three.min.js"></script>
 </head>
-<body>
+
+<body style="background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 60%, #e10600 100%);">
     <div id="online-app">
-        <nav class="top-nav" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <!-- HEADER AMB BALANCES -->
+        <nav class="top-nav" style="position:sticky; top:0; z-index:100;">
             <h1 style="margin:0;">🌐 F1 Manager Online</h1>
             <div id="online-header-balances" style="display:flex;gap:18px;align-items:center;">
-                <span id="online-header-money" class="shop-card" style="min-width:110px;padding:6px 14px;font-size:1.08em;"></span>
-                <span id="online-header-coins" class="shop-card" style="min-width:90px;padding:6px 14px;font-size:1.08em;"></span>
+                <span id="online-header-money"
+                    style="background:#232526;border:2px solid #2ecc40;padding:8px 16px;border-radius:12px;font-weight:bold;font-family:Orbitron,Arial,sans-serif;">💰
+                    --</span>
+                <span id="online-header-coins"
+                    style="background:#232526;border:2px solid #ffd700;padding:8px 16px;border-radius:12px;font-weight:bold;font-family:Orbitron,Arial,sans-serif;">🪙
+                    --</span>
             </div>
-            <button class="back-btn" onclick="window.location.href='index.html'">← Tornar al menú principal</button>
+            <button class="back-btn" onclick="window.location.href='index.html'">← Menú Principal</button>
         </nav>
-        <div class="online-menu-buttons" id="online-menu-buttons" style="display:flex;gap:16px;justify-content:center;margin:18px 0 18px 0;flex-wrap:wrap;">
+
+        <!-- ADVERTÈNCIA SI NO COMPLEIX REQUISITS -->
+        <div id="online-hq-warning" style="display:none;"></div>
+
+        <!-- MENÚ DE NAVEGACIÓ -->
+        <div class="online-menu-buttons" id="online-menu-buttons">
+            <button id="btn-overview" onclick="showOnlineSection('overview')">🏠 Resum</button>
             <button id="btn-shop" onclick="showOnlineSection('shop')">🛒 Tenda</button>
-            <button id="btn-leagues" onclick="showOnlineSection('leagues')">🏆 Lligues</button>
-            <button id="btn-car" onclick="showOnlineSection('car')">🏎️ Monoplaza</button>
             <button id="btn-sponsors" onclick="showOnlineSection('sponsors')">💼 Patrocinadors</button>
-            <button id="btn-xp" onclick="showOnlineSection('xp')">⭐ XP & Recompenses</button>
+            <button id="btn-car" onclick="showOnlineSection('car')">🏎️ Monoplaza</button>
+            <button id="btn-leagues" onclick="showOnlineSection('leagues')">🏆 Lligues</button>
+            <button id="btn-xp" onclick="showOnlineSection('xp')">⭐ XP</button>
         </div>
+
+        <!-- CONTINGUT PRINCIPAL -->
         <div class="online-content">
+            <!-- SECCIÓ RESUM -->
+            <section id="online-section-overview" class="online-section" style="display:none;">
+                <h3 style="text-align:center; font-size:2em; margin-bottom:24px;">🏠 El teu perfil Online</h3>
+                <div id="online-user-info" style="display:flex; gap:18px; flex-wrap:wrap; justify-content:center;">
+                </div>
+
+                <div style="max-width:800px; margin:32px auto; text-align:center;">
+                    <h4 style="color:#ffd700; font-size:1.5em; margin-bottom:16px;">📊 Estadístiques Online</h4>
+                    <div id="online-stats" style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓ TENDA -->
             <section id="online-section-shop" class="online-section" style="display:none;">
-                <h3>Tenda Online</h3>
-                <div class="shop-card" style="margin-bottom:8px;">En producció fins a Gener</div>
+                <h3>🛒 Tenda Online</h3>
+                <div class="shop-card"
+                    style="margin-bottom:16px; background:linear-gradient(135deg, #e10600, #232526); border:2px solid #ffd700; max-width:600px; margin:0 auto 24px auto;">
+                    <div style="font-size:1.8em; margin-bottom:12px;">🚧</div>
+                    <b style="font-size:1.3em;">EN PRODUCCIÓ FINS A GENER 2026</b><br>
+                    <span style="margin-top:12px; display:block;">Les compres amb diners reals estaran disponibles
+                        aviat!</span>
+                </div>
+
+                <h4 style="margin-top:32px;">🪙 Paquets de Coins</h4>
                 <div id="online-shop-coins" class="shop-cards-grid"></div>
-                <h4 style="margin-top:18px;">Comprar diners amb coins</h4>
+
+                <h4 style="margin-top:32px;">💵 Comprar diners amb Coins</h4>
                 <div id="online-shop-money" class="shop-cards-grid"></div>
+
+                <h4 style="margin-top:32px;">🎁 Oferta Especial</h4>
                 <div id="online-starter-pack" class="shop-cards-grid"></div>
             </section>
-            <section id="online-section-leagues" class="online-section" style="display:none;">
-                <h3>Lligues Online</h3>
-                <button class="career-btn" id="create-league-btn" style="margin-bottom:12px;">Crear nova lliga</button>
-                <div id="leagues-list" class="leagues-list"></div>
-            </section>
-            <section id="online-section-car" class="online-section" style="display:none;">
-                <h3>Personalitza el teu Monoplaza</h3>
-                <div id="online-car-upgrades-list" class="shop-cards-grid"></div>
-            </section>
+
+            <!-- SECCIÓ PATROCINADORS -->
             <section id="online-section-sponsors" class="online-section" style="display:none;">
-                <h3>Patrocinadors</h3>
+                <h3>💼 Patrocinadors</h3>
+                <div
+                    style="max-width:700px; margin:0 auto 24px auto; text-align:center; background:rgba(255,215,0,0.1); padding:20px; border-radius:12px; border:2px solid #ffd700;">
+                    <p style="font-size:1.1em; margin-bottom:12px;">
+                        Els patrocinadors et donen <b style="color:#ffd700;">Coins i diners extra</b> cada vegada que
+                        corres una cursa online!
+                    </p>
+                    <p style="font-size:0.95em; opacity:0.9;">
+                        Com millor sigui la teva posició, <b>més guanyes!</b>
+                    </p>
+                </div>
                 <div id="online-sponsors-list" class="shop-cards-grid"></div>
             </section>
+
+            <!-- SECCIÓ MONOPLAZA -->
+            <section id="online-section-car" class="online-section" style="display:none;">
+                <h3>🏎️ Personalitza el teu Monoplaza</h3>
+                <div
+                    style="max-width:700px; margin:0 auto 24px auto; text-align:center; background:rgba(255,215,0,0.1); padding:20px; border-radius:12px;">
+                    <p style="font-size:1.1em;">
+                        Aquestes millores són <b style="color:#ffd700;">exclusives del Modo Online</b> i s'afegeixen a
+                        les millores del HQ.
+                    </p>
+                </div>
+                <div id="online-car-upgrades-list" class="shop-cards-grid"></div>
+
+                <h4 style="margin-top:40px; text-align:center;">🎨 Personalització Visual</h4>
+                <div id="online-car-customization" style="max-width:600px; margin:0 auto;"></div>
+            </section>
+
+            <!-- SECCIÓ LLIGUES -->
+            <section id="online-section-leagues" class="online-section" style="display:none;">
+                <h3>🏆 Lligues Online</h3>
+                <div
+                    style="max-width:700px; margin:0 auto 24px auto; text-align:center; background:rgba(225,6,0,0.1); padding:20px; border-radius:12px; border:2px solid #e10600;">
+                    <p style="font-size:1.1em; margin-bottom:12px;">
+                        Crea la teva pròpia lliga o uneix-te a les dels teus amics!
+                    </p>
+                    <p style="font-size:0.95em; opacity:0.9;">
+                        Personalitza nom, bandera, colors i organitza curses amb calendari propi.
+                    </p>
+                </div>
+                <button class="career-btn" id="create-league-btn" style="margin-bottom:24px;">➕ Crear nova
+                    lliga</button>
+                <div id="leagues-list" class="leagues-list"></div>
+            </section>
+
+            <!-- SECCIÓ XP -->
             <section id="online-section-xp" class="online-section" style="display:none;">
-                <h3>Sistema d'XP i recompenses</h3>
+                <h3>⭐ Sistema d'Experiència i Recompenses</h3>
                 <div id="online-xp-rewards"></div>
             </section>
         </div>
     </div>
-    <div id="game-message-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;background:rgba(0,0,0,0.25);align-items:center;justify-content:center;">
-        <div id="game-message-content" style="background:#232526;border-radius:18px;box-shadow:0 2px 24px #FFD70033;max-width:420px;padding:32px 24px;color:#FFD700;font-family:Orbitron,Arial,sans-serif;text-align:center;font-size:1.15em;position:relative;">
-            <span id="game-message-text"></span>
-            <button onclick="document.getElementById('game-message-modal').style.display='none'" style="margin-top:18px;padding:10px 24px;font-size:1em;border-radius:8px;background:linear-gradient(90deg,#FFD700,#D32F2F);color:#232526;font-weight:bold;cursor:pointer;">Tancar</button>
+
+    <!-- MODAL PER MISSATGES -->
+    <div id="game-message-modal"
+        style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;background:rgba(0,0,0,0.8);align-items:center;justify-content:center;">
+        <div id="game-message-content"
+            style="background:linear-gradient(135deg, #232526, #414345);border-radius:18px;box-shadow:0 8px 48px rgba(255,215,0,0.3);max-width:500px;padding:40px 32px;color:#FFD700;font-family:Orbitron,Arial,sans-serif;text-align:center;font-size:1.15em;position:relative;border:3px solid #ffd700;">
+            <div id="game-message-text" style="margin-bottom:24px;"></div>
+            <button onclick="document.getElementById('game-message-modal').style.display='none'"
+                style="padding:12px 32px;font-size:1.1em;border-radius:10px;background:linear-gradient(90deg,#FFD700,#e10600);color:#232526;font-weight:bold;cursor:pointer;border:none;box-shadow:0 4px 16px rgba(255,215,0,0.3);">
+                Tancar
+            </button>
         </div>
     </div>
+
+    <!-- SCRIPTS -->
     <script src="js/data.js"></script>
     <script src="js/online-data.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/game.js"></script>
     <script src="js/online.js"></script>
+    <script src="js/online-complete-system.js"></script>
     <script src="js/online-leagues.js"></script>
     <script src="js/online-car.js"></script>
+
     <script>
+        // Funció per mostrar seccions
         function showOnlineSection(section) {
-            // Amaga totes les seccions
-            const sections = document.querySelectorAll('.online-section');
-            sections.forEach(s => s.style.display = 'none');
-            // Mostra la secció seleccionada
+            document.querySelectorAll('.online-section').forEach(s => s.style.display = 'none');
             const el = document.getElementById('online-section-' + section);
-            if (el) el.style.display = '';
-            // Destaca el botó actiu
-            const btns = document.querySelectorAll('#online-menu-buttons button');
-            btns.forEach(b => b.classList.remove('active'));
+            if (el) el.style.display = 'block';
+
+            document.querySelectorAll('#online-menu-buttons button').forEach(b => b.classList.remove('active'));
             const btn = document.getElementById('btn-' + section);
             if (btn) btn.classList.add('active');
-            // Recarrega contingut específic si cal
-            if (section === 'shop' && typeof loadOnlineScreen === 'function') loadOnlineScreen();
-            if (section === 'car' && typeof loadCarCustomization === 'function') loadCarCustomization();
-            if (section === 'leagues' && typeof loadLeaguesList === 'function') loadLeaguesList();
-            if (section === 'sponsors' && typeof loadOnlineScreen === 'function') loadOnlineScreen();
-            if (section === 'xp' && typeof loadOnlineScreen === 'function') loadOnlineScreen();
-            // Força la càrrega del header
-            setTimeout(updateOnlineHeaderBalances, 0);
-        }
-        function updateOnlineHeaderBalances() {
-            const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
-            const moneyEl = document.getElementById('online-header-money');
-            const coinsEl = document.getElementById('online-header-coins');
-            if (!user || !user.data) {
-                if (moneyEl) moneyEl.innerHTML = '💰 --';
-                if (coinsEl) coinsEl.innerHTML = '🪙 --';
-                return;
-            }
-            if (moneyEl) moneyEl.innerHTML = '💰 ' + (typeof formatMoney === 'function' ? formatMoney(user.data.budget) : user.data.budget + ' €');
-            if (coinsEl) coinsEl.innerHTML = '🪙 ' + (user.data.online && typeof user.data.online.coins !== 'undefined' ? user.data.online.coins : '--');
+
+            // Carregar contingut específic
+            if (section === 'overview') loadOnlineUserInfo();
+            if (section === 'shop') loadOnlineShop();
+            if (section === 'car') { loadOnlineCarUpgrades(); loadCarCustomization(); }
+            if (section === 'leagues') loadLeaguesList();
+            if (section === 'sponsors') loadOnlineSponsors();
+            if (section === 'xp') loadOnlineXPSystem();
+
+            updateOnlineHeaderBalances();
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        // Carregar estadístiques a la secció resum
+        function loadOnlineStats() {
+            const user = getCurrentUser();
+            if (!user || !user.data.online) return;
+
+            const statsDiv = document.getElementById('online-stats');
+            if (!statsDiv) return;
+
+            statsDiv.innerHTML = `
+                <div class="shop-card" style="min-width:140px;">
+                    <div style="font-size:2em;">🏁</div>
+                    <b>${user.data.online.totalRaces}</b><br>
+                    <span style="font-size:0.9em;">Curses totals</span>
+                </div>
+                <div class="shop-card" style="min-width:140px;">
+                    <div style="font-size:2em;">🏆</div>
+                    <b>${user.data.online.onlineWins}</b><br>
+                    <span style="font-size:0.9em;">Victòries</span>
+                </div>
+                <div class="shop-card" style="min-width:140px;">
+                    <div style="font-size:2em;">🥇</div>
+                    <b>${user.data.online.onlinePodiums}</b><br>
+                    <span style="font-size:0.9em;">Podis</span>
+                </div>
+            `;
+        }
+
+        // Inicialització
+        document.addEventListener('DOMContentLoaded', function () {
             if (typeof loadOnlineScreen === 'function') loadOnlineScreen();
-            if (typeof loadCarCustomization === 'function') loadCarCustomization();
-            updateOnlineHeaderBalances();
-            showOnlineSection('shop');
+            showOnlineSection('overview');
+            loadOnlineStats();
         });
-        // Estil per al botó actiu
-        const style = document.createElement('style');
-        style.innerHTML = '.online-menu-buttons button.active { background: linear-gradient(90deg, #FFD700 0%, #232526 100%) !important; color: #232526 !important; border:2px solid #FFD700; }';
-        document.head.appendChild(style);
     </script>
 </body>
+
 </html>
