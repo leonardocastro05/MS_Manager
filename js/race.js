@@ -50,7 +50,7 @@ function displayTrack(trackId) {
         <div class="${trackClass}" id="race-track" 
              style="background-image: url('${imagePath}');">
             
-            <!-- SVG amb el traçat del circuit (invisible per defecte) -->
+            <!-- SVG amb el traçat del circuit -->
             <svg class="track-svg" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet">
                 <path id="track-path" d="${track.path || ''}" class="track-path-visible"></path>
             </svg>
@@ -58,21 +58,29 @@ function displayTrack(trackId) {
             <!-- Informació del circuit -->
             <div style="position: absolute; top: 20px; left: 20px; 
                         font-size: 2em; color: white; 
-                        text-shadow: 2px 2px 4px rgba(0,0,0,0.8); z-index: 20;">
+                        text-shadow: 2px 2px 8px rgba(0,0,0,0.9); z-index: 20;
+                        font-family: 'Orbitron', Arial, sans-serif;">
                 ${track.flag} ${track.name}
             </div>
             
             <!-- Comptador de voltes -->
-            <div style="position: absolute; top: 60px; left: 20px; 
-                        font-size: 1.2em; color: white; 
-                        text-shadow: 2px 2px 4px rgba(0,0,0,0.8); z-index: 20;">
-                Voltes: <span id="current-lap">0</span> / ${track.laps}
+            <div style="position: absolute; top: 70px; left: 20px; 
+                        font-size: 1.3em; color: #ffd700; 
+                        text-shadow: 2px 2px 8px rgba(0,0,0,0.9); z-index: 20;
+                        font-family: 'Orbitron', Arial, sans-serif;
+                        font-weight: bold;">
+                Volta: <span id="current-lap" style="color: #2ecc40;">0</span> / ${track.laps}
             </div>
         </div>
     `;
 
     // Animació de la targeta del circuit
     animateCircuitCard(track, imagePath);
+    
+    // Afegir millores visuals si la funció existeix
+    if (typeof initEnhancedRaceDisplay === 'function') {
+        setTimeout(() => initEnhancedRaceDisplay(trackId), 100);
+    }
 }
 
 /**
@@ -287,6 +295,11 @@ function runRaceLoop() {
         updatePositions();
         updateDriverMarkers();
         displayRacePositions();
+        
+        // Actualitzar indicadors de sectors si la funció existeix
+        if (typeof updateEnhancedRaceDisplay === 'function') {
+            updateEnhancedRaceDisplay();
+        }
 
     }, 100); // 10 fps per eficiència
 }

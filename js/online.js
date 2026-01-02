@@ -528,14 +528,64 @@ function buyCoinsReal(coinPackId) {
     const pack = coinShop.find(p => p.id === coinPackId);
     if (!pack) return;
 
-    showGameMessage(`🚧 <b>EN PRODUCCIÓ FINS A GENER 2026</b><br><br>Aquesta funcionalitat de pagament estarà disponible aviat!<br><br><b>Paquet seleccionat:</b><br>${pack.label}<br>🪙 ${pack.coins} coins<br>💳 ${pack.price.toFixed(2)}€`, 'info');
+    const user = getCurrentUser();
+    if (!user) return;
+
+    // Simulació de compra (en un joc real seria amb Stripe/PayPal)
+    showConfirm(
+        '💳 Comprar Coins',
+        `<b>${pack.label}</b><br><br>🪙 <b>${pack.coins} coins</b><br>💵 ${pack.price.toFixed(2)}€<br><br><span style="color: #ff9800;">⚠️ NOTA: Aquesta és una simulació.<br>En producció seria un pagament real.</span>`,
+        () => {
+        
+        // Afegir coins a l'usuari
+        if (!user.data.online.coins) user.data.online.coins = 0;
+        user.data.online.coins += pack.coins;
+        
+        saveUserData(user.data);
+        updateUserInfo();
+        
+        // Recarregar tenda per mostrar nous coins
+        loadOnlineShop();
+        
+        showSuccess('✅ Compra Completada!', `Has rebut <b>${pack.coins} coins</b>!<br><br>💰 Total coins: <b>${user.data.online.coins}</b>`);
+        },
+        null,
+        'Comprar',
+        'Cancel·lar'
+    );
 }
 
 /**
  * COMPRAR STARTER PACK (SIMULAT)
  */
 function buyStarterPack() {
-    showGameMessage(`🚧 <b>EN PRODUCCIÓ FINS A GENER 2026</b><br><br><b>🎁 Starter Pack</b><br>${starterPack.description}<br><br>Inclou:<br>🏎️ Pilot Nivell 5<br>👤 Manager Nivell 5<br><br>💳 Preu: ${starterPack.price.toFixed(2)}€`, 'info');
+    const user = getCurrentUser();
+    if (!user) return;
+
+    showConfirm(
+        '🎁 Comprar Starter Pack',
+        `<b>${starterPack.description}</b><br><br>Inclou:<br>🏎️ Pilot Nivell 5<br>👤 Mànager Nivell 5<br><br>💵 ${starterPack.price.toFixed(2)}€<br><br><span style="color: #ff9800;">⚠️ NOTA: Aquesta és una simulació.<br>En producció seria un pagament real.</span>`,
+        () => {
+        
+        // Afegir nivells
+        if (!user.data.online.driverLevel) user.data.online.driverLevel = 1;
+        if (!user.data.online.managerLevel) user.data.online.managerLevel = 1;
+        
+        user.data.online.driverLevel = Math.max(user.data.online.driverLevel, 5);
+        user.data.online.managerLevel = Math.max(user.data.online.managerLevel, 5);
+        
+        saveUserData(user.data);
+        updateUserInfo();
+        
+        // Recarregar tenda
+        loadOnlineShop();
+        
+        showSuccess('✅ Starter Pack Comprat!', `🏎️ Pilot: Nivell <b>${user.data.online.driverLevel}</b><br>👤 Mànager: Nivell <b>${user.data.online.managerLevel}</b>`);
+        },
+        null,
+        'Comprar',
+        'Cancel·lar'
+    );
 }
 
 /**

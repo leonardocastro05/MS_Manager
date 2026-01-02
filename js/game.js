@@ -215,6 +215,7 @@ function buyDriver(driverId) {
     saveUserData(user.data);
     updateUserInfo();
     loadShopItems();
+    loadTeamScreen(); // Actualitzar pantalla de l'equip
     
     alert(`✅ Has contractat a ${driver.name}!\n💰 -${formatMoney(driver.price)}`);
 }

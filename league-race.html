@@ -13,6 +13,23 @@
             padding: 0;
             overflow-x: hidden;
             min-height: 100vh;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                120deg,
+                rgba(255, 215, 0, 0.03) 0 20px,
+                transparent 20px 60px
+            );
+            pointer-events: none;
+            z-index: 0;
         }
 
         #league-race-container {
@@ -267,15 +284,42 @@
 
         <!-- CONTROLS -->
         <div class="race-controls">
-            <button id="start-race-btn" onclick="startLeagueRaceNow()">
+            <button id="start-qualifying-btn" onclick="startQualifying()">
+                🏁 Començar Qualificació (3 voltes)
+            </button>
+            <button id="start-race-btn" onclick="startLeagueRaceNow()" style="display:none;">
                 🏁 Començar Cursa
             </button>
             <button id="pause-race-btn" onclick="pauseLeagueRace()" style="display:none;">
                 ⏸️ Pausar
             </button>
+            <button id="pitstop-btn" onclick="enterPitStop()" style="display:none; background: linear-gradient(90deg, #ff6b00 0%, #ffd700 100%);">
+                🔧 Entrar a Boxes
+            </button>
             <button onclick="window.location.href='liga.html?id=' + getLeagueIdFromSession()">
                 ← Tornar a la Lliga
             </button>
+        </div>
+
+        <!-- PANEL DE BOXES -->
+        <div id="pitstop-panel" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #232526 0%, #414345 100%); padding: 30px; border-radius: 20px; border: 3px solid #FFD700; box-shadow: 0 8px 32px rgba(0,0,0,0.8); z-index: 1000; min-width: 400px;">
+            <h2 style="color: #FFD700; text-align: center; margin-bottom: 20px;">🔧 Parada a Boxes</h2>
+            <p style="color: #fff; text-align: center; margin-bottom: 20px;">Selecciona el tipus de neumàtic:</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <button onclick="changeTyres('soft')" style="padding: 15px; font-size: 1.1em; background: linear-gradient(90deg, #D32F2F 0%, #FF6B6B 100%); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold;">
+                    🔴 Neumàtics Tous (Velocitat alta, desgast ràpid)
+                </button>
+                <button onclick="changeTyres('medium')" style="padding: 15px; font-size: 1.1em; background: linear-gradient(90deg, #FFB300 0%, #FFD700 100%); color: #000; border: none; border-radius: 12px; cursor: pointer; font-weight: bold;">
+                    🟡 Neumàtics Mitjans (Equilibrats)
+                </button>
+                <button onclick="changeTyres('hard')" style="padding: 15px; font-size: 1.1em; background: linear-gradient(90deg, #555 0%, #888 100%); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold;">
+                    ⚪ Neumàtics Durs (Durabilitat alta, velocitat baixa)
+                </button>
+                <button onclick="closePitStopPanel()" style="padding: 12px; font-size: 1em; background: linear-gradient(90deg, #444 0%, #666 100%); color: white; border: none; border-radius: 12px; cursor: pointer; margin-top: 10px;">
+                    ❌ Cancel·lar
+                </button>
+            </div>
         </div>
 
         <!-- CLASSIFICACIÓ -->
@@ -286,10 +330,13 @@
     </div>
 
     <!-- SCRIPTS -->
+    <script src="js/popup.js"></script>
     <script src="js/data.js"></script>
+    <script src="js/realistic-tracks.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/game.js"></script>
     <script src="js/online.js"></script>
+    <script src="js/race-enhanced.js"></script>
     <script src="js/league-race-system.js"></script>
     <script>
         // Obtenir info de la lliga des de sessionStorage
@@ -352,9 +399,11 @@
                 return;
             }
 
-            // Amagar botó començar, mostrar pausar
+            // Amagar botó començar, mostrar pausar i boxes
             document.getElementById('start-race-btn').style.display = 'none';
             document.getElementById('pause-race-btn').style.display = 'inline-block';
+            document.getElementById('pitstop-btn').style.display = 'inline-block';
+            document.getElementById('start-qualifying-btn').style.display = 'none';
 
             leagueRaceState.isRunning = true;
             leagueRaceState.currentLap = 0;
@@ -382,17 +431,25 @@
                     
                     <div style="position: absolute; top: 20px; left: 20px; 
                                 font-size: 2em; color: white; 
-                                text-shadow: 2px 2px 4px rgba(0,0,0,0.8); z-index: 20;">
+                                text-shadow: 2px 2px 8px rgba(0,0,0,0.9); z-index: 20;
+                                font-family: 'Orbitron', Arial, sans-serif;">
                         ${track.flag} ${track.name}
                     </div>
                     
-                    <div style="position: absolute; top: 60px; left: 20px; 
-                                font-size: 1.2em; color: white; 
-                                text-shadow: 2px 2px 4px rgba(0,0,0,0.8); z-index: 20;">
-                        Voltes: <span id="current-lap">0</span> / ${track.laps}
+                    <div style="position: absolute; top: 70px; left: 20px; 
+                                font-size: 1.3em; color: #ffd700; 
+                                text-shadow: 2px 2px 8px rgba(0,0,0,0.9); z-index: 20;
+                                font-family: 'Orbitron', Arial, sans-serif;
+                                font-weight: bold;">
+                        Volta: <span id="current-lap" style="color: #2ecc40;">0</span> / ${track.laps}
                     </div>
                 </div>
             `;
+            
+            // Afegir millores visuals si la funció existeix
+            if (typeof initEnhancedRaceDisplay === 'function') {
+                setTimeout(() => initEnhancedRaceDisplay(trackId), 100);
+            }
         }
 
         // Inicialitzar quan carrega la pàgina

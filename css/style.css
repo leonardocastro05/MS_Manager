@@ -701,9 +701,23 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #000;
+    background: #000 url('../img/f1-manager-background.png') no-repeat center center fixed;
+    background-size: cover;
     color: #fff;
     min-height: 100vh;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 10, 26, 0.75);
+    z-index: -1;
+    pointer-events: none;
 }
 
 #app {
@@ -971,22 +985,41 @@ body {
 .menu-buttons button {
     padding: 32px 36px;
     font-size: 1.3em;
-    background: linear-gradient(120deg, #e10600cc 0%, #ffd70044 100%);
-    border: 2.5px solid #ffd70088;
+    background: linear-gradient(135deg, #e10600 0%, #ff4757 50%, #ffd700 100%);
+    border: 3px solid #ffd700;
     border-radius: 18px;
     color: #fff;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.25s;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     letter-spacing: 1px;
+    box-shadow: 0 6px 24px rgba(255, 215, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-buttons button::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
+.menu-buttons button:hover::after {
+    opacity: 1;
 }
 
 .menu-buttons button:hover {
-    background: linear-gradient(120deg, #ffd700cc 0%, #e10600 100%);
-    color: #222;
-    transform: translateY(-7px) scale(1.04);
-    box-shadow: 0 12px 32px 0 #e1060055;
-    border-color: #ffd700cc;
+    background: linear-gradient(135deg, #ffd700 0%, #ff4757 50%, #e10600 100%);
+    color: #000;
+    transform: translateY(-10px) scale(1.08);
+    box-shadow: 0 16px 48px rgba(255, 215, 0, 0.7);
+    border-color: #fff;
 }
 
 /* ============================================
@@ -1086,20 +1119,22 @@ body {
 }
 
 .upgrade-section {
-    background: linear-gradient(120deg, #1a1a2e 60%, #e10600 100%);
-    box-shadow: 0 4px 32px #e1060033, 0 1.5px 0 #ffd70044 inset;
-    border-radius: 22px;
+    background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(225, 6, 0, 0.85) 50%, rgba(255, 215, 0, 0.3) 100%);
+    box-shadow: 0 6px 40px rgba(255, 215, 0, 0.3), 0 2px 0 rgba(255, 215, 0, 0.5) inset;
+    border-radius: 24px;
     padding: 36px 32px;
     text-align: center;
     min-width: 320px;
     max-width: 370px;
     color: #fff;
-    transition: transform 0.18s, box-shadow 0.18s;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 2px solid rgba(255, 215, 0, 0.4);
 }
 
 .upgrade-section:hover {
-    transform: translateY(-8px) scale(1.03);
-    box-shadow: 0 12px 40px #e1060055, 0 1.5px 0 #ffd70088 inset;
+    transform: translateY(-12px) scale(1.05);
+    box-shadow: 0 20px 60px rgba(255, 215, 0, 0.6), 0 2px 0 rgba(255, 215, 0, 0.8) inset;
+    border-color: #ffd700;
 }
 
 .upgrade-section h3 {
@@ -1174,23 +1209,25 @@ body {
 }
 
 .shop-card {
-    background: linear-gradient(120deg, #1a1a2e 60%, #e10600 100%);
-    border-radius: 22px;
-    box-shadow: 0 4px 32px #e1060033, 0 1.5px 0 #ffd70044 inset;
+    background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(225, 6, 0, 0.7) 60%, rgba(255, 71, 87, 0.6) 100%);
+    border-radius: 24px;
+    box-shadow: 0 6px 40px rgba(255, 215, 0, 0.25), 0 2px 0 rgba(255, 215, 0, 0.4) inset;
     padding: 32px 22px 22px 22px;
     text-align: center;
-    transition: all 0.18s;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     cursor: pointer;
     min-width: 260px;
     max-width: 320px;
     color: #fff;
     animation: shopCardIn 0.7s cubic-bezier(.34, 1.56, .64, 1);
+    border: 2px solid rgba(255, 215, 0, 0.3);
 }
 
 .shop-card:hover {
-    box-shadow: 0 16px 48px #ffd70088, 0 1.5px 0 #ffd700cc inset;
-    transform: translateY(-10px) scale(1.05);
-    border: 2.5px solid #ffd700cc;
+    box-shadow: 0 20px 60px rgba(255, 215, 0, 0.7), 0 2px 0 #ffd700 inset;
+    transform: translateY(-14px) scale(1.08);
+    border: 3px solid #ffd700;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(225, 6, 0, 0.9) 60%, rgba(255, 71, 87, 0.8) 100%);
 }
 
 @keyframes shopCardIn {
@@ -1359,7 +1396,7 @@ body {
 }
 
 /* ============================================
-   CURSES
+   CURSES - VERSIÓ MILLORADA AMB SECTORS
    ============================================ */
 
 .track-selection {
@@ -1381,19 +1418,112 @@ body {
 .track-buttons button {
     padding: 20px 30px;
     font-size: 1.2em;
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(225, 6, 0, 0.3) 100%);
+    border: 2px solid rgba(255, 215, 0, 0.5);
     border-radius: 10px;
     color: white;
     cursor: pointer;
     transition: all 0.3s;
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
 }
 
 .track-buttons button:hover,
 .track-buttons button.selected {
-    background: #e10600;
-    border-color: #e10600;
-    transform: scale(1.05);
+    background: linear-gradient(135deg, #ffd700 0%, #e10600 100%);
+    border-color: #ffd700;
+    transform: scale(1.08) translateY(-4px);
+    box-shadow: 0 8px 24px rgba(255, 215, 0, 0.5);
+    color: #000;
+}
+
+/* Informació de sectors en temps real */
+.race-info-panel {
+    position: absolute;
+    top: 120px;
+    right: 20px;
+    background: linear-gradient(135deg, rgba(35, 37, 38, 0.95) 0%, rgba(26, 26, 46, 0.95) 100%);
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    border-radius: 16px;
+    padding: 20px;
+    min-width: 250px;
+    z-index: 25;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.race-info-panel h4 {
+    color: #ffd700;
+    margin-bottom: 12px;
+    font-size: 1.3em;
+    text-align: center;
+    font-family: 'Orbitron', Arial, sans-serif;
+    text-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+}
+
+.sector-indicator {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.sector-indicator.active {
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.3) 0%, rgba(46, 204, 64, 0.3) 100%);
+    border-left: 4px solid #2ecc40;
+    animation: sectorPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes sectorPulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(46, 204, 64, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(46, 204, 64, 0.6); }
+}
+
+.sector-name {
+    color: #fff;
+    font-weight: bold;
+    font-family: 'Orbitron', Arial, sans-serif;
+}
+
+.sector-status {
+    color: #2ecc40;
+    font-size: 1.1em;
+}
+
+/* Circuit info display */
+.circuit-info-card {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: linear-gradient(135deg, rgba(35, 37, 38, 0.95) 0%, rgba(26, 26, 46, 0.95) 100%);
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    border-radius: 16px;
+    padding: 16px 20px;
+    min-width: 280px;
+    z-index: 25;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.circuit-stat {
+    display: flex;
+    justify-content: space-between;
+    margin: 8px 0;
+    color: #fff;
+    font-family: 'Orbitron', Arial, sans-serif;
+}
+
+.circuit-stat-label {
+    color: #aaa;
+    font-size: 0.95em;
+}
+
+.circuit-stat-value {
+    color: #ffd700;
+    font-weight: bold;
+    font-size: 1.05em;
 }
 
 .race-track {
@@ -1403,9 +1533,10 @@ body {
     aspect-ratio: 1000 / 600;
     min-height: 300px;
     max-height: 700px;
-    background: linear-gradient(45deg, #2d5a27 0%, #4a7c59 50%, #2d5a27 100%);
+    background: linear-gradient(45deg, #1a4d2e 0%, #2d6a4f 50%, #1a4d2e 100%);
     border-radius: 15px;
     overflow: hidden;
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.5);
 }
 
 .race-track.image-track {
@@ -1426,94 +1557,223 @@ body {
 }
 
 .track-path-visible {
-    stroke: rgba(255, 255, 255, 0.12);
-    stroke-width: 6;
+    stroke: rgba(255, 255, 255, 0.15);
+    stroke-width: 8;
     fill: none;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
 }
 
 .race-track.image-track .track-path-visible {
-    stroke: transparent;
-    opacity: 0;
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 10;
 }
 
 .race-track.show-path .track-path-visible {
-    stroke: rgba(255, 255, 255, 0.7) !important;
+    stroke: rgba(255, 215, 0, 0.7) !important;
+    stroke-width: 12;
     opacity: 1 !important;
+    animation: pathGlow 2s ease-in-out infinite;
+}
+
+@keyframes pathGlow {
+    0%, 100% { 
+        filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+    }
+    50% { 
+        filter: drop-shadow(0 0 16px rgba(255, 215, 0, 0.8));
+    }
 }
 
 .driver-marker {
     position: absolute;
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    font-size: 0.8em;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    font-size: 0.85em;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
     transition: all 0.5s ease;
     z-index: 10;
+    font-family: 'Orbitron', Arial, sans-serif;
+}
+
+.driver-marker::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    animation: markerPulse 2s ease-in-out infinite;
+}
+
+@keyframes markerPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0; }
 }
 
 .race-controls {
     text-align: center;
-    margin: 20px 0;
+    margin: 24px 0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
 }
 
 .race-controls button {
-    padding: 15px 50px;
-    font-size: 1.3em;
-    background: #00a000;
+    padding: 16px 48px;
+    font-size: 1.4em;
+    background: linear-gradient(135deg, #2ecc40 0%, #27ae60 100%);
     color: white;
-    border: none;
-    border-radius: 10px;
+    border: 3px solid #2ecc40;
+    border-radius: 14px;
     cursor: pointer;
     font-weight: bold;
-    margin: 0 10px;
-    transition: all 0.2s;
+    font-family: 'Orbitron', Arial, sans-serif;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 6px 20px rgba(46, 204, 64, 0.4);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+.race-controls button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.race-controls button:hover::before {
+    width: 300px;
+    height: 300px;
 }
 
 .race-controls button:hover {
-    background: #008000;
-    transform: scale(1.05);
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc40 100%);
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 12px 32px rgba(46, 204, 64, 0.6);
+}
+
+.race-controls button:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.race-controls button#pause-race-btn {
+    background: linear-gradient(135deg, #ff9800 0%, #ff6b00 100%);
+    border-color: #ff9800;
+    box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+}
+
+.race-controls button#pause-race-btn:hover {
+    background: linear-gradient(135deg, #ff6b00 0%, #ff9800 100%);
+    box-shadow: 0 12px 32px rgba(255, 152, 0, 0.6);
 }
 
 .race-positions {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 20px;
-    border-radius: 15px;
-    margin-top: 20px;
+    background: linear-gradient(135deg, rgba(35, 37, 38, 0.95) 0%, rgba(26, 26, 46, 0.95) 100%);
+    padding: 28px;
+    border-radius: 20px;
+    margin-top: 28px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.race-positions h3 {
+    color: #ffd700;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+    text-align: center;
+    font-family: 'Orbitron', Arial, sans-serif;
+    text-shadow: 0 2px 12px rgba(255, 215, 0, 0.5);
 }
 
 .position-item {
     display: flex;
     align-items: center;
-    padding: 15px;
-    margin: 10px 0;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 12px 0;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+    border-radius: 12px;
+    border-left: 5px solid #666;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.position-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.2) 0%, transparent 100%);
+    transition: width 0.3s;
+}
+
+.position-item:hover::before {
+    width: 100%;
+}
+
+.position-item:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateX(8px);
+    box-shadow: 0 4px 16px rgba(255, 215, 0, 0.2);
+}
+
+.position-item:nth-child(1) {
+    border-left-color: #ffd700;
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+}
+
+.position-item:nth-child(2) {
+    border-left-color: #c0c0c0;
+    background: linear-gradient(90deg, rgba(192, 192, 192, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+}
+
+.position-item:nth-child(3) {
+    border-left-color: #cd7f32;
+    background: linear-gradient(90deg, rgba(205, 127, 50, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
 }
 
 .position-number {
-    font-size: 1.5em;
-    font-weight: bold;
-    min-width: 40px;
+    font-size: 1.8em;
+    font-weight: 900;
+    min-width: 50px;
+    text-align: center;
+    color: #ffd700;
+    font-family: 'Orbitron', Arial, sans-serif;
+    text-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
 }
 
 .driver-info {
     flex: 1;
-    margin-left: 20px;
+    margin-left: 24px;
 }
 
 .driver-name {
-    font-size: 1.2em;
+    font-size: 1.3em;
     font-weight: bold;
+    color: #fff;
+    margin-bottom: 4px;
+    font-family: 'Orbitron', Arial, sans-serif;
 }
 
 .team-name {
-    font-size: 0.9em;
+    font-size: 0.95em;
     opacity: 0.8;
+    color: #aaa;
 }
 
 /* ============================================

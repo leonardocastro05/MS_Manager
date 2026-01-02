@@ -8,8 +8,117 @@ const leagueRaceState = {
     interval: null,
     isRunning: false,
     positions: [],
-    currentLap: 0
+    currentLap: 0,
+    qualifyingActive: false,
+    qualifyingLap: 0,
+    qualifyingTimes: []
 };
+
+/**
+ * Sistema de qualificació de 3 voltes
+ */
+function startQualifying() {
+    const user = getCurrentUser();
+    if (!user) return;
+
+    // Inicialitzar qualificació
+    leagueRaceState.qualifyingActive = true;
+    leagueRaceState.qualifyingLap = 0;
+    leagueRaceState.qualifyingTimes = [];
+
+    // Ocultar botó de qualificació
+    document.getElementById('start-qualifying-btn').style.display = 'none';
+
+    showInfo('🏁 Qualificació', 'Faràs <b>3 voltes</b> per determinar la teva posició de sortida.<br><br>El teu millor temps determinarà la graella de sortida!', () => {
+        // Modificar nombre de voltes per qualificació
+        leagueRaceState.selectedTrack = sessionStorage.getItem('selectedTrack') || 'monaco';
+        const track = gameData.tracks[leagueRaceState.selectedTrack];
+        
+        // Guardar voltes originals
+        if (!track.originalLaps) {
+            track.originalLaps = track.laps;
+        }
+        track.laps = 3; // Només 3 voltes per qualificació
+        
+        // Inicialitzar cursa de qualificació
+        leagueRaceState.isRunning = true;
+        leagueRaceState.currentLap = 0;
+        
+        initializeLeagueRace();
+        runLeagueRaceLoop();
+    });
+}
+
+/**
+ * Finalitza la qualificació i estableix ordre de sortida
+ */
+function endQualifying() {
+    leagueRaceState.qualifyingActive = false;
+    
+    // Calcular millor temps del jugador
+    const playerDriver = leagueRaceState.positions.find(d => d.isPlayer);
+    const playerTime = playerDriver ? calculateQualifyingTime(playerDriver.performance) : 99999;
+    
+    // Simular temps de qualificació per altres jugadors (si n'hi ha)
+    leagueRaceState.positions.forEach(driver => {
+        driver.qualifyingTime = calculateQualifyingTime(driver.performance);
+    });
+    
+    // Ordenar per temps de qualificació
+    leagueRaceState.positions.sort((a, b) => a.qualifyingTime - b.qualifyingTime);
+    
+    // Assignar posicions de sortida
+    leagueRaceState.positions.forEach((driver, index) => {
+        driver.gridPosition = index + 1;
+        driver.position = index + 1;
+    });
+    
+    const playerPosition = playerDriver.gridPosition;
+    
+    // Restaurar nombre de voltes original
+    const track = leagueRaceState.selectedTrack;
+    gameData.tracks[track].laps = gameData.tracks[track].originalLaps || 50;
+    
+    // Mostrar resultats amb pop-up
+    showSuccess(
+        '🏁 Qualificació Completada!',
+        `📊 La teva posició: <b>${playerPosition}è</b><br>⏱️ Temps: <b>${formatQualifyingTime(playerTime)}</b><br><br>✅ Ara pots començar la cursa!`,
+        () => {
+            // Mostrar botó de començar cursa
+            document.getElementById('start-race-btn').style.display = 'inline-block';
+        }
+    );
+    
+    // Mostrar botó de començar cursa
+    document.getElementById('start-race-btn').style.display = 'inline-block';
+    
+    // Reiniciar per a la cursa real
+    leagueRaceState.positions.forEach(driver => {
+        driver.completedLaps = 0;
+        driver.lapProgress = 0;
+    });
+}
+
+/**
+ * Calcula un temps de qualificació basat en el rendiment
+ */
+function calculateQualifyingTime(performance) {
+    // Temps base (en segons) + variabilitat segons rendiment
+    const baseTime = 90; // 1:30 base
+    const variance = (100 - performance) / 10; // Més rendiment = menys temps
+    const randomFactor = Math.random() * 2 - 1; // ±1 segon aleatori
+    
+    return baseTime + variance + randomFactor;
+}
+
+/**
+ * Formata el temps de qualificació
+ */
+function formatQualifyingTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const secs = (seconds % 60).toFixed(3);
+    return `${minutes}:${secs.padStart(6, '0')}`;
+}
 
 /**
  * Inicialitza tots els pilots de la cursa de lliga
@@ -54,42 +163,15 @@ function initializeLeagueRace() {
         isPlayer: true
     });
 
-    // Afegir equips IA
-    aiTeams.forEach(team => {
-        const upgrades = { engine: 5, aero: 5, chassis: 5 }; // IA amb millores mitjanes
-
-        // Pilot 1 IA
-        const aiPerformance1 = calculateLeagueDriverPerformance(
-            team.skill,
-            upgrades,
-            { engine: 0, aero: 0, chassis: 0 }, // IA sense millores online
-            5, // Mànager nivell 5
-            gameData.tyreStrategies.medium
-        ) + (Math.random() * 10 - 5);
-
-        leagueRaceState.positions.push({
-            name: team.driver1,
-            team: team.name,
-            performance: aiPerformance1,
-            position: 0,
-            lapProgress: Math.random() * 2,
-            completedLaps: 0,
-            color: team.color,
-            isPlayer: false
-        });
-
-        // Pilot 2 IA
-        leagueRaceState.positions.push({
-            name: team.driver2,
-            team: team.name,
-            performance: aiPerformance1 - 2,
-            position: 0,
-            lapProgress: Math.random() * 2,
-            completedLaps: 0,
-            color: team.color,
-            isPlayer: false
-        });
-    });
+    // ============================================
+    // MODO ONLINE: NOMÉS JUGADORS REALS
+    // No afegir IA - només es mostren jugadors de la lliga
+    // ============================================
+    
+    // TODO: Aquí s'haurien d'afegir els altres jugadors reals de la lliga
+    // Per ara, si només hi ha un jugador, la cursa continua però sense oponents IA
+    
+    console.log('🏁 Cursa online iniciada amb', leagueRaceState.positions.length, 'jugadors reals');
 
     updateLeaguePositions();
     updateLeagueDriverMarkers();
@@ -163,6 +245,11 @@ function runLeagueRaceLoop() {
         updateLeaguePositions();
         updateLeagueDriverMarkers();
         displayLeagueRacePositions();
+        
+        // Actualitzar indicadors de sectors si la funció existeix
+        if (typeof updateEnhancedRaceDisplay === 'function') {
+            updateEnhancedRaceDisplay();
+        }
 
     }, 100);
 }
@@ -292,6 +379,12 @@ function endLeagueRace() {
     clearInterval(leagueRaceState.interval);
     leagueRaceState.isRunning = false;
 
+    // Si és qualificació, finalitzar-la
+    if (leagueRaceState.qualifyingActive) {
+        endQualifying();
+        return;
+    }
+
     document.getElementById('start-race-btn').style.display = 'inline-block';
     document.getElementById('pause-race-btn').style.display = 'none';
 
@@ -318,8 +411,79 @@ function endLeagueRace() {
     if (bestPosition <= 3) user.data.podiums++;
     user.data.points += points;
 
-    const prize = Math.max(100000, 1500000 - (bestPosition * 80000));
+    // ============================================
+    // SISTEMA DE RECOMPENSES POST-CURSA
+    // ============================================
+    
+    // Diners base segons posició
+    const basePrize = Math.max(100000, 1500000 - (bestPosition * 80000));
+    
+    // Bonus de mànager (entre 1% i 20%)
+    const managerBonus = user.data.online.managerLevel * 2; // 2% per nivell
+    const managerMultiplier = 1 + (managerBonus / 100);
+    
+    // Premi final amb bonus de mànager
+    const prize = Math.floor(basePrize * managerMultiplier);
     user.data.budget += prize;
+    
+    // XP segons posició (més XP per millors posicions)
+    const xpRewards = [150, 120, 100, 85, 70, 60, 50, 40, 30, 25];
+    const baseXP = bestPosition <= 10 ? xpRewards[bestPosition - 1] : 15;
+    
+    // XP amb bonus de mànager
+    const totalXP = Math.floor(baseXP * managerMultiplier);
+    
+    // Inicialitzar valors si no existeixen
+    if (!user.data.online.driverXP) user.data.online.driverXP = 0;
+    if (!user.data.online.driverLevel) user.data.online.driverLevel = 1;
+    
+    // NIVELL MÀXIM DEL PILOT: 20
+    const MAX_DRIVER_LEVEL = 20;
+    const xpPerLevel = 200;
+    
+    let leveledUp = false;
+    let levelsGained = 0;
+    
+    // Afegir XP al pilot online
+    user.data.online.driverXP += totalXP;
+    
+    // Sistema de nivells del pilot amb màxim
+    if (user.data.online.driverLevel < MAX_DRIVER_LEVEL) {
+        while (user.data.online.driverXP >= xpPerLevel && user.data.online.driverLevel < MAX_DRIVER_LEVEL) {
+            user.data.online.driverLevel++;
+            user.data.online.driverXP -= xpPerLevel;
+            leveledUp = true;
+            levelsGained++;
+        }
+    } else {
+        // Si ja està al màxim, acumular XP però no pujar més
+        // L'XP segueix sent útil per desbloquejar millores especials (futur)
+        if (user.data.online.driverXP >= xpPerLevel) {
+            user.data.online.driverXP = xpPerLevel - 1; // Cap al màxim
+        }
+    }
+    
+    // Missions de patrocinadors (si existeixen)
+    let sponsorBonus = 0;
+    if (user.data.online.sponsors && user.data.online.sponsors.length > 0) {
+        user.data.online.sponsors.forEach(sponsor => {
+            // Comprovar si compleix objectius del patrocinador
+            if (sponsor.mission === 'top3' && bestPosition <= 3) {
+                sponsorBonus += sponsor.reward;
+                sponsor.completed = true;
+            } else if (sponsor.mission === 'top10' && bestPosition <= 10) {
+                sponsorBonus += sponsor.reward;
+                sponsor.completed = true;
+            } else if (sponsor.mission === 'win' && bestPosition === 1) {
+                sponsorBonus += sponsor.reward;
+                sponsor.completed = true;
+            }
+        });
+        
+        if (sponsorBonus > 0) {
+            user.data.budget += sponsorBonus;
+        }
+    }
 
     // Actualitzar estadístiques online
     user.data.online.totalRaces++;
@@ -355,7 +519,7 @@ function endLeagueRace() {
     saveUserData(user.data);
     updateUserInfo();
 
-    // Mostrar resultats
+    // Mostrar resultats amb totes les recompenses
     let message = '';
     if (bestPosition === 1) {
         message = `🏆 VICTÒRIA!\n\nHas guanyat la cursa!`;
@@ -369,8 +533,40 @@ function endLeagueRace() {
         message = `Posició: ${bestPosition}è\n\nFora dels punts`;
     }
 
-    message += `\n\n📊 Punts: +${points}`;
-    message += `\n💰 Premi: ${formatMoney(prize)}`;
+    message += `\n\n📊 Punts Campionat: +${points}`;
+    message += `\n💰 Premi base: ${formatMoney(basePrize)}`;
+    
+    if (managerBonus > 0) {
+        message += `\n🎯 Bonus mànager (+${managerBonus}%): ${formatMoney(prize - basePrize)}`;
+    }
+    
+    message += `\n💵 Total guanyat: ${formatMoney(prize)}`;
+    
+    // XP del pilot amb indicador de nivell màxim
+    message += `\n\n⭐ XP guanyat: +${totalXP} XP`;
+    
+    if (user.data.online.driverLevel >= MAX_DRIVER_LEVEL) {
+        message += `\n🏎️ Nivell pilot: ${user.data.online.driverLevel} (NIVELL MÀXIM!)`;
+        message += `\n✨ El teu pilot ha arribat al nivell màxim!`;
+    } else {
+        message += `\n🏎️ Nivell pilot: ${user.data.online.driverLevel} (${user.data.online.driverXP}/${xpPerLevel} XP)`;
+        
+        // Mostrar si ha pujat de nivell
+        if (leveledUp) {
+            if (levelsGained === 1) {
+                message += `\n🎉 Has pujat 1 nivell!`;
+            } else {
+                message += `\n🎉 Has pujat ${levelsGained} nivells!`;
+            }
+        }
+    }
+    
+    // Bonus patrocinadors
+    if (sponsorBonus > 0) {
+        message += `\n\n🏢 Missions patrocinadors completades!`;
+        message += `\n💰 Bonus extra: ${formatMoney(sponsorBonus)}`;
+    }
+    
     message += `\n\n🏆 Total punts lliga: ${league.standings[user.username]} pts`;
 
     alert(message);
@@ -381,4 +577,86 @@ function endLeagueRace() {
             window.location.href = `liga.html?id=${info.leagueId}`;
         }
     }, 500);
+}
+
+// ============================================
+// SISTEMA DE PARADA A BOXES EN DIRECTE
+// ============================================
+
+/**
+ * Mostra el botó de boxes durant la cursa
+ */
+function showPitStopButton() {
+    const pitBtn = document.getElementById('pitstop-btn');
+    if (pitBtn && leagueRaceState.isRunning) {
+        pitBtn.style.display = 'inline-block';
+    }
+}
+
+/**
+ * Obre el panel de parada a boxes
+ */
+function enterPitStop() {
+    // Pausar cursa temporalment
+    leagueRaceState.isRunning = false;
+    
+    // Mostrar panel
+    document.getElementById('pitstop-panel').style.display = 'block';
+}
+
+/**
+ * Tanca el panel sense canviar res
+ */
+function closePitStopPanel() {
+    document.getElementById('pitstop-panel').style.display = 'none';
+    leagueRaceState.isRunning = true;
+}
+
+/**
+ * Canvia els neumàtics i perd temps
+ */
+function changeTyres(tyreType) {
+    const user = getCurrentUser();
+    const playerDriver = leagueRaceState.positions.find(d => d.isPlayer);
+    
+    if (!playerDriver) return;
+    
+    // Temps de boxes (perd posicions)
+    const pitStopTime = 3; // segons ~ 3% de progrés de volta perdut
+    playerDriver.lapProgress -= pitStopTime;
+    
+    if (playerDriver.lapProgress < 0) {
+        playerDriver.completedLaps--;
+        playerDriver.lapProgress += 100;
+    }
+    
+    // Actualitzar rendiment segons nous neumàtics
+    const tyreStats = gameData.tyreStrategies[tyreType];
+    const onlineDriverSkill = 50 + (user.data.online.driverLevel * 2);
+    
+    const newPerformance = calculateLeagueDriverPerformance(
+        onlineDriverSkill,
+        user.data.upgrades,
+        user.data.online.carUpgrades,
+        user.data.online.managerLevel,
+        tyreStats
+    );
+    
+    playerDriver.performance = newPerformance;
+    playerDriver.currentTyres = tyreType;
+    
+    // Mostrar missatge
+    let tyreName = '';
+    if (tyreType === 'soft') tyreName = '🔴 Tous';
+    else if (tyreType === 'medium') tyreName = '🟡 Mitjans';
+    else if (tyreType === 'hard') tyreName = '⚪ Durs';
+    
+    // Tancar panel i continuar
+    document.getElementById('pitstop-panel').style.display = 'none';
+    leagueRaceState.isRunning = true;
+    
+    // Notificació
+    setTimeout(() => {
+        alert(`✅ Parada a boxes completada!\n\nNous neumàtics: ${tyreName}\n⏱️ Temps perdut: ${pitStopTime} segons`);
+    }, 100);
 }

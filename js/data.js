@@ -27,48 +27,57 @@ const gameData = {
         { id: 6, name: 'James Vowles', bonus: 10, price: 1100000, team: 'Williams' }
     ],
 
-    // Circuits
+    // Circuits amb dades realistes actualitzades
     tracks: {
-                portimao: {
-                    name: 'Portimão',
-                    flag: '🇵🇹',
-                    laps: 15,
-                    image: 'portimao.jpg',
-                    path: 'M180,350 C250,200 500,120 700,200 C800,250 850,350 700,400 C600,450 400,480 250,400 C200,380 180,350 180,350',
-                    difficulty: 'Medium'
-                },
-                interlagos: {
-                    name: 'Interlagos',
-                    flag: '🇧🇷',
-                    laps: 15,
-                    image: 'interlagos.png',
-                    path: 'M200,300 C300,180 700,180 800,300 C900,420 700,500 400,480 C250,460 200,400 200,300',
-                    difficulty: 'Medium'
-                },
+        portimao: {
+            name: 'Portimão',
+            flag: '🇵🇹',
+            laps: 15,
+            image: 'portimao.jpg',
+            path: 'M150,350 Q200,300 250,280 L350,260 Q400,250 430,280 L480,330 Q520,370 570,370 L670,370 Q720,370 750,340 L800,290 Q830,260 860,270 L900,290 Q920,310 920,340 L920,380 Q920,410 890,430 L830,460 Q780,480 730,480 L500,480 Q450,480 420,450 L350,400 Q300,370 250,380 L180,400 Q150,410 140,380 L150,350',
+            difficulty: 'Alta',
+            length: 4.653,
+            lapRecord: '1:18.750'
+        },
+        interlagos: {
+            name: 'Interlagos',
+            flag: '🇧🇷',
+            laps: 15,
+            image: 'interlagos.png',
+            path: 'M200,300 Q250,280 300,300 L400,340 Q450,360 500,350 L650,320 Q700,310 730,340 L770,390 Q790,420 770,450 L730,490 Q700,520 650,520 L400,520 Q350,520 320,490 L270,440 Q240,400 230,360 L200,300',
+            difficulty: 'Alta',
+            length: 4.309,
+            lapRecord: '1:10.540'
+        },
         monaco: {
             name: 'Monaco',
             flag: '🇲🇨',
             laps: 15,
             image: 'monaco.png',
-            // SVG path in a 1000x600 viewBox — approximate layout for markers to follow
-            path: 'M200,320 C260,180 440,140 520,200 C600,260 720,260 780,320 C720,380 620,420 520,380 C420,340 300,360 200,320',
-            difficulty: 'Hard'
+            path: 'M150,300 L250,300 C280,300 290,320 290,340 L290,380 C290,400 310,410 330,410 L450,410 C470,410 480,395 480,380 L480,340 Q480,280 540,270 L620,270 Q670,270 680,310 L680,360 C680,380 695,390 710,380 L760,340 Q790,310 790,270 L790,230 Q790,200 765,190 L690,160 Q650,145 640,120 L620,80 Q600,50 560,50 L420,50 Q380,50 360,80 L340,120 Q330,145 290,160 L220,190 Q190,200 180,230 L170,270 Q165,290 150,300',
+            difficulty: 'Molt Difícil',
+            length: 3.337,
+            lapRecord: '1:12.909'
         },
         spa: {
             name: 'Spa-Francorchamps',
             flag: '🇧🇪',
             laps: 15,
             image: 'spa-francorchamps.png',
-            path: 'M120,320 C220,120 420,100 560,160 C700,220 820,220 900,320 C820,420 700,480 560,440 C420,400 260,380 120,320',
-            difficulty: 'Medium'
+            path: 'M100,300 L200,300 Q250,300 270,270 L300,220 Q320,180 360,170 L500,170 L700,170 Q750,170 770,200 L800,250 Q820,280 850,280 L900,280 Q930,280 940,310 L950,350 Q955,380 930,400 L850,450 Q800,480 760,480 L500,480 Q450,480 420,450 L350,380 Q320,350 300,350 L200,350 Q150,350 130,320 L100,300',
+            difficulty: 'Difícil',
+            length: 7.004,
+            lapRecord: '1:46.286'
         },
         monza: {
             name: 'Monza',
             flag: '🇮🇹',
             laps: 15,
             image: 'monza.png',
-            path: 'M140,300 L860,300 C920,300 920,360 860,360 L140,360 C80,360 80,300 140,300',
-            difficulty: 'Easy'
+            path: 'M100,300 L900,300 Q950,300 970,330 L990,370 Q1000,400 970,420 L920,450 Q890,470 850,470 L200,470 Q150,470 130,440 L110,400 Q100,370 120,350 L100,300',
+            difficulty: 'Mitjana',
+            length: 5.793,
+            lapRecord: '1:21.046'
         }
     },
 
@@ -82,19 +91,19 @@ const gameData = {
     // Costos de millores
     upgradeCosts: {
         engine: 1500000,
-        aero: 1500000,
-        chassis: 1000000
+        aero: 1000000,
+        chassis: 500000
     }
 };
 
-// Equips IA per les curses
+// Equips IA per les curses - Nivells reduits per millorar l'experiència del jugador
 const aiTeams = [
-    { name: 'Red Bull Racing', color: '#0600EF', driver1: 'AI Verstappen', driver2: 'AI Perez', skill: 92 },
-    { name: 'Mercedes', color: '#00D2BE', driver1: 'AI Hamilton', driver2: 'AI Russell', skill: 90 },
-    { name: 'Ferrari', color: '#DC0000', driver1: 'AI Leclerc', driver2: 'AI Sainz', skill: 89 },
-    { name: 'McLaren', color: '#FF8700', driver1: 'AI Norris', driver2: 'AI Piastri', skill: 87 },
-    { name: 'Aston Martin', color: '#006F62', driver1: 'AI Alonso', driver2: 'AI Stroll', skill: 84 },
-    { name: 'Alpine', color: '#0090FF', driver1: 'AI Gasly', driver2: 'AI Ocon', skill: 82 },
-    { name: 'Williams', color: '#005AFF', driver1: 'AI Albon', driver2: 'AI Sargeant', skill: 78 },
-    { name: 'AlphaTauri', color: '#2B4562', driver1: 'AI Tsunoda', driver2: 'AI Ricciardo', skill: 80 }
+    { name: 'Red Bull Racing', color: '#0600EF', driver1: 'AI Verstappen', driver2: 'AI Perez', skill: 75 },
+    { name: 'Mercedes', color: '#00D2BE', driver1: 'AI Hamilton', driver2: 'AI Russell', skill: 73 },
+    { name: 'Ferrari', color: '#DC0000', driver1: 'AI Leclerc', driver2: 'AI Sainz', skill: 72 },
+    { name: 'McLaren', color: '#FF8700', driver1: 'AI Norris', driver2: 'AI Piastri', skill: 70 },
+    { name: 'Aston Martin', color: '#006F62', driver1: 'AI Alonso', driver2: 'AI Stroll', skill: 68 },
+    { name: 'Alpine', color: '#0090FF', driver1: 'AI Gasly', driver2: 'AI Ocon', skill: 66 },
+    { name: 'Williams', color: '#005AFF', driver1: 'AI Albon', driver2: 'AI Sargeant', skill: 64 },
+    { name: 'AlphaTauri', color: '#2B4562', driver1: 'AI Tsunoda', driver2: 'AI Ricciardo', skill: 65 }
 ];
