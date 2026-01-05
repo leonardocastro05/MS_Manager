@@ -196,7 +196,22 @@ function loadLeagueConfig() {
             <input type="color" id="edit-league-color" value="${currentLeague.color}">
 
             <button class="btn-primary" onclick="saveLeagueConfig()">💾 Desar Canvis</button>
-            <button class="btn-danger" onclick="openDeleteModal()">🗑️ Eliminar Lliga</button>
+            <button onclick="openDeleteModal()" style="
+                width: 100%;
+                padding: 14px 24px;
+                margin-top: 16px;
+                background: linear-gradient(135deg, #e10600, #a10400);
+                color: #fff;
+                border: 2px solid #ff4444;
+                border-radius: 12px;
+                font-size: 1.1em;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(225, 6, 0, 0.3);
+            " onmouseover="this.style.background='linear-gradient(135deg, #c10500, #8a0300)'; this.style.transform='scale(1.02)'; this.style.boxShadow='0 6px 20px rgba(225, 6, 0, 0.5)';" onmouseout="this.style.background='linear-gradient(135deg, #e10600, #a10400)'; this.style.transform='scale(1)'; this.style.boxShadow='0 4px 15px rgba(225, 6, 0, 0.3)';">
+                🗑️ Eliminar Lliga
+            </button>
         </div>
     `;
 }
