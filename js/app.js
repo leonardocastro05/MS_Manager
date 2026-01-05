@@ -76,11 +76,20 @@ function nextCareerRace() {
 }
 // Controlador principal de l'aplicació
 
+// Audio del main menu
+let mainMenuAudio = null;
+
 function showScreen(screenId) {
     // Amagar totes les pantalles
     document.querySelectorAll('.screen').forEach(screen => {
         screen.classList.remove('active');
     });
+    
+    // Parar audio del main menu si sortim d'ell
+    if (mainMenuAudio && screenId !== 'main-menu') {
+        mainMenuAudio.pause();
+        mainMenuAudio.currentTime = 0;
+    }
     
     // Mostrar la pantalla seleccionada
     const screen = document.getElementById(screenId);
@@ -92,6 +101,22 @@ function showScreen(screenId) {
     switch(screenId) {
         case 'main-menu':
             updateUserInfo();
+            // Reproduir so de F1 només al main menu
+            if (!mainMenuAudio) {
+                mainMenuAudio = new Audio('sounds/F1-car.wav');
+                mainMenuAudio.loop = true;
+                mainMenuAudio.volume = 0.25;
+            }
+            if (mainMenuAudio.paused) {
+                mainMenuAudio.play().catch(err => {
+                    console.log('Audio blocat - es reproduirà després d\'interacció');
+                    document.addEventListener('click', () => {
+                        if (mainMenuAudio && mainMenuAudio.paused) {
+                            mainMenuAudio.play().catch(e => {});
+                        }
+                    }, { once: true });
+                });
+            }
             break;
         case 'career-screen':
             updateCareerScreen();
@@ -135,8 +160,13 @@ window.addEventListener('DOMContentLoaded', () => {
         showScreen('main-menu');
         updateUserInfo();
         // Amaga i atura la intro 3D
-        document.getElementById('intro-canvas').style.display = 'none';
-        cleanupIntro3D();
+        const introCanvas = document.getElementById('intro-canvas');
+        if (introCanvas) {
+            introCanvas.style.display = 'none';
+        }
+        if (typeof cleanupIntro3D === 'function') {
+            cleanupIntro3D();
+        }
     } else {
         // Mostra la intro només una vegada, però manté el canvas de fons al login
         const hasSeenIntro = sessionStorage.getItem('hasSeenIntro');
@@ -166,11 +196,19 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-        // Botons del submenu d'usuari
-        document.getElementById('logout-btn').addEventListener('click', () => {
+    
+    // Botons del submenu d'usuari (només si existeixen)
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
             logout();
         });
-        document.getElementById('delete-account-btn').addEventListener('click', () => {
+    }
+    
+    const deleteAccountBtn = document.getElementById('delete-account-btn');
+    if (deleteAccountBtn) {
+        deleteAccountBtn.addEventListener('click', () => {
             deleteAccount();
         });
+    }
 });

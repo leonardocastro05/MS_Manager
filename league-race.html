@@ -1,462 +1,458 @@
 <!DOCTYPE html>
 <html lang="ca">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cursa de Lliga - F1 Manager</title>
+    <title>F1 Manager - Cursa de Lliga</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
         body {
-            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 60%, #e10600 100%);
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-            min-height: 100vh;
-            position: relative;
-        }
-        
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: repeating-linear-gradient(
-                120deg,
-                rgba(255, 215, 0, 0.03) 0 20px,
-                transparent 20px 60px
-            );
-            pointer-events: none;
-            z-index: 0;
+            overflow: hidden;
         }
 
-        #league-race-container {
-            padding: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
+        .race-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
         }
 
         .race-header {
-            background: linear-gradient(135deg, rgba(35, 37, 38, 0.95) 0%, rgba(26, 26, 46, 0.95) 100%);
-            padding: 24px;
+            background: linear-gradient(135deg, rgba(225,6,0,0.3), rgba(255,215,0,0.3));
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #ffd700;
+        }
+
+        .race-header h2 {
+            margin: 0;
+            font-size: 1.8em;
+        }
+
+        .race-info-bar {
+            display: flex;
+            gap: 32px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .race-main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .race-track-container {
+            flex: 2;
+            padding: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #race-track {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             border-radius: 16px;
-            margin-bottom: 24px;
-            text-align: center;
-            border: 2px solid rgba(255, 215, 0, 0.3);
-            box-shadow: 0 8px 32px rgba(255, 215, 0, 0.2);
+            border: 3px solid #ffd700;
+            position: relative;
+            overflow: hidden;
         }
 
-        .race-header h1 {
-            color: #ffd700;
-            font-size: 2.2em;
-            margin-bottom: 12px;
-            font-family: 'Orbitron', Arial, sans-serif;
-            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        .track-svg {
+            width: 100%;
+            height: 100%;
         }
 
-        .race-header p {
-            color: #fff;
-            font-size: 1.3em;
-            margin-top: 10px;
-            font-family: 'Orbitron', Arial, sans-serif;
-        }
-
-        .strategy-panel {
-            background: linear-gradient(135deg, rgba(35, 37, 38, 0.9) 0%, rgba(26, 26, 46, 0.9) 100%);
-            padding: 24px;
-            border-radius: 16px;
-            margin-bottom: 24px;
-            border: 2px solid rgba(255, 215, 0, 0.2);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-        }
-
-        .strategy-panel h3 {
-            color: #ffd700;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-            font-family: 'Orbitron', Arial, sans-serif;
-            text-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
-        }
-
-        .driver-strategy {
+        .driver-marker {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
-            gap: 15px;
-            margin-bottom: 15px;
-            padding: 12px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-        }
-
-        .driver-strategy label {
-            color: #fff;
-            min-width: 120px;
+            justify-content: center;
             font-weight: bold;
-            font-size: 1.1em;
+            font-size: 0.9em;
+            z-index: 10;
+            transition: all 0.1s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
         }
 
-        .driver-strategy select {
-            padding: 10px 15px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border: 2px solid #ffd700;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-family: 'Orbitron', Arial, sans-serif;
+        .race-sidebar {
+            flex: 1;
+            background: linear-gradient(135deg, #232526, #414345);
+            padding: 32px;
+            overflow-y: auto;
+            border-left: 3px solid #ffd700;
+            min-width: 550px;
+            max-width: 600px;
+        }
+
+        .positions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .position-row {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+            font-size: 1.3em;
+        }
+
+        .position-row.player {
+            border-color: #ffd700;
+            background: rgba(255,215,0,0.15);
+            box-shadow: 0 0 20px rgba(255,215,0,0.3);
+        }
+
+        .position-row .pos {
+            font-size: 2.5em;
+            font-weight: 900;
+            min-width: 70px;
+            text-align: center;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+        }
+
+        .position-row .driver-info {
             flex: 1;
         }
 
-        .driver-strategy select:hover {
-            background: rgba(255, 215, 0, 0.1);
-            border-color: #ffeb3b;
-        }
-
-        .driver-strategy select:focus {
-            outline: none;
-            border-color: #ffd700;
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-        }
-
-        .driver-strategy select option {
-            background: #1a1a2e;
-            color: #fff;
-            padding: 10px;
+        .position-row .laps {
+            color: #00bcd4;
+            font-size: 0.9em;
         }
 
         .race-controls {
-            text-align: center;
-            margin: 24px 0;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .race-controls button {
-            padding: 15px 40px;
-            font-size: 1.3em;
-            font-weight: bold;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-family: 'Orbitron', Arial, sans-serif;
-            transition: all 0.3s;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-        }
-
-        #start-race-btn {
-            background: linear-gradient(90deg, #00a000 0%, #2ecc40 100%);
-            color: white;
-        }
-
-        #start-race-btn:hover {
-            background: linear-gradient(90deg, #008000 0%, #27ae60 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(46, 204, 64, 0.4);
-        }
-
-        #pause-race-btn {
-            background: linear-gradient(90deg, #ff9800 0%, #ff6b00 100%);
-            color: white;
-        }
-
-        #pause-race-btn:hover {
-            background: linear-gradient(90deg, #f57c00 0%, #e65100 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
-        }
-
-        .race-controls button:last-child {
-            background: linear-gradient(90deg, #666 0%, #888 100%);
-            color: white;
-        }
-
-        .race-controls button:last-child:hover {
-            background: linear-gradient(90deg, #555 0%, #777 100%);
-            transform: translateY(-2px);
-        }
-
-        .race-positions {
-            background: linear-gradient(135deg, rgba(35, 37, 38, 0.9) 0%, rgba(26, 26, 46, 0.9) 100%);
-            padding: 24px;
-            border-radius: 16px;
             margin-top: 24px;
-            border: 2px solid rgba(255, 215, 0, 0.2);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            padding-top: 24px;
+            border-top: 2px solid #333;
         }
 
-        .race-positions h3 {
-            color: #ffd700;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-            font-family: 'Orbitron', Arial, sans-serif;
-            text-align: center;
-            text-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
-        }
-
-        #positions-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .position-item {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            transition: all 0.3s;
-        }
-
-        .position-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateX(5px);
-        }
-
-        .position-number {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #ffd700;
-            min-width: 50px;
-            text-align: center;
-        }
-
-        .driver-info {
-            flex: 1;
-            margin-left: 20px;
-        }
-
-        .driver-name {
+        .control-btn {
+            width: 100%;
+            padding: 14px;
             font-size: 1.2em;
             font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-start {
+            background: linear-gradient(90deg, #2ecc40, #27ae60);
             color: #fff;
-            margin-bottom: 5px;
         }
 
-        .team-name {
-            font-size: 0.9em;
-            color: #aaa;
+        .btn-start:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 16px rgba(46,204,64,0.5);
         }
 
-        .track-display {
-            margin: 20px 0;
+        .btn-pause {
+            background: linear-gradient(90deg, #f39c12, #e67e22);
+            color: #fff;
+        }
+
+        .btn-pause:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-exit {
+            background: rgba(225,6,0,0.8);
+            color: #fff;
+        }
+
+        .btn-exit:hover {
+            background: rgba(225,6,0,1);
+        }
+
+        .tyre-selection {
+            background: rgba(255,255,255,0.05);
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+        }
+
+        .tyre-selection h4 {
+            margin-bottom: 12px;
+            color: #ffd700;
+        }
+
+        .tyre-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 6px;
+        }
+
+        .tyre-option select {
+            flex: 1;
+            padding: 8px;
+            border-radius: 6px;
+            border: 2px solid #333;
+            background: #222;
+            color: #fff;
+            font-size: 1em;
+        }
+
+        @media (max-width: 1024px) {
+            .race-main {
+                flex-direction: column;
+            }
+
+            .race-sidebar {
+                max-width: 100%;
+                max-height: 300px;
+                border-left: none;
+                border-top: 2px solid #333;
+            }
         }
     </style>
 </head>
-
 <body>
-    <div id="league-race-container">
-        <!-- HEADER -->
+    <div class="race-container">
+        <!-- Header -->
         <div class="race-header">
-            <h1 id="league-race-title">🏆 Cursa de Lliga</h1>
-            <p id="league-race-info"></p>
-        </div>
-
-        <!-- ESTRATÈGIA - NOMÉS UN PILOT -->
-        <div class="strategy-panel">
-            <h3>🎯 Estratègia de Neumàtics</h3>
-            <div class="driver-strategy">
-                <label>🏎️ El teu Pilot:</label>
-                <select id="driver1-tyres">
-                    <option value="soft">🔴 Tous (Ràpids però es desgasten)</option>
-                    <option value="medium" selected>🟡 Mitjans (Equilibrats)</option>
-                    <option value="hard">⚪ Durs (Lents però resistents)</option>
-                </select>
-            </div>
-            <div
-                style="background:rgba(255,215,0,0.1); padding:16px; border-radius:10px; margin-top:16px; text-align:center;">
-                <p style="font-size:0.95em; color:#ffd700; margin:0;">
-                    💡 <b>Consell:</b> Els neumàtics tous són més ràpids però es desgasten més ràpid. Els durs duren més
-                    però són més lents.
-                </p>
+            <h2 id="race-title" style="font-size:2em;">🏁 Cursa de Lliga</h2>
+            <div class="race-info-bar" style="font-size:1.5em; gap:48px;">
+                <div style="background:rgba(255,215,0,0.2); padding:12px 24px; border-radius:10px; border:2px solid #ffd700;">
+                    🏎️ Volta: <span id="current-lap" style="color:#ffd700; font-size:1.3em; font-weight:900;">0</span>/<span id="total-laps" style="font-size:1.1em;">50</span>
+                </div>
+                <div style="background:rgba(255,215,0,0.2); padding:12px 24px; border-radius:10px; border:2px solid #ffd700;">
+                    🪙 <span id="race-coins" style="color:#ffd700; font-size:1.3em; font-weight:900;">0</span>
+                </div>
             </div>
         </div>
 
-        <!-- PISTA -->
-        <div id="track-display" class="track-display">
-            <!-- La pista es generarà aquí -->
-        </div>
-
-        <!-- CONTROLS -->
-        <div class="race-controls">
-            <button id="start-qualifying-btn" onclick="startQualifying()">
-                🏁 Començar Qualificació (3 voltes)
-            </button>
-            <button id="start-race-btn" onclick="startLeagueRaceNow()" style="display:none;">
-                🏁 Començar Cursa
-            </button>
-            <button id="pause-race-btn" onclick="pauseLeagueRace()" style="display:none;">
-                ⏸️ Pausar
-            </button>
-            <button id="pitstop-btn" onclick="enterPitStop()" style="display:none; background: linear-gradient(90deg, #ff6b00 0%, #ffd700 100%);">
-                🔧 Entrar a Boxes
-            </button>
-            <button onclick="window.location.href='liga.html?id=' + getLeagueIdFromSession()">
-                ← Tornar a la Lliga
-            </button>
-        </div>
-
-        <!-- PANEL DE BOXES -->
-        <div id="pitstop-panel" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #232526 0%, #414345 100%); padding: 30px; border-radius: 20px; border: 3px solid #FFD700; box-shadow: 0 8px 32px rgba(0,0,0,0.8); z-index: 1000; min-width: 400px;">
-            <h2 style="color: #FFD700; text-align: center; margin-bottom: 20px;">🔧 Parada a Boxes</h2>
-            <p style="color: #fff; text-align: center; margin-bottom: 20px;">Selecciona el tipus de neumàtic:</p>
-            
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                <button onclick="changeTyres('soft')" style="padding: 15px; font-size: 1.1em; background: linear-gradient(90deg, #D32F2F 0%, #FF6B6B 100%); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold;">
-                    🔴 Neumàtics Tous (Velocitat alta, desgast ràpid)
-                </button>
-                <button onclick="changeTyres('medium')" style="padding: 15px; font-size: 1.1em; background: linear-gradient(90deg, #FFB300 0%, #FFD700 100%); color: #000; border: none; border-radius: 12px; cursor: pointer; font-weight: bold;">
-                    🟡 Neumàtics Mitjans (Equilibrats)
-                </button>
-                <button onclick="changeTyres('hard')" style="padding: 15px; font-size: 1.1em; background: linear-gradient(90deg, #555 0%, #888 100%); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold;">
-                    ⚪ Neumàtics Durs (Durabilitat alta, velocitat baixa)
-                </button>
-                <button onclick="closePitStopPanel()" style="padding: 12px; font-size: 1em; background: linear-gradient(90deg, #444 0%, #666 100%); color: white; border: none; border-radius: 12px; cursor: pointer; margin-top: 10px;">
-                    ❌ Cancel·lar
-                </button>
+        <!-- Contingut Principal -->
+        <div class="race-main">
+            <!-- Circuit -->
+            <div class="race-track-container">
+                <div id="race-track">
+                    <!-- El traçat es carregarà dinàmicament -->
+                </div>
             </div>
-        </div>
 
-        <!-- CLASSIFICACIÓ -->
-        <div id="race-positions" class="race-positions">
-            <h3>📊 Classificació en Directe</h3>
-            <div id="positions-list"></div>
+            <!-- Barra lateral -->
+            <div class="race-sidebar">
+                <h3 style="margin-bottom: 24px; text-align: center; font-size:2.2em; color:#ffd700; text-shadow: 0 0 15px rgba(255,215,0,0.5);">📊 Classificació en Directe</h3>
+
+                <!-- Selecció de pneumàtics ABANS de començar -->
+                <div id="pre-race-setup" style="display: block;">
+                    <div class="tyre-selection">
+                        <h4>🏎️ Configuració del Pilot</h4>
+                        <div class="tyre-option">
+                            <label>Pneumàtics:</label>
+                            <select id="driver1-tyres">
+                                <option value="soft">🔴 Tous (Velocitat màxima, desgast ràpid)</option>
+                                <option value="medium" selected>🟡 Mitjos (Equilibrats)</option>
+                                <option value="hard">⚪ Durs (Duradors, menys velocitat)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button id="start-qualifying-btn" class="control-btn btn-start" onclick="startQualifying()">
+                        🏁 Començar Qualificació
+                    </button>
+                    <button id="start-race-btn" class="control-btn btn-start" onclick="startRace()" style="display:none;">
+                        🏁 Començar Cursa
+                    </button>
+                </div>
+
+                <!-- Llista de posicions -->
+                <div id="positions-list" class="positions-list">
+                    <!-- S'omplirà dinàmicament -->
+                </div>
+
+                <!-- Controls durant la cursa -->
+                <div class="race-controls" id="race-controls" style="display:none;">
+                    <button class="control-btn btn-exit" onclick="confirmExit()">
+                        ❌ Sortir de la Cursa
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- SCRIPTS -->
-    <script src="js/popup.js"></script>
+    <!-- Scripts -->
     <script src="js/data.js"></script>
-    <script src="js/realistic-tracks.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/game.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/popup.js"></script>
+    <script src="js/online-data.js"></script>
     <script src="js/online.js"></script>
-    <script src="js/race-enhanced.js"></script>
+    <script src="js/realistic-tracks.js"></script>
     <script src="js/league-race-system.js"></script>
+
     <script>
-        // Obtenir info de la lliga des de sessionStorage
-        function getLeagueRaceInfo() {
-            const info = sessionStorage.getItem('leagueRaceInfo');
-            return info ? JSON.parse(info) : null;
-        }
-
-        function getLeagueIdFromSession() {
-            const info = getLeagueRaceInfo();
-            return info ? info.leagueId : '';
-        }
-
-        // Inicialitzar la cursa
-        function initLeagueRace() {
-            const info = getLeagueRaceInfo();
-            if (!info) {
-                alert('⚠️ No hi ha informació de la cursa!');
-                window.location.href = 'online.html';
-                return;
-            }
-
-            const user = getCurrentUser();
-            if (!user || !user.data.onlineLeagues) {
-                window.location.href = 'online.html';
-                return;
-            }
-
-            const league = user.data.onlineLeagues.find(l => l.id === info.leagueId);
-            if (!league || !league.calendar[info.raceIndex]) {
-                alert('⚠️ Lliga o cursa no trobada!');
-                window.location.href = 'online.html';
-                return;
-            }
-
-            const race = league.calendar[info.raceIndex];
-            const track = gameData.tracks[race.trackId];
-
-            // Mostrar info
-            document.getElementById('league-race-title').textContent = `🏆 ${league.name}`;
-            document.getElementById('league-race-info').innerHTML = `
-                ${track.flag} <b>${track.name}</b> • Cursa ${race.raceNumber} • ${track.laps} voltes
-            `;
-
-            // Seleccionar el circuit automàticament
-            leagueRaceState.selectedTrack = race.trackId;
-            displayTrack(race.trackId);
-        }
-
-        // Començar la cursa
-        function startLeagueRaceNow() {
+        /**
+         * Inicialitzar la pàgina de cursa
+         */
+        document.addEventListener('DOMContentLoaded', () => {
             const user = getCurrentUser();
             if (!user) {
-                alert('⚠️ Error: No s\'ha trobat l\'usuari!');
+                window.location.href = 'index.html';
                 return;
             }
 
-            if (!leagueRaceState.selectedTrack) {
-                alert('⚠️ Error carregant el circuit!');
+            // Obtenir info de la cursa del sessionStorage
+            const raceInfo = JSON.parse(sessionStorage.getItem('leagueRaceInfo') || '{}');
+            if (!raceInfo.leagueId || !raceInfo.trackId) {
+                alert('⚠️ Error: No hi ha informació de la cursa!');
+                window.location.href = 'online.html';
                 return;
             }
 
-            // Amagar botó començar, mostrar pausar i boxes
+            // Carregar circuit
+            console.log('🏁 Debug - trackId:', raceInfo.trackId);
+            console.log('🏁 Debug - realisticTracks disponible?', typeof realisticTracks !== 'undefined');
+            console.log('🏁 Debug - renderRealisticTrack?', typeof renderRealisticTrack);
+            
+            const track = gameData.tracks[raceInfo.trackId];
+            if (track) {
+                document.getElementById('race-title').textContent = `${track.flag || '🏎️'} ${track.name}`;
+                document.getElementById('total-laps').textContent = track.laps;
+                leagueRaceState.selectedTrack = raceInfo.trackId;
+                
+                // Renderitzar traçat realista
+                const raceTrack = document.getElementById('race-track');
+                if (raceTrack) {
+                    console.log('🏁 Intentant renderitzar traçat...');
+                    // Provar primer amb realisticTracks
+                    if (typeof renderRealisticTrack === 'function' && typeof realisticTracks !== 'undefined' && realisticTracks[raceInfo.trackId]) {
+                        console.log('✅ Carregant traçat realista per:', raceInfo.trackId);
+                        renderRealisticTrack(raceInfo.trackId, raceTrack);
+                        console.log('✅ Traçat renderitzat!');
+                    } 
+                    // Si no, utilitzar el path de gameData.tracks
+                    else if (track.path) {
+                        console.log('📌 Utilitzant traçat de gameData per:', raceInfo.trackId);
+                        raceTrack.innerHTML = `
+                            <svg class="track-svg" viewBox="0 0 900 700" preserveAspectRatio="xMidYMid meet">
+                                <defs>
+                                    <linearGradient id="track-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#444; stop-opacity:1" />
+                                        <stop offset="50%" style="stop-color:#333; stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#222; stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                                <!-- Zona verda fora de pista -->
+                                <path d="${track.path}" fill="none" stroke="#1a4d1a" stroke-width="100" opacity="0.3" />
+                                <!-- Vorera vermella -->
+                                <path d="${track.path}" fill="none" stroke="#cc0000" stroke-width="75" />
+                                <!-- Asfalt -->
+                                <path d="${track.path}" fill="none" stroke="url(#track-gradient)" stroke-width="60" />
+                                <!-- Path invisible per seguiment -->
+                                <path id="track-path" d="${track.path}" fill="none" stroke="transparent" stroke-width="60" />
+                                <!-- Línia de sortida -->
+                                <rect x="130" y="280" width="40" height="70" fill="#fff" opacity="0.8" />
+                                <rect x="130" y="280" width="20" height="70" fill="#000" />
+                                <rect x="150" y="280" width="20" height="70" fill="#fff" />
+                            </svg>
+                        `;
+                    }
+                    // Fallback final
+                    else {
+                        console.warn('⚠️ Traçat no disponible, utilitzant per defecte');
+                        raceTrack.innerHTML = `
+                            <svg class="track-svg" viewBox="0 0 900 700" preserveAspectRatio="xMidYMid meet">
+                                <defs>
+                                    <linearGradient id="track-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#444; stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#222; stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                                <ellipse cx="450" cy="350" rx="350" ry="250" fill="none" stroke="#1a4d1a" stroke-width="100" opacity="0.3" />
+                                <ellipse cx="450" cy="350" rx="350" ry="250" fill="none" stroke="#cc0000" stroke-width="75" />
+                                <ellipse cx="450" cy="350" rx="350" ry="250" fill="none" stroke="url(#track-gradient)" stroke-width="60" />
+                                <ellipse id="track-path" cx="450" cy="350" rx="350" ry="250" fill="none" stroke="transparent" stroke-width="60" />
+                                <rect x="430" y="80" width="40" height="70" fill="#fff" opacity="0.8" />
+                                <rect x="430" y="80" width="20" height="70" fill="#000" />
+                            </svg>
+                        `;
+                    }
+                }
+            }
+
+            // Mostrar coins actuals
+            if (user.data.online) {
+                document.getElementById('race-coins').textContent = user.data.online.coins;
+            }
+        });
+
+        /**
+         * Començar la cursa principal
+         */
+        function startRace() {
+            console.log('🏁 Iniciant cursa principal...');
+            
+            // Ocultar botó start i mostrar controls
             document.getElementById('start-race-btn').style.display = 'none';
-            document.getElementById('pause-race-btn').style.display = 'inline-block';
-            document.getElementById('pitstop-btn').style.display = 'inline-block';
             document.getElementById('start-qualifying-btn').style.display = 'none';
+            
+            // Restaurar posicions després de qualificació
+            const track = gameData.tracks[leagueRaceState.selectedTrack];
+            if (track.originalLaps) {
+                track.laps = track.originalLaps;
+            }
 
-            leagueRaceState.isRunning = true;
+            // Reiniciar comptadors
             leagueRaceState.currentLap = 0;
+            leagueRaceState.positions.forEach(driver => {
+                driver.completedLaps = 0;
+                driver.lapProgress = 0;
+            });
 
-            initializeLeagueRace();
+            // Iniciar cursa
+            leagueRaceState.isRunning = true;
+            leagueRaceState.qualifyingActive = false;
+            
+            console.log('✅ Cursa iniciada amb', track.laps, 'voltes');
             runLeagueRaceLoop();
         }
 
-        // Mostrar el circuit (funció del sistema normal de curses)
-        function displayTrack(trackId) {
-            const track = gameData.tracks[trackId];
-            const trackDisplay = document.getElementById('track-display');
-
-            const imagePath = track.image ? `img/${track.image}` : '';
-            const hasImage = imagePath !== '';
-            const trackClass = hasImage ? 'race-track image-track' : 'race-track';
-
-            trackDisplay.innerHTML = `
-                <div class="${trackClass}" id="race-track" 
-                     style="background-image: url('${imagePath}');">
-                    
-                    <svg class="track-svg" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet">
-                        <path id="track-path" d="${track.path || ''}" class="track-path-visible"></path>
-                    </svg>
-                    
-                    <div style="position: absolute; top: 20px; left: 20px; 
-                                font-size: 2em; color: white; 
-                                text-shadow: 2px 2px 8px rgba(0,0,0,0.9); z-index: 20;
-                                font-family: 'Orbitron', Arial, sans-serif;">
-                        ${track.flag} ${track.name}
-                    </div>
-                    
-                    <div style="position: absolute; top: 70px; left: 20px; 
-                                font-size: 1.3em; color: #ffd700; 
-                                text-shadow: 2px 2px 8px rgba(0,0,0,0.9); z-index: 20;
-                                font-family: 'Orbitron', Arial, sans-serif;
-                                font-weight: bold;">
-                        Volta: <span id="current-lap" style="color: #2ecc40;">0</span> / ${track.laps}
-                    </div>
-                </div>
-            `;
-            
-            // Afegir millores visuals si la funció existeix
-            if (typeof initEnhancedRaceDisplay === 'function') {
-                setTimeout(() => initEnhancedRaceDisplay(trackId), 100);
+        /**
+         * Confirmar sortida de la cursa
+         */
+        function confirmExit() {
+            if (confirm('⚠️ Segur que vols sortir? Perdràs tot el progrés de la cursa!')) {
+                const raceInfo = JSON.parse(sessionStorage.getItem('leagueRaceInfo') || '{}');
+                window.location.href = `liga.html?id=${raceInfo.leagueId}`;
             }
         }
 
-        // Inicialitzar quan carrega la pàgina
-        window.addEventListener('DOMContentLoaded', () => {
-            initLeagueRace();
-        });
+        /**
+         * Carregar SVG personalitzat del circuitapp.js:175 Uncaught TypeError: Cannot read properties of null (reading 'addEventListener')
+         */
+        function loadTrackSVG(svgPath) {
+            // Funció per carregar SVG personalitzat si està disponible
+            fetch(svgPath)
+                .then(response => response.text())
+                .then(svg => {
+                    const raceTrack = document.getElementById('race-track');
+                    raceTrack.innerHTML = svg;
+                })
+                .catch(err => {
+                    console.warn('No s\'ha pogut carregar el SVG del circuit:', err);
+                });
+        }
     </script>
 </body>
-
 </html>

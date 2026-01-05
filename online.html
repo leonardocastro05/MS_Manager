@@ -92,18 +92,66 @@
 
             <!-- SECCIÓ MONOPLAZA -->
             <section id="online-section-car" class="online-section" style="display:none;">
-                <h3>🏎️ Personalitza el teu Monoplaza</h3>
-                <div
-                    style="max-width:700px; margin:0 auto 24px auto; text-align:center; background:rgba(255,215,0,0.1); padding:20px; border-radius:12px;">
-                    <p style="font-size:1.1em;">
-                        Aquestes millores són <b style="color:#ffd700;">exclusives del Modo Online</b> i s'afegeixen a
-                        les millores del HQ.
-                    </p>
+                <h3>🏎️ El teu Monoplaza</h3>
+                
+                <!-- Botons per alternar entre millores i personalització -->
+                <div style="display:flex; gap:16px; justify-content:center; margin-bottom:24px;">
+                    <button id="btn-car-upgrades" onclick="showCarSection('upgrades')" 
+                            style="padding:12px 32px; font-size:1.1em; border-radius:10px; background:linear-gradient(90deg, #2ecc40, #27ae60); color:#fff; border:none; cursor:pointer; font-weight:bold; box-shadow:0 4px 12px rgba(46,204,64,0.3);">
+                        ⚙️ Millores Tècniques
+                    </button>
+                    <button id="btn-car-visual" onclick="showCarSection('visual')" 
+                            style="padding:12px 32px; font-size:1.1em; border-radius:10px; background:rgba(255,255,255,0.1); color:#fff; border:2px solid #666; cursor:pointer; font-weight:bold;">
+                        🎨 Personalització Visual
+                    </button>
                 </div>
-                <div id="online-car-upgrades-list" class="shop-cards-grid"></div>
 
-                <h4 style="margin-top:40px; text-align:center;">🎨 Personalització Visual</h4>
-                <div id="online-car-customization" style="max-width:600px; margin:0 auto;"></div>
+                <!-- SUBSECCIÓ: MILLORES TÈCNIQUES -->
+                <div id="car-section-upgrades" style="display:block;">
+                    <div style="max-width:700px; margin:0 auto 24px auto; text-align:center; background:rgba(255,215,0,0.1); padding:20px; border-radius:12px;">
+                        <p style="font-size:1.1em;">
+                            Millora el <b style="color:#ffd700;">rendiment del teu monoplaza</b> amb millores tècniques exclusives del Modo Online.
+                        </p>
+                        <p style="font-size:0.95em; margin-top:10px; opacity:0.9;">
+                            Aquestes millores s'afegeixen a les millores del HQ i milloren la velocitat màxima del teu cotxe! 🚀
+                        </p>
+                    </div>
+                    <div id="online-car-upgrades-list" class="shop-cards-grid"></div>
+                </div>
+
+                <!-- SUBSECCIÓ: PERSONALITZACIÓ VISUAL -->
+                <div id="car-section-visual" style="display:none;">
+                    <div style="max-width:700px; margin:0 auto 24px auto; text-align:center; background:rgba(255,215,0,0.1); padding:20px; border-radius:12px;">
+                        <p style="font-size:1.1em;">
+                            Personalitza el <b style="color:#ffd700;">color del teu monoplaza</b>.
+                        </p>
+                        <p style="font-size:0.95em; margin-top:10px; opacity:0.9;">
+                            El primer canvi és gratis! 🎁
+                        </p>
+                    </div>
+                    
+                    <!-- Vista prèvia del cotxe -->
+                    <div style="max-width:800px; margin:0 auto 32px auto; background:linear-gradient(135deg, #1a1a2e, #16213e); padding:40px; border-radius:20px; border:2px solid rgba(255,215,0,0.3);">
+                        <canvas id="car-canvas" width="800" height="400" style="width:100%; height:auto; display:block;"></canvas>
+                    </div>
+                    
+                    <!-- Selector de color -->
+                    <div style="max-width:500px; margin:0 auto; background:rgba(35,37,38,0.9); padding:30px; border-radius:16px; border:2px solid rgba(255,215,0,0.2);">
+                        <label style="display:block; color:#FFD700; font-weight:bold; margin-bottom:15px; font-size:1.2em; text-align:center;">
+                            🎨 Color del Monoplaza
+                        </label>
+                        <input type="color" id="color-body" value="#FFD700" 
+                               style="width:100%; height:80px; cursor:pointer; border:3px solid #FFD700; border-radius:12px; background:#000;">
+                        
+                        <button onclick="saveCarColor()" 
+                                style="width:100%; margin-top:20px; padding:18px; font-size:1.2em; font-weight:bold; background:linear-gradient(90deg, #00a000, #2ecc40); color:#fff; border:none; border-radius:12px; cursor:pointer; box-shadow:0 4px 12px rgba(46,204,64,0.3);">
+                            💾 Desar Color (1 coin)
+                        </button>
+                        <p style="text-align:center; color:#888; font-size:0.85em; margin-top:12px;">
+                            🎁 El primer canvi és completament gratis!
+                        </p>
+                    </div>
+                </div>
             </section>
 
             <!-- SECCIÓ LLIGUES -->
@@ -150,6 +198,7 @@
     <script src="js/online-data.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/game.js"></script>
+    <script src="js/personalitza.js"></script>
     <script src="js/online.js"></script>
     <script src="js/online-complete-system.js"></script>
     <script src="js/online-leagues.js"></script>
@@ -202,6 +251,75 @@
                     <span style="font-size:0.9em;">Podis</span>
                 </div>
             `;
+        }
+
+        /**
+         * Alternar entre millores i personalització visual del cotxe
+         */
+        function showCarSection(section) {
+            const upgradesSection = document.getElementById('car-section-upgrades');
+            const visualSection = document.getElementById('car-section-visual');
+            const upgradesBtn = document.getElementById('btn-car-upgrades');
+            const visualBtn = document.getElementById('btn-car-visual');
+            
+            if (section === 'upgrades') {
+                upgradesSection.style.display = 'block';
+                visualSection.style.display = 'none';
+                upgradesBtn.style.background = 'linear-gradient(90deg, #2ecc40, #27ae60)';
+                upgradesBtn.style.border = 'none';
+                visualBtn.style.background = 'rgba(255,255,255,0.1)';
+                visualBtn.style.border = '2px solid #666';
+            } else if (section === 'visual') {
+                upgradesSection.style.display = 'none';
+                visualSection.style.display = 'block';
+                upgradesBtn.style.background = 'rgba(255,255,255,0.1)';
+                upgradesBtn.style.border = '2px solid #666';
+                visualBtn.style.background = 'linear-gradient(90deg, #e10600, #c10600)';
+                visualBtn.style.border = 'none';
+                
+                // Dibuixar el cotxe quan es mostra la secció visual
+                setTimeout(() => {
+                    const canvas = document.getElementById('car-canvas');
+                    if (canvas && typeof drawF1Car === 'function') {
+                        const ctx = canvas.getContext('2d');
+                        const user = getCurrentUser();
+                        const color = user?.data?.online?.carConfig?.color || '#FFD700';
+                        document.getElementById('color-body').value = color;
+                        drawF1Car(ctx, { body: color }, canvas.width, canvas.height);
+                    }
+                }, 100);
+            }
+        }
+
+        /**
+         * Guardar el color del cotxe
+         */
+        function saveCarColor() {
+            const user = getCurrentUser();
+            if (!user) return;
+            
+            initializeOnlineData(user);
+            
+            const color = document.getElementById('color-body').value;
+            const isFirstChange = !user.data.online.carConfig || !user.data.online.carConfigChanged;
+            
+            if (!isFirstChange) {
+                // Comprovar coins
+                if (!user.data.online.coins || user.data.online.coins < 1) {
+                    showGameMessage('⚠️ No tens prou coins!<br>Necessites <b>1 coin</b> per canviar el color.', 'error');
+                    return;
+                }
+                user.data.online.coins -= 1;
+            }
+            
+            user.data.online.carConfig = { color: color, finish: 'brillant' };
+            user.data.online.carConfigChanged = true;
+            
+            saveUserData(user.data);
+            updateOnlineHeaderBalances();
+            
+            const costMsg = isFirstChange ? '🎁 GRATIS (primer canvi)' : '💰 -1 coin';
+            showGameMessage(`✅ Color guardat!<br>🎨 <b>${color}</b><br><br>${costMsg}`, 'success');
         }
 
         // Inicialització

@@ -31,7 +31,7 @@ function saveOnlineCarConfig(color, finish) {
     
     saveUserData(user.data);
     updateUserInfo();
-    loadCarCustomization();
+    // loadCarCustomization(); // DESACTIVAT: No es mostra en 2D
     
     const costMsg = isFirstChange ? '🎁 GRATIS (primer canvi)' : '💰 -1 coin';
     showSuccess('✅ Monoplaza Guardat!', `🎨 Color: <b>${color}</b><br>✨ Acabat: <b>${finish}</b><br><br>${costMsg}`);
@@ -129,7 +129,9 @@ function applyColorToCarImage(hexColor, finish) {
 
 /**
  * Carrega el formulari de personalització del monoplaza
+ * NOTA: Funció desactivada - El joc és 2D i no es veuen els colors
  */
+/*
 function loadCarCustomization() {
     const upgradesDiv = document.getElementById('online-car-upgrades-list');
     if (!upgradesDiv) return;
@@ -204,10 +206,14 @@ function loadCarCustomization() {
         applyColorToCarImage(color, finish);
     }, 100);
 }
+*/
 
 // Inicialitza listeners
+// DESACTIVAT: No es mostra la personalització visual en 2D
+/*
 if (typeof document !== 'undefined') {
     document.addEventListener('DOMContentLoaded', function() {
         loadCarCustomization();
     });
 }
+*/

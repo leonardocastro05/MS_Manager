@@ -44,6 +44,12 @@
         <!-- Pantalla d'intro 3D -->
         <div id="intro-screen" class="screen active">
             <canvas id="intro-canvas"></canvas>
+            <div id="intro-flash" style="display:none;position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:20;background:black;opacity:0;pointer-events:none;"></div>
+            <div id="intro-title" style="display:none;position:absolute;top:30%;left:0;width:100%;text-align:center;z-index:10;pointer-events:none;">
+                <h1 class="intro-title-text" style="font-size:3.5em;margin:0;text-shadow:0 8px 32px #e10600,0 2px 8px #000;letter-spacing:6px;background:linear-gradient(90deg,#fff,#e10600 60%,#fff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">
+                    🏎️ F1 Manager <span style="font-size:0.4em;display:block;margin-top:0.2em;letter-spacing:2px;">by Leonardo de Castro Ferreira</span>
+                </h1>
+            </div>
         </div>
 
         <!-- Pantalla de login/registre -->
@@ -71,8 +77,12 @@
 
         <!-- Menú principal -->
         <div id="main-menu" class="screen">
-            <nav class="top-nav">
-                <h1>🏎️ F1 Manager</h1>
+            <div class="main-bg" style="position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:0;overflow:hidden;">
+                <img src="img/f1-manager-background.png" alt="F1 Manager Background" style="width:100vw;height:100vh;object-fit:cover;filter:brightness(0.85) blur(0.5px);">
+                <div style="position:absolute;top:0;left:0;width:100vw;height:100vh;pointer-events:none;background:linear-gradient(90deg,rgba(0,60,180,0.38) 0%,rgba(26,26,46,0.55) 50%,rgba(225,6,0,0.38) 100%);"></div>
+            </div>
+            <nav class="top-nav" style="position:relative;z-index:2;">
+                <h1 style="font-size:2.8em;margin-bottom:32px;color:#fff;text-shadow:0 8px 32px #e10600,0 2px 8px #000;letter-spacing:6px;background:linear-gradient(90deg,#fff,#e10600 60%,#fff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">🏎️ F1 Manager</h1>
                 <div class="user-info">
                     <span id="team-name"></span>
                     <span id="budget"></span>
@@ -89,12 +99,12 @@
                     </div>
                 </div>
             </nav>
-            <div class="menu-buttons">
-                <button onclick="showScreen('hq-screen')">🏢 HQ</button>
-                <button onclick="showScreen('shop-screen')">🛒 Tenda</button>
-                <button onclick="showScreen('race-screen')">🏁 Cursa</button>
-                <button onclick="showScreen('team-screen')">👥 Equip</button>
-                <button onclick="window.location.href='online.html'">🌐 Modo Online</button>
+            <div class="menu-buttons" style="display:flex;flex-direction:row;align-items:center;justify-content:center;gap:32px;position:relative;z-index:2;margin-top:64px;">
+                <button onclick="showScreen('hq-screen')" style="background:rgba(225,6,0,0.18);color:#fff;border:2px solid #e10600;border-radius:18px;padding:18px 38px;font-size:1.25em;font-family:'Orbitron',Arial,sans-serif;font-weight:bold;backdrop-filter:blur(6px);box-shadow:0 2px 16px #e1060033;transition:all 0.2s;">🏢 HQ</button>
+                <button onclick="showScreen('shop-screen')" style="background:rgba(0,60,180,0.18);color:#fff;border:2px solid #2980b9;border-radius:18px;padding:18px 38px;font-size:1.25em;font-family:'Orbitron',Arial,sans-serif;font-weight:bold;backdrop-filter:blur(6px);box-shadow:0 2px 16px #2980b933;transition:all 0.2s;">🛒 Tenda</button>
+                <button onclick="showScreen('race-screen')" style="background:rgba(44,204,64,0.18);color:#fff;border:2px solid #2ecc40;border-radius:18px;padding:18px 38px;font-size:1.25em;font-family:'Orbitron',Arial,sans-serif;font-weight:bold;backdrop-filter:blur(6px);box-shadow:0 2px 16px #2ecc4033;transition:all 0.2s;">🏁 Cursa</button>
+                <button onclick="showScreen('team-screen')" style="background:rgba(0,188,212,0.18);color:#fff;border:2px solid #00bcd4;border-radius:18px;padding:18px 38px;font-size:1.25em;font-family:'Orbitron',Arial,sans-serif;font-weight:bold;backdrop-filter:blur(6px);box-shadow:0 2px 16px #00bcd433;transition:all 0.2s;">👥 Equip</button>
+                <button onclick="window.location.href='online.html'" style="background:rgba(255,255,255,0.12);color:#e10600;border:2px solid #fff;border-radius:18px;padding:18px 38px;font-size:1.25em;font-family:'Orbitron',Arial,sans-serif;font-weight:bold;backdrop-filter:blur(6px);box-shadow:0 2px 16px #fff3;transition:all 0.2s;">🌐 Modo Online</button>
             </div>
         </div>
 
