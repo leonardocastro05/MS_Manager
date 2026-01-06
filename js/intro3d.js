@@ -533,15 +533,15 @@ function animateIntro3D() {
             intro3DCamera.lookAt(leadCar.position.x, leadCar.position.y + 0.3, leadCar.position.z);
             
         } else if (elapsed < 3.0) {
-            // ANGLE 2: Vista des de l'aleron posterior (FLASH 1)
+            // ANGLE 2: Càmera des de darrere retrocedint (vista posterior)
             const t = (elapsed - 1.5) / 1.5;
-            intro3DCamera.position.x = leadCar.position.x + Math.sin(t * 2) * 0.3;
-            intro3DCamera.position.y = leadCar.position.y + 1.2;
-            intro3DCamera.position.z = leadCar.position.z + 2.5;
+            intro3DCamera.position.x = leadCar.position.x + Math.sin(t * 2) * 0.5;
+            intro3DCamera.position.y = leadCar.position.y + 1.8 + t * 0.5;
+            intro3DCamera.position.z = leadCar.position.z + 5 + t * 3; // Càmera retrocedeix
             intro3DCamera.lookAt(
                 leadCar.position.x,
-                leadCar.position.y + 0.2,
-                leadCar.position.z - 10
+                leadCar.position.y + 0.3,
+                leadCar.position.z
             );
             
         } else if (elapsed < 4.5) {
@@ -568,31 +568,7 @@ function animateIntro3D() {
         // MOMENT CLAU: Quan creuen la línia de meta
         if (leadCar.position.z < -7 && !titleShown) {
             titleShown = true;
-            
-            // Iniciar drift dels cotxes
-            intro3DCars.forEach((car, index) => {
-                car.userData.driftStartTime = elapsed;
-                car.userData.driftDirection = index % 2 === 0 ? 1 : -1; // Alternats
-            });
-            
             showCinematicTitle();
-        }
-
-        // DRIFT ESPECTACULAR després de creuar la meta
-        if (leadCar.position.z < -7 && leadCar.position.z > -25) {
-            intro3DCars.forEach((car, index) => {
-                const driftTime = elapsed - (car.userData.driftStartTime || elapsed);
-                const driftProgress = Math.min(driftTime / 1.5, 1);
-                
-                // Rotació del drift
-                car.rotation.y = Math.PI + driftProgress * Math.PI * 0.4 * car.userData.driftDirection;
-                
-                // Moviment lateral durant el drift
-                car.position.x += car.userData.driftDirection * driftProgress * 0.08;
-                
-                // Efecte de fum/partícules (moviment vertical)
-                car.position.y = 0.2 + Math.sin(driftTime * 20) * 0.02 * driftProgress;
-            });
         }
     }
 
@@ -603,7 +579,7 @@ function showCinematicTitle() {
     const title = document.getElementById('intro-title');
     
     if (title) {
-        title.innerHTML = '<div style="font-size: 4em; font-weight: 900; text-shadow: 0 0 30px rgba(225,6,0,0.8), 0 0 60px rgba(225,6,0,0.5);">F1 MANAGER</div><div style="font-size: 1.5em; margin-top: 20px; font-weight: 300; letter-spacing: 3px;">BY LEONARDO DE CASTRO FERREIRA</div>';
+        title.innerHTML = '<div style="font-size: 4em; font-weight: 900; color: #e10600; text-shadow: 0 0 30px rgba(225,6,0,0.8), 0 0 60px rgba(225,6,0,0.5);">F1 MANAGER</div><div style="font-size: 1.5em; margin-top: 20px; font-weight: 300; letter-spacing: 3px;">BY LEONARDO DE CASTRO FERREIRA</div>';
         title.style.display = 'block';
         title.style.animation = 'titleExplosion 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
         setTimeout(() => title.classList.add('visible'), 50);
