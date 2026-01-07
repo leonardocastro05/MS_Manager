@@ -98,6 +98,7 @@
             }
         }
         
+        
         .container {
             text-align: center;
             padding: 40px 20px;
@@ -309,6 +310,47 @@
             }
         }
         
+        .logo {
+            font-size: clamp(3rem, 8vw, 5rem);
+            font-weight: 900;
+            background: linear-gradient(90deg, #fff, #e10600 60%, #FFD700);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.7));
+        }
+        
+        .badge {
+            display: inline-block;
+            background: rgba(255, 215, 0, 0.2);
+            border: 2px solid #FFD700;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #FFD700;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        
+        h2 {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        p {
+            font-size: clamp(1rem, 2vw, 1.3rem);
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+        
+        
         .features {
             display: flex;
             justify-content: center;
@@ -436,6 +478,7 @@
                 transform: rotate(360deg) scale(1);
             }
         }
+        
         
         .feature-text {
             font-size: 0.95rem;
@@ -671,9 +714,6 @@
             }
         }
         
-        .notify button:active {
-            transform: scale(1.05) translateY(-1px);
-        }
         
         .social {
             margin-top: 40px;
@@ -800,7 +840,118 @@
             }
         }
         
+        /* ======================================================
+           OPTIMITZACIÓ PER A MÒBIL - Desactivar animacions pesades
+           ====================================================== */
         @media (max-width: 768px) {
+            /* Desactivar animacions del body */
+            body {
+                animation: none;
+            }
+            
+            body::before {
+                animation: none;
+            }
+            
+            body::after {
+                animation: none;
+                opacity: 0.3;
+            }
+            
+            /* Simplificar animacions del logo */
+            .logo {
+                animation: none;
+                filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.5));
+            }
+            
+            /* Simplificar badge */
+            .badge {
+                animation: none;
+            }
+            
+            .badge::before {
+                display: none;
+            }
+            
+            /* Simplificar textos */
+            h2, p {
+                animation: none;
+            }
+            
+            /* Container sense float */
+            .container {
+                animation: fadeIn 1s ease-out;
+            }
+            
+            /* Features sense animacions complexes */
+            .feature {
+                animation: none;
+                opacity: 1;
+            }
+            
+            .feature::before {
+                display: none;
+            }
+            
+            .feature:hover {
+                transform: translateY(-5px) scale(1.02);
+                animation: none;
+            }
+            
+            /* Icones sense bounce */
+            .feature-icon {
+                animation: none;
+            }
+            
+            .feature:hover .feature-icon {
+                animation: none;
+                transform: scale(1.1);
+            }
+            
+            /* Progress bar simplificada */
+            .progress-container {
+                animation: none;
+            }
+            
+            .progress-container::before {
+                display: none;
+            }
+            
+            .progress-bar {
+                animation: none;
+            }
+            
+            .progress-bar::before,
+            .progress-bar::after {
+                display: none;
+            }
+            
+            /* Botons simplificats */
+            .notify button::before {
+                display: none;
+            }
+            
+            .notify button:hover {
+                animation: none;
+                transform: scale(1.05) translateY(-2px);
+            }
+            
+            /* Social simplificat */
+            .social {
+                animation: none;
+            }
+            
+            .social a:hover {
+                animation: none;
+                transform: scale(1.2);
+            }
+            
+            /* Desactivar speed lines i vignette en mòbil */
+            .speed-lines,
+            .vignette {
+                display: none;
+            }
+            
             .features {
                 flex-direction: column;
                 align-items: center;
