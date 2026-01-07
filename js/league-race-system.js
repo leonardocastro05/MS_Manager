@@ -24,6 +24,10 @@ function startQualifying() {
         console.error('❌ No hi ha usuari');
         return;
     }
+    if (!user) {
+        console.error('❌ No hi ha usuari');
+        return;
+    }
 
     // Inicialitzar qualificació
     leagueRaceState.qualifyingActive = true;
@@ -179,13 +183,7 @@ function initializeLeagueRace() {
         lapProgress: Math.random() * 2,
         completedLaps: 0,
         color: user.data.online.carConfig?.color || '#FFD700',
-        isPlayer: true,
-        // Sistema de degradació de pneumàtics
-        tyreType: tyreChoice1,
-        tyreWear: 0,  // 0% = nous, 100% = destruïts
-        tyreLapsUsed: 0,
-        // Configuració aerodinàmica
-        aeroConfig: aeroConfig
+        isPlayer: true
     });
 
     // ============================================
@@ -794,123 +792,53 @@ function showAfterRacePopup(data) {
         emoji = '✅';
         titleColor = '#2ecc40';
     } else {
-        title = 'CURSA COMPLETADA';
-        emoji = '🏁';
-        titleColor = '#3498db';
+        message = `Posició: ${bestPosition}è\n\nFora dels punts`;
     }
 
-    // Crear el popup
-    const popup = document.createElement('div');
-    popup.id = 'after-race-popup';
-    popup.innerHTML = `
-        <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; display:flex; align-items:center; justify-content:center;">
-            <div style="background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border:4px solid ${titleColor}; border-radius:24px; padding:40px; max-width:500px; width:90%; animation: popupAppear 0.5s ease-out;">
-                
-                <!-- Títol -->
-                <div style="text-align:center; margin-bottom:30px;">
-                    <div style="font-size:60px; margin-bottom:10px;">${emoji}</div>
-                    <h2 style="color:${titleColor}; font-size:2.5em; margin:0; text-shadow: 0 0 20px ${titleColor};">${title}</h2>
-                    <p style="color:#aaa; font-size:1.2em; margin-top:10px;">Posició final: <strong style="color:#fff; font-size:1.3em;">${data.position}è</strong></p>
-                </div>
-                
-                <!-- Punts Campionat -->
-                <div style="background:rgba(255,215,0,0.1); border:2px solid #ffd700; border-radius:12px; padding:15px; margin-bottom:20px; text-align:center;">
-                    <div style="color:#ffd700; font-size:2em; font-weight:bold;">+${data.points} PUNTS</div>
-                    <div style="color:#aaa; font-size:0.9em;">Punts totals lliga: ${data.leaguePoints}</div>
-                </div>
-                
-                <!-- Recompenses -->
-                <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:20px; margin-bottom:20px;">
-                    <h4 style="color:#2ecc40; margin:0 0 15px 0; font-size:1.2em;">💰 Recompenses</h4>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                        <span style="color:#aaa;">Premi base:</span>
-                        <span style="color:#fff;">${formatMoney(data.basePrize)}</span>
-                    </div>
-                    
-                    ${data.managerBonus > 0 ? `
-                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                        <span style="color:#aaa;">Bonus mànager (+${data.managerBonus}%):</span>
-                        <span style="color:#2ecc40;">+${formatMoney(data.totalPrize - data.basePrize)}</span>
-                    </div>
-                    ` : ''}
-                    
-                    ${data.sponsorBonus > 0 ? `
-                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                        <span style="color:#aaa;">🏢 Patrocinadors (${data.sponsorsCompleted.join(', ')}):</span>
-                        <span style="color:#9b59b6;">+${formatMoney(data.sponsorBonus)}</span>
-                    </div>
-                    ` : ''}
-                    
-                    ${data.coinsEarned > 0 ? `
-                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                        <span style="color:#aaa;">🪙 Coins (patrocinador):</span>
-                        <span style="color:#ffd700;">+${data.coinsEarned} coins</span>
-                    </div>
-                    <div style="color:#666; font-size:0.8em; text-align:right;">
-                        ${data.sponsorRacesRemaining > 0 ? `Curses restants contracte: ${data.sponsorRacesRemaining}` : 'Contracte finalitzat!'}
-                    </div>
-                    ` : ''}
-                    
-                    <div style="border-top:1px solid #333; padding-top:10px; margin-top:10px; display:flex; justify-content:space-between;">
-                        <span style="color:#ffd700; font-weight:bold;">TOTAL GUANYAT:</span>
-                        <span style="color:#ffd700; font-weight:bold; font-size:1.2em;">${formatMoney(data.totalPrize + data.sponsorBonus)}</span>
-                    </div>
-                </div>
-                
-                <!-- XP i Nivell -->
-                <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:20px; margin-bottom:25px;">
-                    <h4 style="color:#3498db; margin:0 0 15px 0; font-size:1.2em;">⭐ Experiència</h4>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                        <span style="color:#aaa;">XP guanyat:</span>
-                        <span style="color:#3498db; font-weight:bold;">+${data.xpGained} XP</span>
-                    </div>
-                    
-                    <div style="margin-bottom:8px;">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                            <span style="color:#fff;">Nivell Pilot: ${data.driverLevel}${data.driverLevel >= data.maxLevel ? ' (MAX)' : ''}</span>
-                            <span style="color:#aaa; font-size:0.85em;">${data.driverLevel >= data.maxLevel ? 'Màxim!' : `${data.driverXP}/${data.xpPerLevel} XP`}</span>
-                        </div>
-                        <div style="background:#222; border-radius:10px; height:12px; overflow:hidden;">
-                            <div style="width:${data.driverLevel >= data.maxLevel ? 100 : (data.driverXP / data.xpPerLevel * 100)}%; background:linear-gradient(90deg, #3498db, #2980b9); height:100%; transition:width 0.5s;"></div>
-                        </div>
-                    </div>
-                    
-                    ${data.leveledUp ? `
-                    <div style="text-align:center; margin-top:12px; padding:10px; background:rgba(46,204,64,0.2); border-radius:8px; border:1px solid #2ecc40;">
-                        <span style="color:#2ecc40; font-weight:bold;">🎉 Has pujat ${data.levelsGained} nivell${data.levelsGained > 1 ? 's' : ''}!</span>
-                    </div>
-                    ` : ''}
-                </div>
-                
-                <!-- Botó Tornar -->
-                <button onclick="returnToLeague('${data.leagueId}')" style="width:100%; padding:18px; background:linear-gradient(90deg, #ffd700, #f39c12); border:none; border-radius:12px; color:#000; font-size:1.3em; font-weight:bold; cursor:pointer; transition:transform 0.2s;">
-                    🏠 Tornar a la Lliga
-                </button>
-                
-            </div>
-        </div>
-    `;
-
-    // Afegir estils d'animació
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes popupAppear {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+    message += `\n\n📊 Punts Campionat: +${points}`;
+    message += `\n💰 Premi base: ${formatMoney(basePrize)}`;
+    
+    if (managerBonus > 0) {
+        message += `\n🎯 Bonus mànager (+${managerBonus}%): ${formatMoney(prize - basePrize)}`;
+    }
+    
+    message += `\n💵 Total guanyat: ${formatMoney(prize)}`;
+    
+    // XP del pilot amb indicador de nivell màxim
+    message += `\n\n⭐ XP guanyat: +${totalXP} XP`;
+    
+    if (user.data.online.driverLevel >= MAX_DRIVER_LEVEL) {
+        message += `\n🏎️ Nivell pilot: ${user.data.online.driverLevel} (NIVELL MÀXIM!)`;
+        message += `\n✨ El teu pilot ha arribat al nivell màxim!`;
+    } else {
+        message += `\n🏎️ Nivell pilot: ${user.data.online.driverLevel} (${user.data.online.driverXP}/${xpPerLevel} XP)`;
+        
+        // Mostrar si ha pujat de nivell
+        if (leveledUp) {
+            if (levelsGained === 1) {
+                message += `\n🎉 Has pujat 1 nivell!`;
+            } else {
+                message += `\n🎉 Has pujat ${levelsGained} nivells!`;
+            }
         }
-    `;
-    document.head.appendChild(style);
+    }
+    
+    // Bonus patrocinadors
+    if (sponsorBonus > 0) {
+        message += `\n\n🏢 Missions patrocinadors completades!`;
+        message += `\n💰 Bonus extra: ${formatMoney(sponsorBonus)}`;
+    }
+    
+    message += `\n\n🏆 Total punts lliga: ${league.standings[user.username]} pts`;
 
-    document.body.appendChild(popup);
-}
+    alert(message);
 
-/**
- * Torna a la pàgina de la lliga
- */
-function returnToLeague(leagueId) {
-    window.location.href = `liga.html?id=${leagueId}`;
+    // Preguntar si vol tornar a la lliga
+    setTimeout(() => {
+        if (confirm('✅ Cursa completada!\n\nVols tornar a la lliga?')) {
+            window.location.href = `liga.html?id=${info.leagueId}`;
+        }
+    }, 500);
 }
 
 // ============================================
