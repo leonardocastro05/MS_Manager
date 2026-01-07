@@ -82,6 +82,7 @@ function initializeOnlineData(user) {
             driverLevel: 1,         // Nivell del pilot online
             managerLevel: 1,        // Nivell del manager online
             sponsor: null,          // Patrocinador actual
+            sponsorRacesRemaining: 0, // Curses restants del contracte del patrocinador
             carConfig: {            // Configuració del monoplaza
                 color: '#FFD700',
                 finish: 'brillant'
@@ -96,6 +97,10 @@ function initializeOnlineData(user) {
             onlinePodiums: 0
         };
         saveUserData(user.data);
+    }
+    // Assegurar que existeix sponsorRacesRemaining per usuaris antics
+    if (user.data.online.sponsorRacesRemaining === undefined) {
+        user.data.online.sponsorRacesRemaining = 0;
     }
 }
 
@@ -142,6 +147,28 @@ function updateOnlineHeaderBalances() {
 }
 
 /**
+ * ACTUALITZAR TOTA LA UI ONLINE (útil després de compres)
+ */
+function refreshOnlineUI() {
+    updateOnlineHeaderBalances();
+    loadOnlineUserInfo();
+    
+    // Actualitzar la secció actual visible
+    const currentSection = document.querySelector('.online-section[style*="display: block"]');
+    if (currentSection) {
+        const sectionId = currentSection.id.replace('online-section-', '');
+        if (sectionId === 'shop') loadOnlineShop();
+        if (sectionId === 'sponsors') loadOnlineSponsors();
+        if (sectionId === 'car') loadOnlineCarUpgrades();
+        if (sectionId === 'xp') loadOnlineXPSystem();
+        if (sectionId === 'overview') {
+            loadOnlineUserInfo();
+            if (typeof loadOnlineStats === 'function') loadOnlineStats();
+        }
+    }
+}
+
+/**
  * CARREGAR INFORMACIÓ D'USUARI
  */
 function loadOnlineUserInfo() {
@@ -171,7 +198,7 @@ function loadOnlineUserInfo() {
             <b>Pilot Nv.${user.data.online.driverLevel}</b><br>
             <span style="font-size:0.9em;">Habilitat base: ${50 + user.data.online.driverLevel * 2}</span><br>
             <button onclick="upgradeOnlineDriver()">
-                Millorar (5 coins)
+                ${user.data.online.driverLevel >= 20 ? '✓ Màxim' : 'Millorar (' + getUpgradeCost(user.data.online.driverLevel) + ' coins)'}
             </button>
         </div>
         
@@ -180,16 +207,17 @@ function loadOnlineUserInfo() {
             <b>Manager Nv.${user.data.online.managerLevel}</b><br>
             <span style="font-size:0.9em;">Bonus: +${user.data.online.managerLevel}%</span><br>
             <button onclick="upgradeOnlineManager()">
-                Millorar (5 coins)
+                ${user.data.online.managerLevel >= 20 ? '✓ Màxim' : 'Millorar (' + getUpgradeCost(user.data.online.managerLevel) + ' coins)'}
             </button>
         </div>
         
-        <div class="shop-card" style="min-width:180px;">
+        <div class="shop-card" style="min-width:180px; ${user.data.online.sponsorRacesRemaining <= 0 && user.data.online.sponsor ? 'background:rgba(255,0,0,0.3);' : ''}">
             <div style="font-size:2em;">💼</div>
             <b>Patrocinador</b><br>
             <span style="font-size:0.9em;">
                 ${user.data.online.sponsor ? user.data.online.sponsor.icon + ' ' + user.data.online.sponsor.name : 'Cap patrocinador'}
             </span>
+            ${user.data.online.sponsorRacesRemaining > 0 ? `<br><span style="font-size:0.85em; color:#ffd700;">⏱️ ${user.data.online.sponsorRacesRemaining} curses restants</span>` : user.data.online.sponsor ? '<br><span style="font-size:0.85em; color:#ff4444;">⚠️ Contracte finalitzat</span>' : ''}
         </div>
     `;
 }
@@ -371,6 +399,19 @@ function loadOnlineXPSystem() {
 }
 
 /**
+ * CALCULAR COST PROGRESSIU PER NIVELL
+ * Nivell 1->2: 5 coins
+ * Nivell 2->3: 7 coins (5+2)
+ * Nivell 3->4: 9 coins (7+2)
+ * I així successivament...
+ */
+function getUpgradeCost(currentLevel) {
+    const baseCost = 5;
+    const increment = 2;
+    return baseCost + (currentLevel - 1) * increment;
+}
+
+/**
  * MILLORAR PILOT ONLINE
  */
 function upgradeOnlineDriver() {
@@ -384,7 +425,7 @@ function upgradeOnlineDriver() {
         return;
     }
 
-    const cost = 5;
+    const cost = getUpgradeCost(user.data.online.driverLevel);
     if (user.data.online.coins < cost) {
         showGameMessage(`🪙 No tens prou coins!<br>Necessites: ${cost} coins<br>Tens: ${user.data.online.coins} coins`, 'error');
         return;
@@ -394,10 +435,11 @@ function upgradeOnlineDriver() {
     user.data.online.driverLevel++;
 
     saveUserData(user.data);
-    updateOnlineHeaderBalances();
-    loadOnlineUserInfo();
+    updateUserInfo();
+    refreshOnlineUI();
 
-    showGameMessage(`✅ Pilot millorat!<br>🏎️ Nivell: ${user.data.online.driverLevel}<br>💰 Cost: ${cost} coins<br><br>Habilitat actual: ${50 + user.data.online.driverLevel * 2}/100`, 'success');
+    const nextCost = user.data.online.driverLevel < 20 ? getUpgradeCost(user.data.online.driverLevel) : 0;
+    showGameMessage(`✅ Pilot millorat!<br>🏎️ Nivell: ${user.data.online.driverLevel}<br>💰 Cost: ${cost} coins<br><br>Habilitat actual: ${50 + user.data.online.driverLevel * 2}/100${nextCost > 0 ? '<br><br>💡 Pròxim nivell: ' + nextCost + ' coins' : ''}`, 'success');
 }
 
 /**
@@ -414,7 +456,7 @@ function upgradeOnlineManager() {
         return;
     }
 
-    const cost = 5;
+    const cost = getUpgradeCost(user.data.online.managerLevel);
     if (user.data.online.coins < cost) {
         showGameMessage(`🪙 No tens prou coins!<br>Necessites: ${cost} coins<br>Tens: ${user.data.online.coins} coins`, 'error');
         return;
@@ -424,10 +466,11 @@ function upgradeOnlineManager() {
     user.data.online.managerLevel++;
 
     saveUserData(user.data);
-    updateOnlineHeaderBalances();
-    loadOnlineUserInfo();
+    updateUserInfo();
+    refreshOnlineUI();
 
-    showGameMessage(`✅ Manager millorat!<br>👤 Nivell: ${user.data.online.managerLevel}<br>💰 Cost: ${cost} coins<br><br>Bonus actual: +${user.data.online.managerLevel}%`, 'success');
+    const nextCost = user.data.online.managerLevel < 20 ? getUpgradeCost(user.data.online.managerLevel) : 0;
+    showGameMessage(`✅ Manager millorat!<br>👤 Nivell: ${user.data.online.managerLevel}<br>💰 Cost: ${cost} coins<br><br>Bonus actual: +${user.data.online.managerLevel}%${nextCost > 0 ? '<br><br>💡 Pròxim nivell: ' + nextCost + ' coins' : ''}`, 'success');
 }
 
 /**
@@ -456,8 +499,8 @@ function upgradeOnlineCar(component) {
     user.data.online.carUpgrades[component]++;
 
     saveUserData(user.data);
-    updateOnlineHeaderBalances();
-    loadOnlineCarUpgrades();
+    updateUserInfo();
+    refreshOnlineUI();
 
     const names = { engine: 'Motor', aero: 'Aerodinàmica', chassis: 'Xassís' };
     const icons = { engine: '⚙️', aero: '✈️', chassis: '🔧' };
@@ -484,14 +527,13 @@ function buySponsor(sponsorId) {
 
     user.data.budget -= sponsor.cost;
     user.data.online.sponsor = sponsor;
+    user.data.online.sponsorRacesRemaining = 5; // Contracte de 5 curses
 
     saveUserData(user.data);
     updateUserInfo();
-    updateOnlineHeaderBalances();
-    loadOnlineSponsors();
-    loadOnlineUserInfo();
+    refreshOnlineUI();
 
-    showGameMessage(`✅ Patrocinador contractat!<br>${sponsor.icon} ${sponsor.name}<br><br>${sponsor.description}<br><br>💰 Cost: ${formatMoney(sponsor.cost)}`, 'success');
+    showGameMessage(`✅ Patrocinador contractat!<br>${sponsor.icon} ${sponsor.name}<br><br>${sponsor.description}<br>⏱️ <b>Durada: 5 curses</b><br><br>💰 Cost: ${formatMoney(sponsor.cost)}`, 'success');
 }
 
 /**
@@ -516,7 +558,7 @@ function buyMoneyWithCoins(moneyPackId) {
 
     saveUserData(user.data);
     updateUserInfo();
-    updateOnlineHeaderBalances();
+    refreshOnlineUI();
 
     showGameMessage(`✅ Compra realitzada!<br>💵 Has rebut: ${formatMoney(pack.amount)}<br>🪙 Cost: ${pack.coinsCost} coins`, 'success');
 }
@@ -543,9 +585,7 @@ function buyCoinsReal(coinPackId) {
         
         saveUserData(user.data);
         updateUserInfo();
-        
-        // Recarregar tenda per mostrar nous coins
-        loadOnlineShop();
+        refreshOnlineUI();
         
         showSuccess('✅ Compra Completada!', `Has rebut <b>${pack.coins} coins</b>!<br><br>💰 Total coins: <b>${user.data.online.coins}</b>`);
         },
@@ -576,9 +616,7 @@ function buyStarterPack() {
         
         saveUserData(user.data);
         updateUserInfo();
-        
-        // Recarregar tenda
-        loadOnlineShop();
+        refreshOnlineUI();
         
         showSuccess('✅ Starter Pack Comprat!', `🏎️ Pilot: Nivell <b>${user.data.online.driverLevel}</b><br>👤 Mànager: Nivell <b>${user.data.online.managerLevel}</b>`);
         },
@@ -613,7 +651,7 @@ function addXP(xpAmount) {
 
         saveUserData(user.data);
         updateUserInfo();
-        updateOnlineHeaderBalances();
+        refreshOnlineUI();
 
         showGameMessage(`🎉 <b>FELICITATS!</b><br><br>Has pujat al <b style="font-size:1.5em;">NIVELL ${user.data.online.level}</b>!<br><br>🎁 <b>Recompenses:</b><br>💰 +${formatMoney(rewards.money)}<br>${rewards.coins > 0 ? `🪙 +${rewards.coins} coins` : ''}`, 'success');
     } else {
@@ -635,8 +673,10 @@ function finishOnlineRace(position) {
     if (position <= 3) user.data.online.onlinePodiums++;
 
     let sponsorRewards = { coins: 0, money: 0 };
+    let sponsorExpired = false;
 
-    if (user.data.online.sponsor) {
+    // Processar recompenses del patrocinador només si té curses restants
+    if (user.data.online.sponsor && user.data.online.sponsorRacesRemaining > 0) {
         const sponsor = user.data.online.sponsor;
         sponsorRewards.coins = sponsor.coinsPerRace;
         user.data.online.coins += sponsorRewards.coins;
@@ -650,23 +690,41 @@ function finishOnlineRace(position) {
             sponsorRewards.money = sponsor.bonusMoney;
             user.data.budget += sponsorRewards.money;
         }
+
+        // Reduir curses restants
+        user.data.online.sponsorRacesRemaining--;
+        
+        // Comprovar si el contracte s'ha acabat
+        if (user.data.online.sponsorRacesRemaining <= 0) {
+            sponsorExpired = true;
+        }
     }
 
     const xpEarned = getXPForPosition(position);
 
     saveUserData(user.data);
     updateUserInfo();
-    updateOnlineHeaderBalances();
+    refreshOnlineUI();
 
     let message = `🏁 <b>CURSA ONLINE COMPLETADA!</b><br><br>`;
     message += `📊 Posició: <b>${position}è</b><br>`;
     message += `⭐ XP guanyada: <b>+${xpEarned}</b><br>`;
 
     if (user.data.online.sponsor) {
-        message += `<br>💼 <b>Recompenses del Patrocinador:</b><br>`;
-        message += `🪙 +${sponsorRewards.coins} coins<br>`;
-        if (sponsorRewards.money > 0) {
-            message += `💰 +${formatMoney(sponsorRewards.money)}<br>`;
+        if (user.data.online.sponsorRacesRemaining >= 0) {
+            message += `<br>💼 <b>Recompenses del Patrocinador:</b><br>`;
+            message += `🪙 +${sponsorRewards.coins} coins<br>`;
+            if (sponsorRewards.money > 0) {
+                message += `💰 +${formatMoney(sponsorRewards.money)}<br>`;
+            }
+            
+            // Avís d'expiració del contracte
+            if (sponsorExpired) {
+                message += `<br><span style="color:#ff4444; font-weight:bold;">⚠️ CONTRACTE FINALITZAT!</span><br>`;
+                message += `<span style="font-size:0.9em;">El contracte amb ${user.data.online.sponsor.icon} ${user.data.online.sponsor.name} ha expirat.<br>Contracta un nou patrocinador!</span>`;
+            } else if (user.data.online.sponsorRacesRemaining > 0) {
+                message += `⏱️ Curses restants: <b>${user.data.online.sponsorRacesRemaining}</b>`;
+            }
         }
     }
 

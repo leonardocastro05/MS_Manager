@@ -11,6 +11,9 @@ function createLeague(leagueData) {
     if (!user) return;
     if (!user.data.onlineLeagues) user.data.onlineLeagues = [];
 
+    // Generar 9 pilots IA per defecte
+    const aiDrivers = generateAIDrivers(9);
+    
     const league = {
         id: 'lg_' + Date.now(),
         name: leagueData.name,
@@ -21,13 +24,62 @@ function createLeague(leagueData) {
         owner: user.username,
         calendar: generateDefaultCalendar(),
         standings: {},
-        currentRace: 0
+        currentRace: 0,
+        aiDrivers: aiDrivers // Pilots controlats per IA
     };
+    
+    // Inicialitzar standings amb pilots IA
+    league.standings[user.username] = 0;
+    aiDrivers.forEach(ai => {
+        league.standings[ai.name] = 0;
+    });
 
     user.data.onlineLeagues.push(league);
     saveUserData(user.data);
+    updateUserInfo();
     loadLeaguesList();
-    alert('✅ Lliga creada amb èxit!');
+    alert('✅ Lliga creada amb èxit!\n\n9 pilots IA s\'han afegit per omplir la graella.');
+}
+
+/**
+ * Genera pilots IA amb noms i habilitats aleatòries
+ */
+function generateAIDrivers(count) {
+    const names = [
+        'Max Verstappen', 'Lewis Hamilton', 'Charles Leclerc', 'Sergio Pérez',
+        'Carlos Sainz', 'Lando Norris', 'George Russell', 'Fernando Alonso',
+        'Oscar Piastri', 'Pierre Gasly', 'Esteban Ocon', 'Lance Stroll',
+        'Valtteri Bottas', 'Zhou Guanyu', 'Kevin Magnussen', 'Nico Hülkenberg',
+        'Yuki Tsunoda', 'Daniel Ricciardo', 'Alex Albon', 'Logan Sargeant'
+    ];
+    
+    // Barrejar noms
+    const shuffledNames = names.sort(() => Math.random() - 0.5);
+    
+    const drivers = [];
+    for (let i = 0; i < count; i++) {
+        drivers.push({
+            name: shuffledNames[i],
+            isAI: true,
+            skill: 50 + Math.floor(Math.random() * 40), // Habilitat entre 50-90
+            team: getRandomTeam(),
+            carPerformance: 50 + Math.floor(Math.random() * 40) // Rendiment del cotxe 50-90
+        });
+    }
+    
+    return drivers;
+}
+
+/**
+ * Retorna un equip aleatori
+ */
+function getRandomTeam() {
+    const teams = [
+        'Red Bull Racing', 'Mercedes', 'Ferrari', 'McLaren',
+        'Aston Martin', 'Alpine', 'Williams', 'AlphaTauri',
+        'Alfa Romeo', 'Haas'
+    ];
+    return teams[Math.floor(Math.random() * teams.length)];
 }
 
 /**

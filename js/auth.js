@@ -112,8 +112,11 @@ function updateUserInfo() {
     const user = getCurrentUser();
     if (!user) return;
 
-    document.getElementById('team-name').textContent = user.data.teamName;
-    document.getElementById('budget').textContent = formatMoney(user.data.budget);
+    const teamNameEl = document.getElementById('team-name');
+    const budgetEl = document.getElementById('budget');
+    
+    if (teamNameEl) teamNameEl.textContent = user.data.teamName;
+    if (budgetEl) budgetEl.textContent = formatMoney(user.data.budget);
 }
 
 function formatMoney(amount) {

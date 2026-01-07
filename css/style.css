@@ -1200,6 +1200,27 @@ body::before {
     background: #e10600;
 }
 
+/* Pestanyes online */
+.online-tab {
+    display: none;
+}
+
+.online-tab.active {
+    display: block;
+    animation: fadeInTab 0.3s ease-out;
+}
+
+@keyframes fadeInTab {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .shop-cards-grid {
     display: flex;
     flex-wrap: wrap;

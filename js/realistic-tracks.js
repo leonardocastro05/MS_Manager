@@ -15,49 +15,88 @@ const realisticTracks = {
         lapRecord: '1:12.909',
         difficulty: 'Molt Difícil',
         
-        // Traçat SVG ultra-realista
-        path: 'M150,300 L250,300 C280,300 290,320 290,340 L290,380 C290,400 310,410 330,410 L450,410 C470,410 480,395 480,380 L480,340 Q480,280 540,270 L620,270 Q670,270 680,310 L680,360 C680,380 695,390 710,380 L760,340 Q790,310 790,270 L790,230 Q790,200 765,190 L690,160 Q650,145 640,120 L620,80 Q600,50 560,50 L420,50 Q380,50 360,80 L340,120 Q330,145 290,160 L220,190 Q190,200 180,230 L170,270 Q165,290 150,300',
+        // TRAÇAT REALISTA DE MONACO - Forma característica del port
+        // Sainte Dévote → Casino → Mirabeau → Túnel → Chicane → Piscine → Rascasse
+        path: 'M 150,480 L 200,480 Q 230,480 240,450 L 260,400 Q 270,370 300,360 L 380,350 Q 420,345 440,310 L 470,260 Q 490,230 530,225 L 600,220 Q 640,220 660,250 L 680,290 Q 690,320 720,330 L 780,345 Q 810,355 820,320 L 825,280 Q 830,240 800,220 L 750,200 Q 710,190 700,220 L 695,260 Q 690,290 660,300 L 600,310 Q 560,315 550,350 L 545,390 Q 540,420 510,430 L 450,445 Q 410,455 400,490 L 395,530 Q 390,560 360,570 L 300,580 Q 260,585 250,550 L 235,510 Q 225,480 195,475 L 150,470 Q 120,465 115,500 L 120,540 Q 125,570 150,575 L 190,580 Q 220,585 225,550 L 220,510 Q 215,480 185,475 L 150,480 Z',
         
-        // Sectors del circuit
+        // Sectors del circuit amb informació detallada
         sectors: [
             {
                 name: 'Sector 1',
                 start: 0,
                 end: 0.33,
-                corners: ['Sainte Dévote', 'Massenet', 'Casino', 'Mirabeau'],
-                difficulty: 'Alta',
-                characteristics: 'Corbes lentes i tècniques'
+                corners: ['Sainte Dévote (T1)', 'Beau Rivage (Pujada)', 'Massenet (T3)', 'Casino Square (T4-T5)', 'Mirabeau (T6)', 'Loews/Grand Hotel (T7)'],
+                difficulty: 'Molt Alta',
+                characteristics: 'Pujada pronuciada després de Sainte Dévote, corbes lentes i tècniques al casino'
             },
             {
                 name: 'Sector 2',
                 start: 0.33,
                 end: 0.66,
-                corners: ['Portier', 'Túnel', 'Nouvelle Chicane'],
-                difficulty: 'Mitjana',
-                characteristics: 'Recta del túnel amb frenada brutal'
+                corners: ['Portier (T8)', 'Túnel (recta)', 'Nouvelle Chicane (T10)', 'Tabac (T11)', 'Piscine (T13-T14)'],
+                difficulty: 'Alta',
+                characteristics: 'Baixada al túnel amb frenada brutal a Nouvelle Chicane, chicanes ràpides a Piscine'
             },
             {
                 name: 'Sector 3',
                 start: 0.66,
                 end: 1.0,
-                corners: ['Tabac', 'Piscine', 'La Rascasse', 'Antony Noghès'],
-                difficulty: 'Molt Alta',
-                characteristics: 'Chicanes ràpides i corbes finals tancades'
+                corners: ['La Rascasse (T16)', 'Antony Noghès (T17-T18)', 'Recta de boxes'],
+                difficulty: 'Alta',
+                characteristics: 'La Rascasse molt tancada, acceleració final i recta de meta'
             }
         ],
         
-        // Punts clau del traçat (percentatge 0-1)
+        // Punts clau del traçat (percentatge 0-1 segons el path)
         keyPoints: {
-            'sainteDevote': 0.05,
-            'casino': 0.15,
-            'mirabeau': 0.25,
-            'tunnel': 0.45,
-            'nouvelleChicane': 0.55,
-            'tabac': 0.68,
-            'piscine': 0.78,
-            'rascasse': 0.88,
-            'anthonyNoghes': 0.95
-        }
+            'sainteDevote': 0.02,      // T1 - Corba dreta de baixada
+            'beauRivage': 0.08,        // Pujada empinadaç
+            'massenet': 0.15,          // T3 - Corba dreta
+            'casino': 0.22,            // T4-T5 - Square del Casino
+            'mirabeau': 0.28,          // T6 - Corba molt lenta
+            'loews': 0.32,             // T7 - Baixada cap al túnel
+            'portier': 0.36,           // T8 - Entrada al túnel
+            'tunnelStart': 0.40,       // Inici del túnel
+            'tunnelEnd': 0.50,         // Final del túnel
+            'nouvelleChicane': 0.55,   // T10 - Frenada des del túnel
+            'tabac': 0.62,             // T11 - Corba ràpida
+            'piscineEntry': 0.70,      // T13 - Entrada a Piscine
+            'piscineExit': 0.78,       // T14 - Sortida de Piscine
+            'rascasse': 0.88,          // T16 - Corba més lenta del circuit
+            'anthonyNoghes': 0.94      // T17-T18 - Corbes finals
+        },
+        
+        // Zona de boxes (percentatge del traçat)
+        pitLane: {
+            entry: 0.96,    // Entrada a boxes després d'Antony Noghès
+            exit: 0.04,     // Sortida abans de Sainte Dévote
+            length: 0.08    // Longitud de la pit lane
+        },
+        
+        // Característiques especials
+        specialFeatures: [
+            {
+                name: 'Túnel',
+                start: 0.40,
+                end: 0.50,
+                type: 'tunnel',
+                description: 'Túnel il·luminat artificalment - canvi brusc de llum'
+            },
+            {
+                name: 'Piscine',
+                start: 0.70,
+                end: 0.78,
+                type: 'chicane',
+                description: 'Chicanes ultraràpides al costat de la piscina'
+            },
+            {
+                name: 'La Rascasse',
+                start: 0.86,
+                end: 0.90,
+                type: 'hairpin',
+                description: 'Corba més lenta - famosa per avaries i tocs'
+            }
+        ]
     },
 
     spa: {
@@ -69,8 +108,8 @@ const realisticTracks = {
         lapRecord: '1:46.286',
         difficulty: 'Difícil',
         
-        // Traçat realista de Spa amb Eau Rouge i Kemmel
-        path: 'M100,300 L200,300 Q250,300 270,270 L300,220 Q320,180 360,170 L500,170 L700,170 Q750,170 770,200 L800,250 Q820,280 850,280 L900,280 Q930,280 940,310 L950,350 Q955,380 930,400 L850,450 Q800,480 760,480 L500,480 Q450,480 420,450 L350,380 Q320,350 300,350 L200,350 Q150,350 130,320 L100,300',
+        // TRAÇAT REALISTA DE SPA - La Source → Eau Rouge/Raidillon → Kemmel → Les Combes → Pouhon → Blanchimont → Bus Stop
+        path: 'M 100,400 L 130,400 Q 160,400 170,370 L 190,320 Q 210,270 260,250 L 380,230 Q 450,220 500,200 L 620,170 Q 680,155 720,170 L 780,200 Q 820,220 840,260 L 860,320 Q 875,370 850,400 L 800,450 Q 760,490 700,500 L 580,510 Q 500,515 440,490 L 340,440 Q 280,410 230,420 L 170,440 Q 130,455 120,430 L 100,400 Z',
         
         sectors: [
             {
@@ -121,8 +160,9 @@ const realisticTracks = {
         lapRecord: '1:21.046',
         difficulty: 'Mitjana',
         
-        // Traçat de Monza - El Temple de la Velocitat
-        path: 'M100,300 L900,300 Q950,300 970,330 L990,370 Q1000,400 970,420 L920,450 Q890,470 850,470 L200,470 Q150,470 130,440 L110,400 Q100,370 120,350 L100,300',
+        // TRAÇAT REALISTA DE MONZA - El Temple de la Velocitat
+        // Variante del Rettifilo → Curva Grande → Variante della Roggia → Lesmos → Variante Ascari → Parabolica
+        path: 'M 100,350 L 200,350 Q 250,350 280,320 L 330,270 Q 360,240 420,240 L 580,240 Q 640,240 670,210 L 720,160 Q 750,130 800,140 L 850,160 Q 880,180 880,220 L 880,300 Q 880,360 840,390 L 780,430 Q 720,470 640,470 L 400,470 Q 320,470 270,430 L 200,380 Q 150,340 120,360 L 100,380 Q 80,400 80,370 L 100,350 Z',
         
         sectors: [
             {
@@ -171,8 +211,9 @@ const realisticTracks = {
         lapRecord: '1:18.750',
         difficulty: 'Alta',
         
-        // Traçat de Portimão - Pujades i baixades
-        path: 'M150,350 Q200,300 250,280 L350,260 Q400,250 430,280 L480,330 Q520,370 570,370 L670,370 Q720,370 750,340 L800,290 Q830,260 860,270 L900,290 Q920,310 920,340 L920,380 Q920,410 890,430 L830,460 Q780,480 730,480 L500,480 Q450,480 420,450 L350,400 Q300,370 250,380 L180,400 Q150,410 140,380 L150,350',
+        // TRAÇAT REALISTA DE PORTIMÃO - Pujades i baixades característiques
+        // Corbes cegues amb canvis d'elevació
+        path: 'M 120,400 Q 180,340 250,320 L 380,300 Q 450,290 500,320 L 560,380 Q 600,420 660,420 L 760,420 Q 820,420 850,380 L 880,320 Q 900,280 870,250 L 820,220 Q 780,200 730,210 L 650,240 Q 600,260 560,240 L 480,200 Q 430,180 400,210 L 360,260 Q 330,300 280,310 L 200,330 Q 150,350 140,400 L 130,450 Q 120,490 150,500 L 200,505 Q 250,505 260,470 L 250,430 Q 240,400 200,395 L 150,400 Q 120,400 120,430 L 120,400 Z',
         
         sectors: [
             {
@@ -219,8 +260,9 @@ const realisticTracks = {
         lapRecord: '1:10.540',
         difficulty: 'Alta',
         
-        // Traçat d'Interlagos - Contra-rellotge
-        path: 'M200,300 Q250,280 300,300 L400,340 Q450,360 500,350 L650,320 Q700,310 730,340 L770,390 Q790,420 770,450 L730,490 Q700,520 650,520 L400,520 Q350,520 320,490 L270,440 Q240,400 230,360 L200,300',
+        // TRAÇAT REALISTA D'INTERLAGOS - Sentit anti-horari
+        // Esses de Senna → Descida do Lago → Ferradura → Laranjinha → Pinheirinho → Juncão
+        path: 'M 200,350 Q 250,300 320,290 L 450,280 Q 530,280 580,320 L 640,380 Q 680,420 720,420 L 800,410 Q 850,400 870,360 L 880,300 Q 885,250 850,220 L 780,190 Q 720,170 660,190 L 560,230 Q 500,260 450,240 L 380,210 Q 330,190 290,220 L 250,270 Q 220,310 230,360 L 250,420 Q 270,470 240,500 L 190,520 Q 150,530 140,490 L 150,440 Q 160,400 200,390 L 200,350 Z',
         
         sectors: [
             {
@@ -344,4 +386,219 @@ function checkForIncidents(lapProgress, trackId) {
  */
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { realisticTracks, getCurrentSector, calculateLapTime, checkForIncidents };
+}
+
+/**
+ * Renderitza el traçat realista del circuit amb totes les seves característiques
+ * @param {string} trackId - ID del circuit
+ * @param {HTMLElement} container - Element contenidor del SVG
+ */
+function renderRealisticTrack(trackId, container) {
+    const track = realisticTracks[trackId];
+    if (!track || !track.path) {
+        console.warn('Traçat no disponible per:', trackId);
+        return;
+    }
+    
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'track-svg');
+    svg.setAttribute('viewBox', '0 0 900 700');
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    
+    // Defs per gradients i patrons
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    
+    // Gradient per l'asfalt
+    const trackGradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+    trackGradient.setAttribute('id', 'track-gradient');
+    trackGradient.setAttribute('x1', '0%');
+    trackGradient.setAttribute('y1', '0%');
+    trackGradient.setAttribute('x2', '100%');
+    trackGradient.setAttribute('y2', '100%');
+    trackGradient.innerHTML = `
+        <stop offset="0%" style="stop-color:#444; stop-opacity:1" />
+        <stop offset="50%" style="stop-color:#333; stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#222; stop-opacity:1" />
+    `;
+    defs.appendChild(trackGradient);
+    
+    // Gradient per al túnel (més fosc)
+    const tunnelGradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+    tunnelGradient.setAttribute('id', 'tunnel-gradient');
+    tunnelGradient.innerHTML = `
+        <stop offset="0%" style="stop-color:#1a1a1a; stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#0a0a0a; stop-opacity:1" />
+    `;
+    defs.appendChild(tunnelGradient);
+    
+    svg.appendChild(defs);
+    
+    // === ZONA DE FORA DE PISTA (verd) ===
+    const offTrack = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    offTrack.setAttribute('d', track.path);
+    offTrack.setAttribute('fill', 'none');
+    offTrack.setAttribute('stroke', '#1a4d1a');
+    offTrack.setAttribute('stroke-width', '100');
+    offTrack.setAttribute('opacity', '0.3');
+    svg.appendChild(offTrack);
+    
+    // === VORERA EXTERIOR (vermella i blanca) ===
+    const outerKerb = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    outerKerb.setAttribute('d', track.path);
+    outerKerb.setAttribute('fill', 'none');
+    outerKerb.setAttribute('stroke', '#cc0000');
+    outerKerb.setAttribute('stroke-width', '72');
+    svg.appendChild(outerKerb);
+    
+    // === ASFALT PRINCIPAL ===
+    const mainTrack = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    mainTrack.setAttribute('d', track.path);
+    mainTrack.setAttribute('fill', 'none');
+    mainTrack.setAttribute('stroke', 'url(#track-gradient)');
+    mainTrack.setAttribute('stroke-width', '60');
+    svg.appendChild(mainTrack);
+    
+    // === TÚNEL (si existeix) ===
+    if (track.specialFeatures) {
+        const tunnel = track.specialFeatures.find(f => f.type === 'tunnel');
+        if (tunnel) {
+            // Crear path només per al túnel
+            const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            pathEl.setAttribute('id', 'track-path');
+            pathEl.setAttribute('d', track.path);
+            pathEl.setAttribute('fill', 'none');
+            pathEl.setAttribute('stroke', 'transparent');
+            pathEl.setAttribute('stroke-width', '60');
+            svg.appendChild(pathEl);
+            
+            // Obtenir el path per calcular posicions
+            const pathLength = pathEl.getTotalLength();
+            const tunnelStart = pathEl.getPointAtLength(pathLength * tunnel.start);
+            const tunnelEnd = pathEl.getPointAtLength(pathLength * tunnel.end);
+            
+            // Dibuixar zona del túnel més fosca
+            const tunnelOverlay = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+            tunnelOverlay.setAttribute('cx', (tunnelStart.x + tunnelEnd.x) / 2);
+            tunnelOverlay.setAttribute('cy', (tunnelStart.y + tunnelEnd.y) / 2);
+            tunnelOverlay.setAttribute('rx', '100');
+            tunnelOverlay.setAttribute('ry', '80');
+            tunnelOverlay.setAttribute('fill', 'rgba(0,0,0,0.5)');
+            svg.appendChild(tunnelOverlay);
+            
+            // Text del túnel
+            const tunnelText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            tunnelText.setAttribute('x', (tunnelStart.x + tunnelEnd.x) / 2);
+            tunnelText.setAttribute('y', (tunnelStart.y + tunnelEnd.y) / 2);
+            tunnelText.setAttribute('fill', '#888');
+            tunnelText.setAttribute('font-size', '14');
+            tunnelText.setAttribute('text-anchor', 'middle');
+            tunnelText.setAttribute('font-family', 'Arial, sans-serif');
+            tunnelText.textContent = '🚇 TÚNEL';
+            svg.appendChild(tunnelText);
+        }
+    }
+    
+    // === PATH INVISIBLE PER SEGUIMENT ===
+    const trackPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    trackPath.setAttribute('id', 'track-path');
+    trackPath.setAttribute('d', track.path);
+    trackPath.setAttribute('fill', 'none');
+    trackPath.setAttribute('stroke', 'transparent');
+    trackPath.setAttribute('stroke-width', '60');
+    svg.appendChild(trackPath);
+    
+    // === LÍNIA DE SORTIDA/META ===
+    const pathEl = document.getElementById('track-path') || trackPath;
+    const pathLength = pathEl.getTotalLength();
+    const startPoint = pathEl.getPointAtLength(0);
+    
+    const startLine = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    startLine.setAttribute('x', startPoint.x - 20);
+    startLine.setAttribute('y', startPoint.y - 30);
+    startLine.setAttribute('width', '40');
+    startLine.setAttribute('height', '60');
+    startLine.setAttribute('fill', '#fff');
+    startLine.setAttribute('opacity', '0.8');
+    svg.appendChild(startLine);
+    
+    // Patró d'escacs
+    const checkeredRect1 = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    checkeredRect1.setAttribute('x', startPoint.x - 20);
+    checkeredRect1.setAttribute('y', startPoint.y - 30);
+    checkeredRect1.setAttribute('width', '20');
+    checkeredRect1.setAttribute('height', '60');
+    checkeredRect1.setAttribute('fill', '#000');
+    svg.appendChild(checkeredRect1);
+    
+    // === ZONA DE BOXES ===
+    if (track.pitLane) {
+        const pitEntry = pathEl.getPointAtLength(pathLength * track.pitLane.entry);
+        const pitExit = pathEl.getPointAtLength(pathLength * track.pitLane.exit);
+        
+        // Línia d'entrada a boxes
+        const pitEntryLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        pitEntryLine.setAttribute('x1', pitEntry.x - 15);
+        pitEntryLine.setAttribute('y1', pitEntry.y - 35);
+        pitEntryLine.setAttribute('x2', pitEntry.x - 15);
+        pitEntryLine.setAttribute('y2', pitEntry.y + 35);
+        pitEntryLine.setAttribute('stroke', '#ffd700');
+        pitEntryLine.setAttribute('stroke-width', '3');
+        pitEntryLine.setAttribute('stroke-dasharray', '5,5');
+        svg.appendChild(pitEntryLine);
+        
+        // Text PIT IN
+        const pitInText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        pitInText.setAttribute('x', pitEntry.x - 25);
+        pitInText.setAttribute('y', pitEntry.y - 45);
+        pitInText.setAttribute('fill', '#ffd700');
+        pitInText.setAttribute('font-size', '12');
+        pitInText.setAttribute('font-weight', 'bold');
+        pitInText.textContent = 'PIT IN';
+        svg.appendChild(pitInText);
+        
+        // Línia de sortida de boxes
+        const pitExitLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        pitExitLine.setAttribute('x1', pitExit.x + 15);
+        pitExitLine.setAttribute('y1', pitExit.y - 35);
+        pitExitLine.setAttribute('x2', pitExit.x + 15);
+        pitExitLine.setAttribute('y2', pitExit.y + 35);
+        pitExitLine.setAttribute('stroke', '#ffd700');
+        pitExitLine.setAttribute('stroke-width', '3');
+        pitExitLine.setAttribute('stroke-dasharray', '5,5');
+        svg.appendChild(pitExitLine);
+        
+        // Text PIT OUT
+        const pitOutText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        pitOutText.setAttribute('x', pitExit.x + 20);
+        pitOutText.setAttribute('y', pitExit.y - 45);
+        pitOutText.setAttribute('fill', '#ffd700');
+        pitOutText.setAttribute('font-size', '12');
+        pitOutText.setAttribute('font-weight', 'bold');
+        pitOutText.textContent = 'PIT OUT';
+        svg.appendChild(pitOutText);
+    }
+    
+    // === SECTORS (marques) ===
+    if (track.sectors) {
+        track.sectors.forEach((sector, index) => {
+            if (index < track.sectors.length - 1) {
+                const sectorPoint = pathEl.getPointAtLength(pathLength * sector.end);
+                
+                // Línia de sector
+                const sectorLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                sectorLine.setAttribute('x1', sectorPoint.x - 25);
+                sectorLine.setAttribute('y1', sectorPoint.y - 25);
+                sectorLine.setAttribute('x2', sectorPoint.x + 25);
+                sectorLine.setAttribute('y2', sectorPoint.y + 25);
+                sectorLine.setAttribute('stroke', '#0f0');
+                sectorLine.setAttribute('stroke-width', '2');
+                sectorLine.setAttribute('opacity', '0.6');
+                svg.appendChild(sectorLine);
+            }
+        });
+    }
+    
+    // Netejar contenidor i afegir SVG
+    container.innerHTML = '';
+    container.appendChild(svg);
 }

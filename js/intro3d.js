@@ -1,10 +1,12 @@
-// Intro 3D amb Three.js - VERSIÓ CINEMATOGRÀFICA
+// Intro 3D amb Three.js - VERSIÓ CINEMATOGRÀFICA AMB FLASHES NFS MW
 
 let intro3DScene = null;
 let intro3DCamera = null;
 let intro3DRenderer = null;
 let intro3DCars = [];
 let intro3DAnimationId = null;
+let intro3DStartTime = Date.now();
+let titleShown = false;
 
 function initIntro3D() {
     const canvas = document.getElementById('intro-canvas');
@@ -56,6 +58,7 @@ function initIntro3D() {
     createLighting();
 
     // Iniciar animació
+    intro3DStartTime = Date.now();
     animateIntro3D();
 
     // Responsive
@@ -430,7 +433,7 @@ function createLighting() {
     const ambientLight = new THREE.AmbientLight(0x404060, 0.6);
     intro3DScene.add(ambientLight);
 
-    // Llum direccional principal (sol)
+    // Llum direccional principal
     const sunLight = new THREE.DirectionalLight(0xffffff, 1.8);
     sunLight.position.set(-8, 20, -10);
     sunLight.castShadow = true;
@@ -440,13 +443,11 @@ function createLighting() {
     sunLight.shadow.camera.bottom = -30;
     sunLight.shadow.mapSize.width = 4096;
     sunLight.shadow.mapSize.height = 4096;
-    sunLight.shadow.bias = -0.0001;
     intro3DScene.add(sunLight);
 
-    // Llums dels focus de la pista
-    const spotIntensity = 1.5;
+    // Spots de pista
     for (let i = 0; i < 6; i++) {
-        const spotLight = new THREE.SpotLight(0xffffff, spotIntensity);
+        const spotLight = new THREE.SpotLight(0xffffff, 1.5);
         spotLight.position.set((i % 2 === 0 ? -12 : 12), 15, -20 + i * 10);
         spotLight.angle = Math.PI / 5;
         spotLight.penumbra = 0.4;
@@ -456,24 +457,46 @@ function createLighting() {
         intro3DScene.add(spotLight);
     }
 
-    // Llum de fons blava (ambient)
+    // Llum de fons
     const backLight = new THREE.DirectionalLight(0x4488ff, 0.6);
     backLight.position.set(0, 8, 15);
     intro3DScene.add(backLight);
-
-    // Llums al pòrtic
-    const porticLight = new THREE.PointLight(0xe10600, 3, 20);
-    porticLight.position.set(0, 6, -8);
-    intro3DScene.add(porticLight);
 }
-
-let intro3DStartTime = Date.now();
-let titleShown = false;
 
 function animateIntro3D() {
     intro3DAnimationId = requestAnimationFrame(animateIntro3D);
 
     const elapsed = (Date.now() - intro3DStartTime) / 1000;
+
+    // FLASHES SIGNIFICATIUS AMB CANVIS DE CÀMERA
+    const flashEl = document.getElementById('intro-flash');
+    if (flashEl) {
+        let flashIntensity = 0;
+
+        // Flash 1: Canvi a vista d'aleron (segon 1.5)
+        // Flash 2: Canvi a vista de cockpit (segon 3.0)
+        // Flash 3: Canvi a vista de línia de meta (segon 4.5)
+        const flashTimings = [
+            { start: 1.48, duration: 0.15, intensity: 1.0 },  // Flash aleron
+            { start: 2.98, duration: 0.15, intensity: 1.0 },  // Flash cockpit
+            { start: 4.48, duration: 0.15, intensity: 1.0 }   // Flash meta
+        ];
+
+        for (const flash of flashTimings) {
+            if (elapsed >= flash.start && elapsed < flash.start + flash.duration) {
+                const flashProgress = (elapsed - flash.start) / flash.duration;
+                if (flashProgress < 0.2) {
+                    flashIntensity = (flashProgress / 0.2) * flash.intensity;
+                } else {
+                    flashIntensity = (1 - (flashProgress - 0.2) / 0.8) * flash.intensity;
+                }
+                break;
+            }
+        }
+
+        flashEl.style.display = flashIntensity > 0 ? 'block' : 'none';
+        flashEl.style.opacity = flashIntensity;
+    }
 
     // Moure cotxes amb acceleració realista
     intro3DCars.forEach((car, index) => {
@@ -497,60 +520,55 @@ function animateIntro3D() {
         }
     });
 
-    // Càmera cinematogràfica dinàmica
+    // CÀMERES CINEMATOGRÀFIQUES AMB CANVIS DRAMÀTICS
     if (intro3DCars.length > 0) {
         const leadCar = intro3DCars[0];
 
-        if (elapsed < 2.5) {
-            // Vista lateral tracking
-            const t = elapsed / 2.5;
-            intro3DCamera.position.x = -15 + t * 10;
-            intro3DCamera.position.y = 3 + Math.sin(t * Math.PI) * 1;
-            intro3DCamera.position.z = leadCar.position.z + 8;
+        if (elapsed < 1.5) {
+            // ANGLE 1: Vista lateral seguint els cotxes
+            const t = elapsed / 1.5;
+            intro3DCamera.position.x = -12 + t * 5;
+            intro3DCamera.position.y = 2.5 + Math.sin(t * Math.PI) * 0.8;
+            intro3DCamera.position.z = leadCar.position.z + 10;
             intro3DCamera.lookAt(leadCar.position.x, leadCar.position.y + 0.3, leadCar.position.z);
-        } else if (elapsed < 4.5) {
-            // Vista des de darrere baixa (ground level)
-            const t = (elapsed - 2.5) / 2;
-            intro3DCamera.position.x = leadCar.position.x + Math.sin(t * Math.PI) * 3;
-            intro3DCamera.position.y = 0.8 + t * 1.5;
-            intro3DCamera.position.z = leadCar.position.z + 10 - t * 4;
+            
+        } else if (elapsed < 3.0) {
+            // ANGLE 2: Càmera des de darrere retrocedint (vista posterior)
+            const t = (elapsed - 1.5) / 1.5;
+            intro3DCamera.position.x = leadCar.position.x + Math.sin(t * 2) * 0.5;
+            intro3DCamera.position.y = leadCar.position.y + 1.8 + t * 0.5;
+            intro3DCamera.position.z = leadCar.position.z + 5 + t * 3; // Càmera retrocedeix
             intro3DCamera.lookAt(
                 leadCar.position.x,
-                leadCar.position.y + 0.5,
-                leadCar.position.z - 3
+                leadCar.position.y + 0.3,
+                leadCar.position.z
             );
+            
+        } else if (elapsed < 4.5) {
+            // ANGLE 3: Vista del cockpit (FLASH 2)
+            const t = (elapsed - 3.0) / 1.5;
+            intro3DCamera.position.x = leadCar.position.x + Math.sin(elapsed * 3) * 0.15;
+            intro3DCamera.position.y = leadCar.position.y + 0.7;
+            intro3DCamera.position.z = leadCar.position.z - 0.5;
+            intro3DCamera.lookAt(
+                leadCar.position.x,
+                leadCar.position.y + 0.3,
+                leadCar.position.z - 20
+            );
+            
         } else {
-            // Vista frontal DRAMÀTICA per la intro del títol
+            // ANGLE 4: Vista de la línia de meta (FLASH 3)
             const t = (elapsed - 4.5) / 2;
-            intro3DCamera.position.x = Math.sin(t * 0.5) * 2;
-            intro3DCamera.position.y = 1.2 + Math.cos(t * 0.3) * 0.5;
-            intro3DCamera.position.z = -18 + t * 2;
-            intro3DCamera.lookAt(0, 0.8, leadCar.position.z);
+            intro3DCamera.position.x = Math.sin(t * 0.8) * 3;
+            intro3DCamera.position.y = 1.5 + t * 1.5;
+            intro3DCamera.position.z = -12 + Math.cos(t * 0.5) * 2;
+            intro3DCamera.lookAt(0, 0.5, leadCar.position.z);
         }
 
         // MOMENT CLAU: Quan creuen la línia de meta
         if (leadCar.position.z < -7 && !titleShown) {
             titleShown = true;
             showCinematicTitle();
-        }
-
-        // Slow motion quan passen la meta
-        if (leadCar.position.z < -7 && leadCar.position.z > -15) {
-            intro3DCars.forEach(car => {
-                car.position.z += 0.15; // Alentir
-            });
-        }
-
-        // Fade out suau
-        if (leadCar.position.z < -20) {
-            intro3DCars.forEach(car => {
-                car.traverse(child => {
-                    if (child.material) {
-                        child.material.opacity = Math.max(0, 1 - (elapsed - 7) * 0.3);
-                        child.material.transparent = true;
-                    }
-                });
-            });
         }
     }
 
@@ -559,20 +577,18 @@ function animateIntro3D() {
 
 function showCinematicTitle() {
     const title = document.getElementById('intro-title');
-    const loadingBar = document.getElementById('loading-bar');
-
+    
     if (title) {
+        title.innerHTML = '<div style="font-size: 4em; font-weight: 900; color: #e10600; text-shadow: 0 0 30px rgba(225,6,0,0.8), 0 0 60px rgba(225,6,0,0.5);">F1 MANAGER</div><div style="font-size: 1.5em; margin-top: 20px; font-weight: 300; letter-spacing: 3px;">BY LEONARDO DE CASTRO FERREIRA</div>';
         title.style.display = 'block';
         title.style.animation = 'titleExplosion 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
         setTimeout(() => title.classList.add('visible'), 50);
-    }
-
-    if (loadingBar) {
+        
+        // Transició al menú després de mostrar el títol
         setTimeout(() => {
-            loadingBar.style.display = 'block';
-            loadingBar.style.animation = 'slideInBottom 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
-            setTimeout(() => loadingBar.classList.add('visible'), 50);
-        }, 1000);
+            showScreen('auth-screen');
+            cleanupIntro3D();
+        }, 3500);
     }
 }
 
