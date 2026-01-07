@@ -42,18 +42,13 @@ function displayTrack(trackId) {
     
     // Preparar imatge de fons si existeix
     const imagePath = track.image ? `img/${track.image}` : '';
-    const hasImage = imagePath !== '';
-    const trackClass = hasImage ? 'race-track image-track' : 'race-track';
 
-    // Crear el HTML de la pista
+    // Crear el HTML de la pista amb contenidor per al SVG realista
     trackDisplay.innerHTML = `
-        <div class="${trackClass}" id="race-track" 
-             style="background-image: url('${imagePath}');">
+        <div class="race-track" id="race-track">
             
-            <!-- SVG amb el traçat del circuit -->
-            <svg class="track-svg" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet">
-                <path id="track-path" d="${track.path || ''}" class="track-path-visible"></path>
-            </svg>
+            <!-- Contenidor per al traçat realista -->
+            <div id="realistic-track-container" style="width: 100%; height: 100%;"></div>
             
             <!-- Informació del circuit -->
             <div style="position: absolute; top: 20px; left: 20px; 
@@ -73,6 +68,12 @@ function displayTrack(trackId) {
             </div>
         </div>
     `;
+
+    // Renderitzar la pista realista
+    const container = document.getElementById('realistic-track-container');
+    if (container && typeof renderRealisticTrack === 'function') {
+        renderRealisticTrack(trackId, container);
+    }
 
     // Animació de la targeta del circuit
     animateCircuitCard(track, imagePath);
