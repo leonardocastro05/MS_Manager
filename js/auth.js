@@ -2,15 +2,15 @@
 function deleteAccount() {
     const username = localStorage.getItem('currentUser');
     if (!username) {
-        alert('No hi ha cap sessió iniciada.');
+        alert('No hay ninguna sesión iniciada.');
         return;
     }
-    if (!confirm('Segur que vols esborrar el teu compte? Aquesta acció és irreversible!')) return;
+    if (!confirm('¿Seguro que quieres eliminar tu cuenta? ¡Esta acción es irreversible!')) return;
     let users = JSON.parse(localStorage.getItem('users') || '{}');
     delete users[username];
     localStorage.setItem('users', JSON.stringify(users));
     localStorage.removeItem('currentUser');
-    alert('Compte esborrat correctament.');
+    alert('Cuenta eliminada correctamente.');
     showScreen('auth-screen');
 }
 // Sistema d'autenticació
@@ -21,14 +21,14 @@ function register() {
     const password = document.getElementById('register-password').value;
 
     if (!username || !teamName || !password) {
-        alert('Si us plau, omple tots els camps!');
+        alert('¡Por favor, rellena todos los campos!');
         return;
     }
 
     // Comprovar si l'usuari ja existeix
     const users = JSON.parse(localStorage.getItem('users') || '{}');
     if (users[username]) {
-        alert('Aquest usuari ja existeix!');
+        alert('¡Este usuario ya existe!');
         return;
     }
 
@@ -50,7 +50,7 @@ function register() {
     };
 
     localStorage.setItem('users', JSON.stringify(users));
-    alert('Compte creat amb èxit! Ara pots iniciar sessió.');
+    alert('¡Cuenta creada con éxito! Ahora puedes iniciar sesión.');
     
     // Netejar els camps
     document.getElementById('register-username').value = '';
@@ -63,7 +63,7 @@ function login() {
     const password = document.getElementById('login-password').value;
 
     if (!username || !password) {
-        alert('Si us plau, omple tots els camps!');
+        alert('¡Por favor, rellena todos los campos!');
         return;
     }
 
@@ -71,12 +71,12 @@ function login() {
     const user = users[username];
 
     if (!user) {
-        alert('Usuari no trobat!');
+        alert('¡Usuario no encontrado!');
         return;
     }
 
     if (user.password !== password) {
-        alert('Contrasenya incorrecta!');
+        alert('¡Contraseña incorrecta!');
         return;
     }
 

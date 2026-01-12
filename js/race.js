@@ -132,17 +132,17 @@ function startRace() {
 
     // Validacions
     if (!user) {
-        alert('⚠️ Primer has d\'iniciar sessió!');
+        alert('⚠️ ¡Primero debes iniciar sesión!');
         return;
     }
 
     if (user.data.drivers.length < 2) {
-        alert('⚠️ Necessites 2 pilots per córrer!');
+        alert('⚠️ ¡Necesitas 2 pilotos para correr!');
         return;
     }
 
     if (!raceState.selectedTrack) {
-        alert('⚠️ Selecciona un circuit primer!');
+        alert('⚠️ ¡Selecciona un circuito primero!');
         return;
     }
 

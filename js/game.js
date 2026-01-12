@@ -13,7 +13,7 @@
 function upgradeComponent(component) {
     const user = getCurrentUser();
     if (!user) {
-        alert('⚠️ Primer has d\'iniciar sessió!');
+        alert('⚠️ ¡Primero debes iniciar sesión!');
         return;
     }
 
@@ -21,7 +21,7 @@ function upgradeComponent(component) {
     
     // Límit màxim de nivell
     if (currentLevel >= 10) {
-        alert('✅ Ja tens el nivell màxim (10)!');
+        alert('✅ ¡Ya tienes el nivel máximo (10)!');
         return;
     }
 
@@ -31,7 +31,7 @@ function upgradeComponent(component) {
 
     // Comprovar si té diners
     if (user.data.budget < cost) {
-        alert(`💰 No tens prou diners!\nNecessites: ${formatMoney(cost)}\nTens: ${formatMoney(user.data.budget)}`);
+        alert(`💰 ¡No tienes suficiente dinero!\nNecesitas: ${formatMoney(cost)}\nTienes: ${formatMoney(user.data.budget)}`);
         return;
     }
 
@@ -44,7 +44,7 @@ function upgradeComponent(component) {
     updateUserInfo();
     updateHQDisplay();
 
-    alert(`✅ ${component.toUpperCase()} millorat!\nNivell: ${user.data.upgrades[component]}\nCost: ${formatMoney(cost)}`);
+    alert(`✅ ¡${component.toUpperCase()} mejorado!\nNivel: ${user.data.upgrades[component]}\nCosto: ${formatMoney(cost)}`);
     
     // Comprovar si s'ha desbloquejat el mode online
     if (typeof checkOnlineUnlockAndNotify === 'function') {
@@ -62,9 +62,9 @@ function updateHQDisplay() {
     const { engine, aero, chassis } = user.data.upgrades;
 
     // Actualitzar textos de nivell
-    document.getElementById('engine-level').textContent = `Nivell: ${engine}`;
-    document.getElementById('aero-level').textContent = `Nivell: ${aero}`;
-    document.getElementById('chassis-level').textContent = `Nivell: ${chassis}`;
+    document.getElementById('engine-level').textContent = `Nivel: ${engine}`;
+    document.getElementById('aero-level').textContent = `Nivel: ${aero}`;
+    document.getElementById('chassis-level').textContent = `Nivel: ${chassis}`;
 
     // Actualitzar barres de progrés (0-100, cada nivell = 10%)
     document.getElementById('engine-progress').value = engine * 10;
@@ -197,7 +197,7 @@ function buyDriver(driverId) {
 
     // Límit de 2 pilots
     if (user.data.drivers.length >= 2) {
-        alert('⚠️ Ja tens 2 pilots!\nNomés pots tenir 2 pilots a l\'equip.');
+        alert('⚠️ ¡Ya tienes 2 pilotos!\nSolo puedes tener 2 pilotos en el equipo.');
         return;
     }
 
@@ -209,7 +209,7 @@ function buyDriver(driverId) {
 
     // Comprovar diners
     if (user.data.budget < driver.price) {
-        alert(`💰 No tens prou diners!\nNecessites: ${formatMoney(driver.price)}\nTens: ${formatMoney(user.data.budget)}`);
+        alert(`💰 ¡No tienes suficiente dinero!\nNecesitas: ${formatMoney(driver.price)}\nTienes: ${formatMoney(user.data.budget)}`);
         return;
     }
 
@@ -222,7 +222,7 @@ function buyDriver(driverId) {
     loadShopItems();
     loadTeamScreen(); // Actualitzar pantalla de l'equip
     
-    alert(`✅ Has contractat a ${driver.name}!\n💰 -${formatMoney(driver.price)}`);
+    alert(`✅ ¡Has contratado a ${driver.name}!\n💰 -${formatMoney(driver.price)}`);
 }
 
 /**
@@ -240,7 +240,7 @@ function buyManager(managerId) {
 
     // Comprovar diners
     if (user.data.budget < manager.price) {
-        alert(`💰 No tens prou diners!\nNecessites: ${formatMoney(manager.price)}\nTens: ${formatMoney(user.data.budget)}`);
+        alert(`💰 ¡No tienes suficiente dinero!\nNecesitas: ${formatMoney(manager.price)}\nTienes: ${formatMoney(user.data.budget)}`);
         return;
     }
 
@@ -252,7 +252,7 @@ function buyManager(managerId) {
     updateUserInfo();
     loadShopItems();
     
-    alert(`✅ Has contractat a ${manager.name}!\n💰 -${formatMoney(manager.price)}`);
+    alert(`✅ ¡Has contratado a ${manager.name}!\n💰 -${formatMoney(manager.price)}`);
 }
 
 // --------------------------------------------
@@ -292,7 +292,7 @@ function displayManager(user) {
             </div>
         `;
     } else {
-        managerDiv.innerHTML = '<p class="no-data">Cap mànager contractat</p>';
+        managerDiv.innerHTML = '<p class="no-data">Sin mánager contratado</p>';
     }
 }
 

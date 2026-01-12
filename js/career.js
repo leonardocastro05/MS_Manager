@@ -202,9 +202,9 @@ function updateCareerScreen() {
 function nextCareerRace() {
     if (nextRace()) {
         updateCareerScreen();
-        alert('✅ Has avançat a la següent cursa!');
+        alert('✅ ¡Has avanzado a la siguiente carrera!');
     } else {
-        alert('🏁 La temporada ha acabat!\n\nClassificació final:\n' +
+        alert('🏁 ¡La temporada ha terminado!\n\nClasificación final:\n' +
             careerMode.standings
                 .slice()
                 .sort((a, b) => b.points - a.points)

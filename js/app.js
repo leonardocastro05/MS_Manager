@@ -82,12 +82,12 @@ function tryEnterOnline() {
         
         // Mostrar estat de cada requisit
         message += `⚙️ Motor: Nivell ${upgrades.engine}/5 ${upgrades.engine >= 5 ? '✅' : '❌'}\n`;
-        message += `✈️ Aerodinàmica: Nivell ${upgrades.aero}/5 ${upgrades.aero >= 5 ? '✅' : '❌'}\n`;
-        message += `🔧 Xassís: Nivell ${upgrades.chassis}/5 ${upgrades.chassis >= 5 ? '✅' : '❌'}\n`;
-        message += `🏁 Curses completades: ${racesCompleted}/1 ${racesCompleted >= 1 ? '✅' : '❌'}`;
+        message += `✈️ Aerodinámica: Nivel ${upgrades.aero}/5 ${upgrades.aero >= 5 ? '✅' : '❌'}\n`;
+        message += `🔧 Chasis: Nivel ${upgrades.chassis}/5 ${upgrades.chassis >= 5 ? '✅' : '❌'}\n`;
+        message += `🏁 Carreras completadas: ${racesCompleted}/1 ${racesCompleted >= 1 ? '✅' : '❌'}`;
         
         showCustomPopup({
-            title: '🔒 Mode Online Bloquejat',
+            title: '🔒 Modo Online Bloqueado',
             message: message,
             type: 'warning'
         });
@@ -109,10 +109,10 @@ function checkOnlineUnlockAndNotify() {
         user.data.onlineUnlockShown = true;
         saveUserData(user.data);
         
-        // Mostrar popup de felicitació
+        // Mostrar popup de felicitación
         showCustomPopup({
-            title: '🎉 Mode Online Desbloquejat!',
-            message: '¡Felicitats! Has completat tots els requisits!\n\n✅ Tots els apartats del HQ al nivell 5\n✅ Almenys 1 cursa completada\n\nAra pots competir contra altres jugadors en el Mode Online!',
+            title: '🎉 ¡Modo Online Desbloqueado!',
+            message: '¡Felicitaciones! ¡Has completado todos los requisitos!\n\n✅ Todos los apartados del HQ al nivel 5\n✅ Al menos 1 carrera completada\n\n¡Ahora puedes competir contra otros jugadores en el Modo Online!',
             type: 'success'
         });
         

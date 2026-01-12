@@ -29,12 +29,12 @@
     }
 </style>
 <!DOCTYPE html>
-<html lang="ca">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F1 Manager - Joc de Gestió</title>
+    <title>F1 Manager - Juego de Gestión</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="js/libs/three.min.js"></script>
 </head>
@@ -59,17 +59,17 @@
                 <h1>🏎️ F1 Manager</h1>
                 <div class="auth-forms">
                     <div id="login-form">
-                        <h2>Iniciar Sessió</h2>
-                        <input type="text" id="login-username" placeholder="Nom d'usuari">
-                        <input type="password" id="login-password" placeholder="Contrasenya">
+                        <h2>Iniciar Sesión</h2>
+                        <input type="text" id="login-username" placeholder="Nombre de usuario">
+                        <input type="password" id="login-password" placeholder="Contraseña">
                         <button onclick="login()">Entrar</button>
                     </div>
                     <div id="register-form">
-                        <h2>Crear Compte</h2>
-                        <input type="text" id="register-username" placeholder="Nom d'usuari">
-                        <input type="text" id="register-team" placeholder="Nom de l'escuderia">
-                        <input type="password" id="register-password" placeholder="Contrasenya">
-                        <button onclick="register()">Registrar-se</button>
+                        <h2>Crear Cuenta</h2>
+                        <input type="text" id="register-username" placeholder="Nombre de usuario">
+                        <input type="text" id="register-team" placeholder="Nombre de la escudería">
+                        <input type="password" id="register-password" placeholder="Contraseña">
+                        <button onclick="register()">Registrarse</button>
                     </div>
                 </div>
             </div>
@@ -90,11 +90,11 @@
                         <div class="user-menu-deco"></div>
                         <button id="user-menu-btn" class="user-menu-btn" onclick="toggleUserMenu()">
                             <span class="menu-icon">⚙️</span>
-                            <span class="menu-label">Opcions</span>
+                            <span class="menu-label">Opciones</span>
                         </button>
                         <div id="user-menu-dropdown" class="user-menu-dropdown">
-                            <button id="logout-btn">Sortir</button>
-                            <button id="delete-account-btn">Esborrar compte</button>
+                            <button id="logout-btn">Salir</button>
+                            <button id="delete-account-btn">Eliminar cuenta</button>
                         </div>
                     </div>
                 </div>
@@ -106,7 +106,7 @@
                     <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at center, rgba(225,6,0,0.2) 0%, transparent 70%);pointer-events:none;"></div>
                     <div style="font-size:5em;margin-bottom:20px;filter:drop-shadow(0 4px 20px rgba(225,6,0,0.5));">🏆</div>
                     <h2 style="font-family:'Orbitron',Arial,sans-serif;font-size:2.2em;color:#fff;text-shadow:0 4px 20px rgba(225,6,0,0.8);margin-bottom:12px;letter-spacing:3px;">Modo Carrera</h2>
-                    <p style="font-size:1.1em;color:rgba(255,255,255,0.8);text-align:center;max-width:80%;line-height:1.5;">Gestiona el teu equip, millora les instal·lacions i competeix per ser el millor de la graella!</p>
+                    <p style="font-size:1.1em;color:rgba(255,255,255,0.8);text-align:center;max-width:80%;line-height:1.5;">Gestiona tu equipo, mejora las instalaciones y compite para ser el mejor de la parrilla!</p>
                     <div style="margin-top:24px;padding:12px 32px;background:rgba(225,6,0,0.3);border:2px solid #e10600;border-radius:12px;font-family:'Orbitron',Arial,sans-serif;font-weight:bold;color:#fff;transition:all 0.2s;">JUGAR</div>
                 </div>
                 <!-- Modo Online -->
@@ -115,11 +115,11 @@
                     <!-- Candau de bloqueig -->
                     <div id="online-lock-overlay" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;border-radius:0 21px 21px 0;">
                         <div style="font-size:4em;margin-bottom:16px;">🔒</div>
-                        <p style="font-family:'Orbitron',Arial,sans-serif;font-size:1em;color:rgba(255,255,255,0.9);text-align:center;max-width:80%;line-height:1.5;">Completa 1 cursa i millora tots els apartats del HQ al nivell 5</p>
+                        <p style="font-family:'Orbitron',Arial,sans-serif;font-size:1em;color:rgba(255,255,255,0.9);text-align:center;max-width:80%;line-height:1.5;">Completa 1 carrera y mejora todos los apartados del HQ al nivel 5</p>
                     </div>
                     <div style="font-size:5em;margin-bottom:20px;filter:drop-shadow(0 4px 20px rgba(0,150,255,0.5));">🌐</div>
                     <h2 style="font-family:'Orbitron',Arial,sans-serif;font-size:2.2em;color:#fff;text-shadow:0 4px 20px rgba(0,150,255,0.8);margin-bottom:12px;letter-spacing:3px;">Entrar al Online</h2>
-                    <p style="font-size:1.1em;color:rgba(255,255,255,0.8);text-align:center;max-width:80%;line-height:1.5;">Competeix contra altres jugadors en temps real i demostra qui és el millor mànager!</p>
+                    <p style="font-size:1.1em;color:rgba(255,255,255,0.8);text-align:center;max-width:80%;line-height:1.5;">Compite contra otros jugadores en tiempo real y demuestra quién es el mejor mánager!</p>
                     <div style="margin-top:24px;padding:12px 32px;background:rgba(0,150,255,0.3);border:2px solid #0096ff;border-radius:12px;font-family:'Orbitron',Arial,sans-serif;font-weight:bold;color:#fff;transition:all 0.2s;">ENTRAR</div>
                 </div>
             </div>
@@ -153,7 +153,7 @@
                 <div style="position:absolute;top:0;left:0;width:100vw;height:100vh;background:linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #0a0a1a 100%);"></div>
                 <div style="position:absolute;top:0;left:0;width:100vw;height:100vh;pointer-events:none;background:radial-gradient(ellipse at center, rgba(225,6,0,0.1) 0%, transparent 70%);"></div>
             </div>
-            <button class="back-btn" onclick="showScreen('main-menu')" style="position:relative;z-index:2;">← Tornar</button>
+            <button class="back-btn" onclick="showScreen('main-menu')" style="position:relative;z-index:2;">← Volver</button>
             <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;padding-top:20px;">
                 <h1 style="font-size:2.2em;margin-bottom:8px;color:#fff;text-shadow:0 4px 20px #e10600;letter-spacing:4px;font-family:'Orbitron',Arial,sans-serif;">🏆 Modo Carrera</h1>
                 <div class="user-info-career" style="margin-bottom:24px;">
@@ -167,19 +167,19 @@
                 <div class="career-option-card" onclick="showScreen('hq-screen')" style="flex:1;min-width:280px;max-width:350px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 30px;background:linear-gradient(180deg, rgba(225,6,0,0.12) 0%, rgba(225,6,0,0.04) 100%);border:2px solid #e10600;border-radius:20px;cursor:pointer;transition:all 0.3s ease;">
                     <div style="font-size:3.5em;margin-bottom:16px;">🏢</div>
                     <h3 style="font-family:'Orbitron',Arial,sans-serif;font-size:1.5em;color:#fff;margin-bottom:8px;">HQ</h3>
-                    <p style="font-size:0.95em;color:rgba(255,255,255,0.7);text-align:center;">Millora el motor, aerodinàmica i xassís del teu cotxe</p>
+                    <p style="font-size:0.95em;color:rgba(255,255,255,0.7);text-align:center;">Mejora el motor, aerodinámica y chasis de tu coche</p>
                 </div>
                 <!-- Comprar Pilots -->
                 <div class="career-option-card" onclick="showScreen('shop-screen')" style="flex:1;min-width:280px;max-width:350px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 30px;background:linear-gradient(180deg, rgba(0,60,180,0.12) 0%, rgba(0,60,180,0.04) 100%);border:2px solid #2980b9;border-radius:20px;cursor:pointer;transition:all 0.3s ease;">
                     <div style="font-size:3.5em;margin-bottom:16px;">👨‍✈️</div>
-                    <h3 style="font-family:'Orbitron',Arial,sans-serif;font-size:1.5em;color:#fff;margin-bottom:8px;">Comprar Pilots</h3>
-                    <p style="font-size:0.95em;color:rgba(255,255,255,0.7);text-align:center;">Contracta els millors pilots per al teu equip</p>
+                    <h3 style="font-family:'Orbitron',Arial,sans-serif;font-size:1.5em;color:#fff;margin-bottom:8px;">Comprar Pilotos</h3>
+                    <p style="font-size:0.95em;color:rgba(255,255,255,0.7);text-align:center;">Contrata los mejores pilotos para tu equipo</p>
                 </div>
                 <!-- Temporada -->
                 <div class="career-option-card" onclick="showScreen('race-screen')" style="flex:1;min-width:280px;max-width:350px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 30px;background:linear-gradient(180deg, rgba(44,204,64,0.12) 0%, rgba(44,204,64,0.04) 100%);border:2px solid #2ecc40;border-radius:20px;cursor:pointer;transition:all 0.3s ease;">
                     <div style="font-size:3.5em;margin-bottom:16px;">🏁</div>
                     <h3 style="font-family:'Orbitron',Arial,sans-serif;font-size:1.5em;color:#fff;margin-bottom:8px;">Temporada</h3>
-                    <p style="font-size:0.95em;color:rgba(255,255,255,0.7);text-align:center;">Competeix en les curses i guanya el campionat</p>
+                    <p style="font-size:0.95em;color:rgba(255,255,255,0.7);text-align:center;">Compite en las carreras y gana el campeonato</p>
                 </div>
             </div>
             <style>
@@ -191,37 +191,37 @@
         </div>
 
         <div id="hq-screen" class="screen">
-            <button class="back-btn" onclick="showScreen('career-menu')">← Tornar</button>
-            <h2>Headquarters - Millores</h2>
+            <button class="back-btn" onclick="showScreen('career-menu')">← Volver</button>
+            <h2>Headquarters - Mejoras</h2>
             <div class="hq-container" style="display: flex; justify-content: center; align-items: center; min-height: 60vh; gap: 48px;">
                 <div class="upgrade-section">
                     <h3>⚙️ Motor</h3>
-                    <div id="engine-level">Nivell: 1</div>
+                    <div id="engine-level">Nivel: 1</div>
                     <progress id="engine-progress" max="100" value="50"></progress>
-                    <button onclick="upgradeComponent('engine')">Millorar (<span id="engine-upgrade-price">€1.500.000</span>)</button>
+                    <button onclick="upgradeComponent('engine')">Mejorar (<span id="engine-upgrade-price">€1.500.000</span>)</button>
                 </div>
                 <div class="upgrade-section">
-                    <h3>✈️ Aerodinàmica</h3>
-                    <div id="aero-level">Nivell: 1</div>
+                    <h3>✈️ Aerodinámica</h3>
+                    <div id="aero-level">Nivel: 1</div>
                     <progress id="aero-progress" max="100" value="50"></progress>
-                    <button onclick="upgradeComponent('aero')">Millorar (<span id="aero-upgrade-price">€1.000.000</span>)</button>
+                    <button onclick="upgradeComponent('aero')">Mejorar (<span id="aero-upgrade-price">€1.000.000</span>)</button>
                 </div>
                 <div class="upgrade-section">
-                    <h3>🔧 Xassís</h3>
-                    <div id="chassis-level">Nivell: 1</div>
+                    <h3>🔧 Chasis</h3>
+                    <div id="chassis-level">Nivel: 1</div>
                     <progress id="chassis-progress" max="100" value="50"></progress>
-                    <button onclick="upgradeComponent('chassis')">Millorar (<span id="chassis-upgrade-price">€500.000</span>)</button>
+                    <button onclick="upgradeComponent('chassis')">Mejorar (<span id="chassis-upgrade-price">€500.000</span>)</button>
                 </div>
             </div>
         </div>
 
         <!-- Pantalla Tenda -->
         <div id="shop-screen" class="screen">
-            <button class="back-btn" onclick="showScreen('career-menu')">← Tornar</button>
-            <h2 class="shop-title">🛒 Tenda - Contractar Personal</h2>
+            <button class="back-btn" onclick="showScreen('career-menu')">← Volver</button>
+            <h2 class="shop-title">🛒 Tienda - Contratar Personal</h2>
             <div class="shop-tabs">
-                <button class="tab-btn active" onclick="showShopTab('drivers')">Pilots</button>
-                <button class="tab-btn" onclick="showShopTab('managers')">Mànagers</button>
+                <button class="tab-btn active" onclick="showShopTab('drivers')">Pilotos</button>
+                <button class="tab-btn" onclick="showShopTab('managers')">Mánagers</button>
             </div>
             <div id="shop-content" class="shop-cards-grid">
                 <!-- S'omplirà dinàmicament amb JavaScript -->
@@ -338,30 +338,30 @@
 
         <!-- Pantalla Equip -->
         <div id="team-screen" class="screen">
-            <button class="back-btn" onclick="showScreen('career-menu')">← Tornar</button>
-            <h2 class="team-title">👥 El Meu Equip</h2>
+            <button class="back-btn" onclick="showScreen('career-menu')">← Volver</button>
+            <h2 class="team-title">👥 Mi Equipo</h2>
             <div class="team-cards-row">
                 <div class="team-card manager-card">
-                    <div class="team-card-title">Mànager</div>
+                    <div class="team-card-title">Mánager</div>
                     <div class="team-card-img-wrap"><img id="manager-img" class="team-card-img"
                             src="img/manager_placeholder.png" alt="Manager" /></div>
-                    <div id="current-manager" class="team-card-name">Cap mànager contractat</div>
+                    <div id="current-manager" class="team-card-name">Sin mánager contratado</div>
                 </div>
                 <div class="team-card driver-card">
-                    <div class="team-card-title">Pilot 1</div>
+                    <div class="team-card-title">Piloto 1</div>
                     <div class="team-card-img-wrap"><img id="driver1-img" class="team-card-img"
-                            src="img/driver_placeholder.png" alt="Pilot 1" /></div>
-                    <div id="driver1-name" class="team-card-name">Cap pilot contractat</div>
+                            src="img/driver_placeholder.png" alt="Piloto 1" /></div>
+                    <div id="driver1-name" class="team-card-name">Sin piloto contratado</div>
                 </div>
                 <div class="team-card driver-card">
-                    <div class="team-card-title">Pilot 2</div>
+                    <div class="team-card-title">Piloto 2</div>
                     <div class="team-card-img-wrap"><img id="driver2-img" class="team-card-img"
-                            src="img/driver_placeholder.png" alt="Pilot 2" /></div>
-                    <div id="driver2-name" class="team-card-name">Cap pilot contractat</div>
+                            src="img/driver_placeholder.png" alt="Piloto 2" /></div>
+                    <div id="driver2-name" class="team-card-name">Sin piloto contratado</div>
                 </div>
             </div>
             <div class="team-stats-card">
-                <h3>📊 Estadístiques de l'Escuderia</h3>
+                <h3>📊 Estadísticas de la Escudería</h3>
                 <div id="team-stats"></div>
             </div>
         </div>
@@ -455,8 +455,8 @@
 
         <!-- Pantalla Cursa -->
         <div id="race-screen" class="screen">
-            <button class="back-btn" onclick="showScreen('career-menu')">← Tornar</button>
-            <h2 class="race-title">🏁 Cursa</h2>
+            <button class="back-btn" onclick="showScreen('career-menu')">← Volver</button>
+            <h2 class="race-title">🏁 Carrera</h2>
             <div class="race-container">
                 <div class="race-top-row">
                     <div class="race-circuit-card fade-anim" id="race-circuit-card" style="display:none;">
@@ -480,7 +480,7 @@
                     }
                 </style>
                 <div class="track-selection">
-                    <h3>Selecciona Circuit</h3>
+                    <h3>Selecciona Circuito</h3>
                     <div class="track-buttons">
                         <button onclick="selectTrack('monaco', event)">🇲🇨 Monaco</button>
                         <button onclick="selectTrack('spa', event)">🇧🇪 Spa-Francorchamps</button>
@@ -490,21 +490,21 @@
                     </div>
                 </div>
                 <div id="strategy-panel" class="strategy-panel">
-                    <h3>Estratègia de Neumàtics</h3>
+                    <h3>Estrategia de Neumáticos</h3>
                     <div class="driver-strategy">
-                        <label>Pilot 1:</label>
+                        <label>Piloto 1:</label>
                         <select id="driver1-tyres">
-                            <option value="soft">🔴 Tous</option>
-                            <option value="medium" selected>🟡 Mitjans</option>
-                            <option value="hard">⚪ Durs</option>
+                            <option value="soft">🔴 Blandos</option>
+                            <option value="medium" selected>🟡 Medios</option>
+                            <option value="hard">⚪ Duros</option>
                         </select>
                     </div>
                     <div class="driver-strategy">
-                        <label>Pilot 2:</label>
+                        <label>Piloto 2:</label>
                         <select id="driver2-tyres">
-                            <option value="soft">🔴 Tous</option>
-                            <option value="medium" selected>🟡 Mitjans</option>
-                            <option value="hard">⚪ Durs</option>
+                            <option value="soft">🔴 Blandos</option>
+                            <option value="medium" selected>🟡 Medios</option>
+                            <option value="hard">⚪ Duros</option>
                         </select>
                     </div>
                 </div>
@@ -512,12 +512,12 @@
                     <!-- La pista es mostrarà aquí -->
                 </div>
                 <div class="race-controls">
-                    <button id="start-race-btn" onclick="startRace()">Començar Cursa</button>
+                    <button id="start-race-btn" onclick="startRace()">Comenzar Carrera</button>
                     <button id="pause-race-btn" onclick="pauseRace()" style="display:none;">Pausar</button>
-                    <button id="toggle-path-btn" onclick="toggleTrackPathVisibility()">Mostrar traçat</button>
+                    <button id="toggle-path-btn" onclick="toggleTrackPathVisibility()">Mostrar trazado</button>
                 </div>
                 <div id="race-positions" class="race-positions">
-                    <h3>Classificació</h3>
+                    <h3>Clasificación</h3>
                     <div id="positions-list"></div>
                 </div>
             </div>

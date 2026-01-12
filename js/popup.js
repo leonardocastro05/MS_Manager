@@ -19,13 +19,13 @@ function showCustomPopup(options) {
     }
 
     const {
-        title = '⚠️ Atenció',
+        title = '⚠️ Atención',
         message = '',
         type = 'info',
         onConfirm = null,
         onCancel = null,
-        confirmText = 'Acceptar',
-        cancelText = 'Cancel·lar'
+        confirmText = 'Aceptar',
+        cancelText = 'Cancelar'
     } = options;
 
     // Definir colors i icones segons tipus
@@ -284,6 +284,6 @@ function showInfo(title, message, onConfirm) {
     showCustomPopup({ title, message, type: 'info', onConfirm });
 }
 
-function showConfirm(title, message, onConfirm, onCancel, confirmText = 'Confirmar', cancelText = 'Cancel·lar') {
+function showConfirm(title, message, onConfirm, onCancel, confirmText = 'Confirmar', cancelText = 'Cancelar') {
     showCustomPopup({ title, message, type: 'confirm', onConfirm, onCancel, confirmText, cancelText });
 }

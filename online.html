@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ca">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
@@ -30,11 +30,11 @@
 
         <!-- MENÚ DE NAVEGACIÓ -->
         <div class="online-menu-buttons" id="online-menu-buttons">
-            <button id="btn-overview" onclick="showOnlineSection('overview')">🏠 Resum</button>
-            <button id="btn-shop" onclick="showOnlineSection('shop')">🛒 Tenda</button>
-            <button id="btn-sponsors" onclick="showOnlineSection('sponsors')">💼 Patrocinadors</button>
+            <button id="btn-overview" onclick="showOnlineSection('overview')">🏠 Resumen</button>
+            <button id="btn-shop" onclick="showOnlineSection('shop')">🛒 Tienda</button>
+            <button id="btn-sponsors" onclick="showOnlineSection('sponsors')">💼 Patrocinadores</button>
             <button id="btn-car" onclick="showOnlineSection('car')">🏎️ Monoplaza</button>
-            <button id="btn-leagues" onclick="showOnlineSection('leagues')">🏆 Lligues</button>
+            <button id="btn-leagues" onclick="showOnlineSection('leagues')">🏆 Ligas</button>
             <button id="btn-xp" onclick="showOnlineSection('xp')">⭐ XP</button>
         </div>
 
@@ -42,12 +42,12 @@
         <div class="online-content">
             <!-- SECCIÓ RESUM -->
             <section id="online-section-overview" class="online-section" style="display:none;">
-                <h3 style="text-align:center; font-size:2em; margin-bottom:24px;">🏠 El teu perfil Online</h3>
+                <h3 style="text-align:center; font-size:2em; margin-bottom:24px;">🏠 Tu perfil Online</h3>
                 <div id="online-user-info" style="display:flex; gap:18px; flex-wrap:wrap; justify-content:center;">
                 </div>
 
                 <div style="max-width:800px; margin:32px auto; text-align:center;">
-                    <h4 style="color:#ffd700; font-size:1.5em; margin-bottom:16px;">📊 Estadístiques Online</h4>
+                    <h4 style="color:#ffd700; font-size:1.5em; margin-bottom:16px;">📊 Estadísticas Online</h4>
                     <div id="online-stats" style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
                     </div>
                 </div>
@@ -55,19 +55,19 @@
 
             <!-- SECCIÓ TENDA -->
             <section id="online-section-shop" class="online-section" style="display:none;">
-                <h3>🛒 Tenda Online</h3>
+                <h3>🛒 Tienda Online</h3>
                 <div class="shop-card"
                     style="margin-bottom:16px; background:linear-gradient(135deg, #e10600, #232526); border:2px solid #ffd700; max-width:600px; margin:0 auto 24px auto;">
                     <div style="font-size:1.8em; margin-bottom:12px;">🚧</div>
-                    <b style="font-size:1.3em;">EN PRODUCCIÓ FINS A GENER 2026</b><br>
-                    <span style="margin-top:12px; display:block;">Les compres amb diners reals estaran disponibles
-                        aviat!</span>
+                    <b style="font-size:1.3em;">EN PRODUCCIÓN HASTA ENERO 2026</b><br>
+                    <span style="margin-top:12px; display:block;">¡Las compras con dinero real estarán disponibles
+                        pronto!</span>
                 </div>
 
-                <h4 style="margin-top:32px;">🪙 Paquets de Coins</h4>
+                <h4 style="margin-top:32px;">🪙 Paquetes de Coins</h4>
                 <div id="online-shop-coins" class="shop-cards-grid"></div>
 
-                <h4 style="margin-top:32px;">💵 Comprar diners amb Coins</h4>
+                <h4 style="margin-top:32px;">💵 Comprar dinero con Coins</h4>
                 <div id="online-shop-money" class="shop-cards-grid"></div>
 
                 <h4 style="margin-top:32px;">🎁 Oferta Especial</h4>
@@ -76,15 +76,15 @@
 
             <!-- SECCIÓ PATROCINADORS -->
             <section id="online-section-sponsors" class="online-section" style="display:none;">
-                <h3>💼 Patrocinadors</h3>
+                <h3>💼 Patrocinadores</h3>
                 <div
                     style="max-width:700px; margin:0 auto 24px auto; text-align:center; background:rgba(255,215,0,0.1); padding:20px; border-radius:12px; border:2px solid #ffd700;">
                     <p style="font-size:1.1em; margin-bottom:12px;">
-                        Els patrocinadors et donen <b style="color:#ffd700;">Coins i diners extra</b> cada vegada que
-                        corres una cursa online!
+                        Los patrocinadores te dan <b style="color:#ffd700;">Coins y dinero extra</b> cada vez que
+                        corres una carrera online!
                     </p>
                     <p style="font-size:0.95em; opacity:0.9;">
-                        Com millor sigui la teva posició, <b>més guanyes!</b>
+                        ¡Cuanto mejor sea tu posición, <b>más ganas!</b>
                     </p>
                 </div>
                 <div id="online-sponsors-list" class="shop-cards-grid"></div>
@@ -92,17 +92,17 @@
 
             <!-- SECCIÓ MONOPLAZA -->
             <section id="online-section-car" class="online-section" style="display:none;">
-                <h3>🏎️ El teu Monoplaza</h3>
+                <h3>🏎️ Tu Monoplaza</h3>
                 
                 <!-- Botons per alternar entre millores i personalització -->
                 <div style="display:flex; gap:16px; justify-content:center; margin-bottom:24px;">
                     <button id="btn-car-upgrades" onclick="showCarSection('upgrades')" 
                             style="padding:12px 32px; font-size:1.1em; border-radius:10px; background:linear-gradient(135deg, #1e5dd8, #2980ff); color:#fff; border:2px solid rgba(111,195,255,0.5); cursor:pointer; font-weight:bold; box-shadow:0 4px 12px rgba(41,98,255,0.3); transition: all 0.3s ease;">
-                        ⚙️ Millores Tècniques
+                        ⚙️ Mejoras Técnicas
                     </button>
                     <button id="btn-car-visual" onclick="showCarSection('visual')" 
                             style="padding:12px 32px; font-size:1.1em; border-radius:10px; background:rgba(65,105,225,0.12); color:#6fc3ff; border:2px solid rgba(111,195,255,0.35); cursor:pointer; font-weight:bold; transition: all 0.3s ease;">
-                        🎨 Personalització Visual
+                        🎨 Personalización Visual
                     </button>
                 </div>
 
@@ -110,10 +110,10 @@
                 <div id="car-section-upgrades" style="display:block;">
                     <div style="max-width:700px; margin:0 auto 24px auto; text-align:center; background:rgba(255,215,0,0.1); padding:20px; border-radius:12px;">
                         <p style="font-size:1.1em;">
-                            Millora el <b style="color:#ffd700;">rendiment del teu monoplaza</b> amb millores tècniques exclusives del Modo Online.
+                            Mejora el <b style="color:#ffd700;">rendimiento de tu monoplaza</b> con mejoras técnicas exclusivas del Modo Online.
                         </p>
                         <p style="font-size:0.95em; margin-top:10px; opacity:0.9;">
-                            Aquestes millores s'afegeixen a les millores del HQ i milloren la velocitat màxima del teu cotxe! 🚀
+                            ¡Estas mejoras se suman a las mejoras del HQ y mejoran la velocidad máxima de tu coche! 🚀
                         </p>
                     </div>
                     <div id="online-car-upgrades-list" class="shop-cards-grid"></div>
@@ -123,10 +123,10 @@
                 <div id="car-section-visual" style="display:none;">
                     <div style="max-width:700px; margin:0 auto 24px auto; text-align:center; background:rgba(255,215,0,0.1); padding:20px; border-radius:12px;">
                         <p style="font-size:1.1em;">
-                            Personalitza el <b style="color:#ffd700;">color del teu monoplaza</b>.
+                            Personaliza el <b style="color:#ffd700;">color de tu monoplaza</b>.
                         </p>
                         <p style="font-size:0.95em; margin-top:10px; opacity:0.9;">
-                            El primer canvi és gratis! 🎁
+                            ¡El primer cambio es gratis! 🎁
                         </p>
                     </div>
                     
@@ -145,10 +145,10 @@
                         
                         <button onclick="saveCarColor()" 
                                 style="width:100%; margin-top:20px; padding:18px; font-size:1.2em; font-weight:bold; background:linear-gradient(90deg, #00a000, #2ecc40); color:#fff; border:none; border-radius:12px; cursor:pointer; box-shadow:0 4px 12px rgba(46,204,64,0.3);">
-                            💾 Desar Color (1 coin)
+                            💾 Guardar Color (1 coin)
                         </button>
                         <p style="text-align:center; color:#888; font-size:0.85em; margin-top:12px;">
-                            🎁 El primer canvi és completament gratis!
+                            🎁 ¡El primer cambio es completamente gratis!
                         </p>
                     </div>
                 </div>
@@ -156,24 +156,24 @@
 
             <!-- SECCIÓ LLIGUES -->
             <section id="online-section-leagues" class="online-section" style="display:none;">
-                <h3>🏆 Lligues Online</h3>
+                <h3>🏆 Ligas Online</h3>
                 <div
                     style="max-width:700px; margin:0 auto 24px auto; text-align:center; background:rgba(16, 71, 147, 0.182); padding:20px; border-radius:12px; border:2px solid #079f9f5a;">
                     <p style="font-size:1.1em; margin-bottom:12px;">
-                        Crea la teva pròpia lliga o uneix-te a les dels teus amics!
+                        ¡Crea tu propia liga o únete a las de tus amigos!
                     </p>
                     <p style="font-size:0.95em; opacity:0.9;">
-                        Personalitza nom, bandera, colors i organitza curses amb calendari propi.
+                        Personaliza nombre, bandera, colores y organiza carreras con calendario propio.
                     </p> 
                 </div>
-                <button class="career-btn" id="create-league-btn" style="margin-bottom:24px;">➕ Crear nova
-                    lliga</button>
+                <button class="career-btn" id="create-league-btn" style="margin-bottom:24px;">➕ Crear nueva
+                    liga</button>
                 <div id="leagues-list" class="leagues-list"></div>
             </section>
 
             <!-- SECCIÓ XP -->
             <section id="online-section-xp" class="online-section" style="display:none;">
-                <h3>⭐ Sistema d'Experiència i Recompenses</h3>
+                <h3>⭐ Sistema de Experiencia y Recompensas</h3>
                 <div id="online-xp-rewards"></div>
             </section>
         </div>
@@ -187,7 +187,7 @@
             <div id="game-message-text" style="margin-bottom:24px;"></div>
             <button onclick="document.getElementById('game-message-modal').style.display='none'"
                 style="padding:12px 32px;font-size:1.1em;border-radius:10px;background:linear-gradient(90deg,#FFD700,#e10600);color:#232526;font-weight:bold;cursor:pointer;border:none;box-shadow:0 4px 16px rgba(255,215,0,0.3);">
-                Tancar
+                Cerrar
             </button>
         </div>
     </div>

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ca">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F1 Manager - Cursa de Lliga</title>
+    <title>F1 Manager - Carrera de Liga</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
         body {
@@ -229,10 +229,10 @@
     <div class="race-container">
         <!-- Header -->
         <div class="race-header">
-            <h2 id="race-title" style="font-size:2em;">🏁 Cursa de Lliga</h2>
+            <h2 id="race-title" style="font-size:2em;">🏁 Carrera de Liga</h2>
             <div class="race-info-bar" style="font-size:1.5em; gap:48px;">
                 <div style="background:rgba(255,215,0,0.2); padding:12px 24px; border-radius:10px; border:2px solid #ffd700;">
-                    🏎️ Volta: <span id="current-lap" style="color:#ffd700; font-size:1.3em; font-weight:900;">0</span>/<span id="total-laps" style="font-size:1.1em;">50</span>
+                    🏎️ Vuelta: <span id="current-lap" style="color:#ffd700; font-size:1.3em; font-weight:900;">0</span>/<span id="total-laps" style="font-size:1.1em;">50</span>
                 </div>
                 <div style="background:rgba(255,215,0,0.2); padding:12px 24px; border-radius:10px; border:2px solid #ffd700;">
                     🪙 <span id="race-coins" style="color:#ffd700; font-size:1.3em; font-weight:900;">0</span>
@@ -251,61 +251,61 @@
 
             <!-- Barra lateral -->
             <div class="race-sidebar">
-                <h3 style="margin-bottom: 24px; text-align: center; font-size:2.2em; color:#ffd700; text-shadow: 0 0 15px rgba(255,215,0,0.5);">📊 Classificació en Directe</h3>
+                <h3 style="margin-bottom: 24px; text-align: center; font-size:2.2em; color:#ffd700; text-shadow: 0 0 15px rgba(255,215,0,0.5);">📊 Clasificación en Directo</h3>
 
                 <!-- Selecció de pneumàtics i configuració ABANS de començar -->
                 <div id="pre-race-setup" style="display: block;">
                     <!-- Configuració Aerodinàmica -->
                     <div class="tyre-selection" style="margin-bottom:16px; border:2px solid #3498db;">
-                        <h4 style="color:#3498db;">🛠️ Configuració Aerodinàmica</h4>
-                        <p style="color:#aaa; font-size:0.85em; margin-bottom:12px;">Ajusta el teu cotxe segons el circuit:</p>
+                        <h4 style="color:#3498db;">🛠️ Configuración Aerodinámica</h4>
+                        <p style="color:#aaa; font-size:0.85em; margin-bottom:12px;">Ajusta tu coche según el circuito:</p>
                         
                         <div class="tyre-option">
-                            <label style="min-width:100px;">Aleró davanter:</label>
+                            <label style="min-width:100px;">Alerón delantero:</label>
                             <input type="range" id="front-wing" min="1" max="10" value="5" style="flex:1;" oninput="updateAeroDisplay()">
                             <span id="front-wing-val" style="min-width:40px; text-align:center;">5</span>
                         </div>
                         
                         <div class="tyre-option">
-                            <label style="min-width:100px;">Aleró posterior:</label>
+                            <label style="min-width:100px;">Alerón trasero:</label>
                             <input type="range" id="rear-wing" min="1" max="10" value="5" style="flex:1;" oninput="updateAeroDisplay()">
                             <span id="rear-wing-val" style="min-width:40px; text-align:center;">5</span>
                         </div>
                         
                         <div style="display:flex; gap:8px; margin-top:12px;">
                             <button onclick="setAeroPreset('lowDownforce')" style="flex:1; padding:8px; border:none; border-radius:6px; background:#2c3e50; color:#fff; cursor:pointer; font-size:0.85em;">
-                                🏎️ Velocitat<br><small>(Monza)</small>
+                                🏎️ Velocidad<br><small>(Monza)</small>
                             </button>
                             <button onclick="setAeroPreset('balanced')" style="flex:1; padding:8px; border:none; border-radius:6px; background:#2c3e50; color:#fff; cursor:pointer; font-size:0.85em;">
-                                ⚖️ Equilibrat<br><small>(Spa)</small>
+                                ⚖️ Equilibrado<br><small>(Spa)</small>
                             </button>
                             <button onclick="setAeroPreset('highDownforce')" style="flex:1; padding:8px; border:none; border-radius:6px; background:#2c3e50; color:#fff; cursor:pointer; font-size:0.85em;">
-                                🔽 Càrrega<br><small>(Monaco)</small>
+                                🔽 Carga<br><small>(Monaco)</small>
                             </button>
                         </div>
                         
                         <div id="aero-effect" style="margin-top:10px; padding:8px; background:rgba(0,0,0,0.3); border-radius:6px; font-size:0.85em; color:#aaa;">
-                            ⚙️ Efecte: <span id="aero-effect-text">Configuració equilibrada</span>
+                            ⚙️ Efecto: <span id="aero-effect-text">Configuración equilibrada</span>
                         </div>
                     </div>
                     
                     <div class="tyre-selection">
-                        <h4>🏎️ Configuració del Pilot</h4>
+                        <h4>🏎️ Configuración del Piloto</h4>
                         <div class="tyre-option">
-                            <label>Pneumàtics:</label>
+                            <label>Neumáticos:</label>
                             <select id="driver1-tyres">
-                                <option value="soft">🔴 Tous (Velocitat màxima, desgast ràpid)</option>
-                                <option value="medium" selected>🟡 Mitjos (Equilibrats)</option>
-                                <option value="hard">⚪ Durs (Duradors, menys velocitat)</option>
+                                <option value="soft">🔴 Blandos (Velocidad máxima, desgaste rápido)</option>
+                                <option value="medium" selected>🟡 Medios (Equilibrados)</option>
+                                <option value="hard">⚪ Duros (Duraderos, menos velocidad)</option>
                             </select>
                         </div>
                     </div>
 
                     <button id="start-qualifying-btn" class="control-btn btn-start" onclick="startQualifying()">
-                        🏁 Començar Qualificació
+                        🏁 Comenzar Calificación
                     </button>
                     <button id="start-race-btn" class="control-btn btn-start" onclick="startRace()" style="display:none;">
-                        🏁 Començar Cursa
+                        🏁 Comenzar Carrera
                     </button>
                 </div>
 
@@ -320,7 +320,7 @@
                         🔧 ENTRAR A BOXES
                     </button>
                     <button class="control-btn btn-exit" onclick="confirmExit()">
-                        ❌ Sortir de la Cursa
+                        ❌ Salir de la Carrera
                     </button>
                 </div>
 
@@ -378,7 +378,7 @@
             // Obtenir info de la cursa del sessionStorage
             const raceInfo = JSON.parse(sessionStorage.getItem('leagueRaceInfo') || '{}');
             if (!raceInfo.leagueId || !raceInfo.trackId) {
-                alert('⚠️ Error: No hi ha informació de la cursa!');
+                alert('⚠️ Error: ¡No hay información de la carrera!');
                 window.location.href = 'online.html';
                 return;
             }
@@ -495,7 +495,7 @@
          * Confirmar sortida de la cursa
          */
         function confirmExit() {
-            if (confirm('⚠️ Segur que vols sortir? Perdràs tot el progrés de la cursa!')) {
+            if (confirm('⚠️ ¿Seguro que quieres salir? ¡Perderás todo el progreso de la carrera!')) {
                 const raceInfo = JSON.parse(sessionStorage.getItem('leagueRaceInfo') || '{}');
                 window.location.href = `liga.html?id=${raceInfo.leagueId}`;
             }
@@ -517,16 +517,16 @@
             let effectColor = '#aaa';
             
             if (totalDownforce <= 3) {
-                effectText = '🚀 Configuració de velocitat punta (+velocitat recta, -agarre corba)';
+                effectText = '🚀 Configuración de velocidad punta (+velocidad recta, -agarre curva)';
                 effectColor = '#3498db';
             } else if (totalDownforce <= 5) {
-                effectText = '⚖️ Configuració equilibrada';
+                effectText = '⚖️ Configuración equilibrada';
                 effectColor = '#2ecc40';
             } else if (totalDownforce <= 7) {
-                effectText = '🔽 Alta càrrega aerodinàmica (+agarre corba, -velocitat recta)';
+                effectText = '🔽 Alta carga aerodinámica (+agarre curva, -velocidad recta)';
                 effectColor = '#f39c12';
             } else {
-                effectText = '🔽🔽 Màxima càrrega - Ideal per circuits urbans';
+                effectText = '🔽🔽 Máxima carga - Ideal para circuitos urbanos';
                 effectColor = '#e74c3c';
             }
             

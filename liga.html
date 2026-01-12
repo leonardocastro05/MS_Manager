@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ca">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F1 Manager - La Meva Lliga</title>
+    <title>F1 Manager - Mi Liga</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -13,7 +13,7 @@
 
     <!-- HEADER FIXAT -->
     <nav class="top-nav" style="position:sticky; top:0; z-index:100;">
-        <h1>🏆 La Meva Lliga</h1>
+        <h1>🏆 Mi Liga</h1>
         <div style="display:flex; gap:18px; align-items:center;">
             <span id="league-user-coins"
                 style="background:#232526; border:2px solid #ffd700; padding:8px 16px; border-radius:12px; font-weight:bold;">🪙
@@ -32,10 +32,10 @@
 
     <!-- TABS DE NAVEGACIÓ -->
     <div class="league-tabs">
-        <button class="league-tab active" onclick="showLeagueTab('calendar')">📅 Calendari</button>
-        <button class="league-tab" onclick="showLeagueTab('standings')">🏆 Classificació</button>
-        <button class="league-tab" onclick="showLeagueTab('car-config')">🎯 El Meu Cotxe</button>
-        <button class="league-tab" onclick="showLeagueTab('league-config')">⚙️ Configuració</button>
+        <button class="league-tab active" onclick="showLeagueTab('calendar')">📅 Calendario</button>
+        <button class="league-tab" onclick="showLeagueTab('standings')">🏆 Clasificación</button>
+        <button class="league-tab" onclick="showLeagueTab('car-config')">🎯 Mi Coche</button>
+        <button class="league-tab" onclick="showLeagueTab('league-config')">⚙️ Configuración</button>
     </div>
 
     <!-- CONTINGUT -->
@@ -43,7 +43,7 @@
 
         <!-- SECCIÓ: CALENDARI -->
         <section id="tab-calendar" class="league-section active">
-            <h2 style="text-align:center; color:#ffd700; font-size:2em; margin-bottom:24px;">📅 Calendari de Curses</h2>
+            <h2 style="text-align:center; color:#ffd700; font-size:2em; margin-bottom:24px;">📅 Calendario de Carreras</h2>
             <div id="calendar-grid" class="calendar-grid">
                 <!-- S'omplirà amb JS -->
             </div>
@@ -51,8 +51,8 @@
 
         <!-- SECCIÓ: CLASSIFICACIÓ -->
         <section id="tab-standings" class="league-section">
-            <h2 style="text-align:center; color:#ffd700; font-size:2em; margin-bottom:24px;">🏆 Classificació del
-                Campionat</h2>
+            <h2 style="text-align:center; color:#ffd700; font-size:2em; margin-bottom:24px;">🏆 Clasificación del
+                Campeonato</h2>
             <div id="standings-table" class="standings-table">
                 <!-- S'omplirà amb JS -->
             </div>
@@ -60,39 +60,39 @@
 
         <!-- SECCIÓ: CONFIGURACIÓ DEL COTXE -->
         <section id="tab-car-config" class="league-section">
-            <h2 style="text-align:center; color:#ffd700; font-size:2em; margin-bottom:24px;">🎯 Configuració del Meu
-                Cotxe</h2>
+            <h2 style="text-align:center; color:#ffd700; font-size:2em; margin-bottom:24px;">🎯 Configuración de Mi
+                Coche</h2>
             <div class="config-form">
-                <h3 style="color:#ffd700; margin-bottom:16px;">Estratègia de Neumàtics</h3>
-                <label>Neumàtic per defecte:</label>
+                <h3 style="color:#ffd700; margin-bottom:16px;">Estrategia de Neumáticos</h3>
+                <label>Neumático por defecto:</label>
                 <select id="car-default-tyre">
-                    <option value="soft">🔴 Tous (Més ràpids, es desgasten ràpid)</option>
-                    <option value="medium" selected>🟡 Mitjans (Equilibrats)</option>
-                    <option value="hard">⚪ Durs (Lents, però duren més)</option>
+                    <option value="soft">🔴 Blandos (Más rápidos, se desgastan rápido)</option>
+                    <option value="medium" selected>🟡 Medios (Equilibrados)</option>
+                    <option value="hard">⚪ Duros (Lentos, pero duran más)</option>
                 </select>
 
-                <h3 style="color:#ffd700; margin:32px 0 16px 0;">Estil de Conducció</h3>
-                <label>Mode de cursa:</label>
+                <h3 style="color:#ffd700; margin:32px 0 16px 0;">Estilo de Conducción</h3>
+                <label>Modo de carrera:</label>
                 <select id="car-driving-style">
-                    <option value="aggressive">🔥 Agressiu (Més risc, més velocitat)</option>
-                    <option value="balanced" selected>⚖️ Equilibrat</option>
-                    <option value="conservative">🛡️ Conservador (Menys risc)</option>
+                    <option value="aggressive">🔥 Agresivo (Más riesgo, más velocidad)</option>
+                    <option value="balanced" selected>⚖️ Equilibrado</option>
+                    <option value="conservative">🛡️ Conservador (Menos riesgo)</option>
                 </select>
 
-                <h3 style="color:#ffd700; margin:32px 0 16px 0;">Configuració Aerodinàmica</h3>
-                <label>Aleron davanter: <span id="front-wing-value">5</span></label>
+                <h3 style="color:#ffd700; margin:32px 0 16px 0;">Configuración Aerodinámica</h3>
+                <label>Alerón delantero: <span id="front-wing-value">5</span></label>
                 <input type="range" id="car-front-wing" min="1" max="10" value="5">
 
-                <label>Aleron posterior: <span id="rear-wing-value">5</span></label>
+                <label>Alerón trasero: <span id="rear-wing-value">5</span></label>
                 <input type="range" id="car-rear-wing" min="1" max="10" value="5">
 
-                <button class="btn-primary" onclick="saveCarConfig()">💾 Desar Configuració</button>
+                <button class="btn-primary" onclick="saveCarConfig()">💾 Guardar Configuración</button>
             </div>
         </section>
 
         <!-- SECCIÓ: CONFIGURACIÓ DE LA LLIGA -->
         <section id="tab-league-config" class="league-section">
-            <h2 style="text-align:center; color:#ffd700; font-size:2em; margin-bottom:24px;">⚙️ Configuració de la Lliga
+            <h2 style="text-align:center; color:#ffd700; font-size:2em; margin-bottom:24px;">⚙️ Configuración de la Liga
             </h2>
             <div id="league-config-content">
                 <!-- S'omplirà amb JS -->
@@ -104,13 +104,13 @@
     <!-- MODAL: COMENÇAR CURSA -->
     <div id="race-modal" class="modal">
         <div class="modal-content">
-            <h2 style="color:#ffd700; text-align:center; margin-bottom:24px;">🏁 Començar Cursa</h2>
+            <h2 style="color:#ffd700; text-align:center; margin-bottom:24px;">🏁 Comenzar Carrera</h2>
             <div id="race-info" style="text-align:center; margin-bottom:24px;">
                 <!-- Info de la cursa -->
             </div>
             <div style="text-align:center;">
-                <button class="btn-primary" onclick="startLeagueRace()">🚀 Començar!</button>
-                <button class="btn-primary" onclick="closeRaceModal()" style="background:#666;">Cancel·lar</button>
+                <button class="btn-primary" onclick="startLeagueRace()">🚀 Comenzar!</button>
+                <button class="btn-primary" onclick="closeRaceModal()" style="background:#666;">Cancelar</button>
             </div>
         </div>
     </div>
@@ -118,14 +118,14 @@
     <!-- MODAL: ELIMINAR LLIGA -->
     <div id="delete-modal" class="modal">
         <div class="modal-content">
-            <h2 style="color:#e10600; text-align:center; margin-bottom:24px;">⚠️ Eliminar Lliga</h2>
-            <p style="text-align:center; margin-bottom:16px;">Aquesta acció NO es pot desfer!</p>
-            <p style="text-align:center; margin-bottom:24px;">Escriu el nom exacte de la lliga per confirmar:</p>
-            <input type="text" id="delete-confirmation" placeholder="Nom de la lliga"
+            <h2 style="color:#e10600; text-align:center; margin-bottom:24px;">⚠️ Eliminar Liga</h2>
+            <p style="text-align:center; margin-bottom:16px;">Esta acción NO se puede deshacer!</p>
+            <p style="text-align:center; margin-bottom:24px;">Escribe el nombre exacto de la liga para confirmar:</p>
+            <input type="text" id="delete-confirmation" placeholder="Nombre de la liga"
                 style="width:100%; padding:12px; border-radius:8px; margin-bottom:24px; background:rgba(255,255,255,0.1); border:2px solid #e10600; color:#fff;">
             <div style="text-align:center;">
                 <button class="btn-danger" onclick="confirmDeleteLeague()">🗑️ Eliminar</button>
-                <button class="btn-primary" onclick="closeDeleteModal()" style="background:#666;">Cancel·lar</button>
+                <button class="btn-primary" onclick="closeDeleteModal()" style="background:#666;">Cancelar</button>
             </div>
         </div>
     </div>
