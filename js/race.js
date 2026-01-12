@@ -484,6 +484,12 @@ function endRace() {
         user.data.podiums++;
     }
     user.data.points += points;
+    
+    // Incrementar el comptador de curses completades (per desbloqueig mode online)
+    if (!user.data.racesCompleted) {
+        user.data.racesCompleted = 0;
+    }
+    user.data.racesCompleted++;
 
     // Premi econòmic (més alt com millor posició)
     const prize = Math.max(100000, 1500000 - (bestPosition * 80000));
@@ -494,6 +500,11 @@ function endRace() {
 
     // Mostrar resultats
     showRaceResults(bestPosition, points, prize);
+    
+    // Comprovar si s'ha desbloquejat el mode online
+    if (typeof checkOnlineUnlockAndNotify === 'function') {
+        setTimeout(() => checkOnlineUnlockAndNotify(), 1500); // Esperar a que es tanqui el popup de resultats
+    }
 
     // If this race was started from a league, update league data
     try {

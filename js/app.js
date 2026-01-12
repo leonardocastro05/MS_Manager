@@ -22,6 +22,119 @@ function closeUserMenuOnClickOutside(e) {
         document.removeEventListener('mousedown', closeUserMenuOnClickOutside);
     }
 }
+
+// ============================================
+// SISTEMA DE DESBLOQUEIG DEL MODE ONLINE
+// ============================================
+
+/**
+ * Comprova si el mode online està desbloquejat
+ * Requisits: Tots els apartats del HQ al nivell 5 mínim + 1 cursa completada
+ */
+function isOnlineUnlocked() {
+    const user = getCurrentUser();
+    if (!user) return false;
+    
+    const upgrades = user.data.upgrades;
+    const racesCompleted = user.data.racesCompleted || 0;
+    
+    // Comprovar si tots els apartats estan al nivell 5 mínim
+    const allUpgradesLevel5 = upgrades.engine >= 5 && upgrades.aero >= 5 && upgrades.chassis >= 5;
+    
+    // Comprovar si ha completat almenys 1 cursa
+    const hasCompletedRace = racesCompleted >= 1;
+    
+    return allUpgradesLevel5 && hasCompletedRace;
+}
+
+/**
+ * Actualitza l'estat visual del botó online (bloquejat/desbloquejat)
+ */
+function updateOnlineStatus() {
+    const onlineCard = document.getElementById('mode-online-card');
+    const lockOverlay = document.getElementById('online-lock-overlay');
+    
+    if (!onlineCard || !lockOverlay) return;
+    
+    if (isOnlineUnlocked()) {
+        onlineCard.classList.remove('locked');
+        lockOverlay.style.display = 'none';
+    } else {
+        onlineCard.classList.add('locked');
+        lockOverlay.style.display = 'flex';
+    }
+}
+
+/**
+ * Intent d'entrar al mode online
+ */
+function tryEnterOnline() {
+    if (isOnlineUnlocked()) {
+        window.location.href = 'online.html';
+    } else {
+        const user = getCurrentUser();
+        if (!user) return;
+        
+        const upgrades = user.data.upgrades;
+        const racesCompleted = user.data.racesCompleted || 0;
+        
+        let message = '🔒 Mode Online Bloquejat\n\nPer desbloquejar-lo necessites:\n\n';
+        
+        // Mostrar estat de cada requisit
+        message += `⚙️ Motor: Nivell ${upgrades.engine}/5 ${upgrades.engine >= 5 ? '✅' : '❌'}\n`;
+        message += `✈️ Aerodinàmica: Nivell ${upgrades.aero}/5 ${upgrades.aero >= 5 ? '✅' : '❌'}\n`;
+        message += `🔧 Xassís: Nivell ${upgrades.chassis}/5 ${upgrades.chassis >= 5 ? '✅' : '❌'}\n`;
+        message += `🏁 Curses completades: ${racesCompleted}/1 ${racesCompleted >= 1 ? '✅' : '❌'}`;
+        
+        showCustomPopup({
+            title: '🔒 Mode Online Bloquejat',
+            message: message,
+            type: 'warning'
+        });
+    }
+}
+
+/**
+ * Comprova si s'acaba de desbloquejar el mode online i mostra popup
+ */
+function checkOnlineUnlockAndNotify() {
+    const user = getCurrentUser();
+    if (!user) return;
+    
+    // Si ja havia vist el popup de desbloqueig, no mostrar-lo
+    if (user.data.onlineUnlockShown) return;
+    
+    if (isOnlineUnlocked()) {
+        // Marcar que s'ha mostrat el popup
+        user.data.onlineUnlockShown = true;
+        saveUserData(user.data);
+        
+        // Mostrar popup de felicitació
+        showCustomPopup({
+            title: '🎉 Mode Online Desbloquejat!',
+            message: '¡Felicitats! Has completat tots els requisits!\n\n✅ Tots els apartats del HQ al nivell 5\n✅ Almenys 1 cursa completada\n\nAra pots competir contra altres jugadors en el Mode Online!',
+            type: 'success'
+        });
+        
+        // Actualitzar l'estat visual
+        updateOnlineStatus();
+    }
+}
+
+/**
+ * Actualitza la informació del menú de carrera
+ */
+function updateCareerMenuInfo() {
+    const user = getCurrentUser();
+    if (!user) return;
+    
+    const teamNameEl = document.getElementById('career-team-name');
+    const budgetEl = document.getElementById('career-budget');
+    
+    if (teamNameEl) teamNameEl.textContent = '🏎️ ' + user.data.teamName;
+    if (budgetEl) budgetEl.textContent = '💰 ' + formatMoney(user.data.budget);
+}
+
 // Mostrar info del modo carrera
 function updateCareerScreen() {
     if (typeof careerMode === 'undefined') return;
@@ -86,7 +199,7 @@ function showScreen(screenId) {
     });
     
     // Parar audio del main menu si sortim d'ell
-    if (mainMenuAudio && screenId !== 'main-menu') {
+    if (mainMenuAudio && screenId !== 'main-menu' && screenId !== 'career-menu') {
         mainMenuAudio.pause();
         mainMenuAudio.currentTime = 0;
     }
@@ -101,6 +214,8 @@ function showScreen(screenId) {
     switch(screenId) {
         case 'main-menu':
             updateUserInfo();
+            updateOnlineStatus();
+            checkOnlineUnlockAndNotify();
             // Reproduir so de F1 només al main menu
             if (!mainMenuAudio) {
                 mainMenuAudio = new Audio('sounds/F1-car.wav');
@@ -117,6 +232,9 @@ function showScreen(screenId) {
                     }, { once: true });
                 });
             }
+            break;
+        case 'career-menu':
+            updateCareerMenuInfo();
             break;
         case 'career-screen':
             updateCareerScreen();

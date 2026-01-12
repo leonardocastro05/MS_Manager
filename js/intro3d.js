@@ -1,8 +1,9 @@
-// Intro 3D amb Three.js - VERSIÓ CINEMATOGRÀFICA AMB FLASHES NFS MW
+// Intro 3D amb Three.js - VERSIÓ CINEMATOGRÀFICA AMB FLASHES NFS MW + POST-PROCESSING
 
 let intro3DScene = null;
 let intro3DCamera = null;
 let intro3DRenderer = null;
+let intro3DComposer = null;
 let intro3DCars = [];
 let intro3DAnimationId = null;
 let intro3DStartTime = Date.now();
@@ -45,6 +46,9 @@ function initIntro3D() {
     intro3DRenderer.toneMappingExposure = 1.3;
     intro3DRenderer.outputEncoding = THREE.sRGBEncoding;
 
+    // POST-PROCESSING: Crear composer amb efectes cinematogràfics
+    setupPostProcessing();
+
     // Crear pista
     createTrack();
 
@@ -63,6 +67,59 @@ function initIntro3D() {
 
     // Responsive
     window.addEventListener('resize', onIntro3DResize);
+}
+
+function setupPostProcessing() {
+    // EffectComposer (requereix EffectComposer.js, RenderPass.js i altres passes)
+    if (typeof THREE.EffectComposer === 'undefined') {
+        console.warn('⚠️ EffectComposer no disponible. Descarrega els fitxers de post-processing.');
+        return;
+    }
+
+    intro3DComposer = new THREE.EffectComposer(intro3DRenderer);
+
+    // Pass 1: Render bàsic de l'escena
+    const renderPass = new THREE.RenderPass(intro3DScene, intro3DCamera);
+    intro3DComposer.addPass(renderPass);
+
+    // Pass 2: Unreal Bloom (glow als llums i alerons)
+    if (typeof THREE.UnrealBloomPass !== 'undefined') {
+        const bloomPass = new THREE.UnrealBloomPass(
+            new THREE.Vector2(window.innerWidth, window.innerHeight),
+            1.2,    // strength (intensitat del bloom)
+            0.6,    // radius
+            0.15    // threshold (només elements brillants)
+        );
+        intro3DComposer.addPass(bloomPass);
+    }
+
+    // Pass 3: Film Grain (efecte de pel·lícula)
+    if (typeof THREE.FilmPass !== 'undefined') {
+        const filmPass = new THREE.FilmPass(
+            0.15,   // noise intensity
+            0.025,  // scanline intensity
+            648,    // scanline count
+            false   // grayscale
+        );
+        filmPass.renderToScreen = false;
+        intro3DComposer.addPass(filmPass);
+    }
+
+    // Pass 4: Vignette (fosc als cantons)
+    if (typeof THREE.ShaderPass !== 'undefined' && typeof THREE.VignetteShader !== 'undefined') {
+        const vignettePass = new THREE.ShaderPass(THREE.VignetteShader);
+        vignettePass.uniforms['offset'].value = 0.95;
+        vignettePass.uniforms['darkness'].value = 1.6;
+        intro3DComposer.addPass(vignettePass);
+    }
+
+    // Darrer pass: Output al canvas
+    const outputPass = intro3DComposer.passes[intro3DComposer.passes.length - 1];
+    if (outputPass) {
+        outputPass.renderToScreen = true;
+    }
+
+    console.log('✅ Post-processing activat amb', intro3DComposer.passes.length, 'efectes');
 }
 
 function createTrack() {
@@ -572,7 +629,12 @@ function animateIntro3D() {
         }
     }
 
-    intro3DRenderer.render(intro3DScene, intro3DCamera);
+    // Renderitzar amb post-processing si està disponible
+    if (intro3DComposer) {
+        intro3DComposer.render();
+    } else {
+        intro3DRenderer.render(intro3DScene, intro3DCamera);
+    }
 }
 
 function showCinematicTitle() {
@@ -601,6 +663,11 @@ function onIntro3DResize() {
     const pixelRatio = Math.min(window.devicePixelRatio, 2);
     intro3DRenderer.setPixelRatio(pixelRatio);
     intro3DRenderer.setSize(window.innerWidth, window.innerHeight);
+
+    // Actualitzar composer si està actiu
+    if (intro3DComposer) {
+        intro3DComposer.setSize(window.innerWidth, window.innerHeight);
+    }
 }
 
 function cleanupIntro3D() {

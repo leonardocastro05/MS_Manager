@@ -75,14 +75,14 @@
             </div>
         </div>
 
-        <!-- Menú principal -->
+        <!-- Menú principal - Pantalla dividida -->
         <div id="main-menu" class="screen">
             <div class="main-bg" style="position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:0;overflow:hidden;">
-                <img src="img/f1-manager-background.png" alt="F1 Manager Background" style="width:100vw;height:100vh;object-fit:cover;filter:brightness(0.85) blur(0.5px);">
-                <div style="position:absolute;top:0;left:0;width:100vw;height:100vh;pointer-events:none;background:linear-gradient(90deg,rgba(0,60,180,0.38) 0%,rgba(26,26,46,0.55) 50%,rgba(225,6,0,0.38) 100%);"></div>
+                <div style="position:absolute;top:0;left:0;width:100vw;height:100vh;background:linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #0a0a1a 100%);"></div>
+                <div style="position:absolute;top:0;left:0;width:100vw;height:100vh;pointer-events:none;background:radial-gradient(ellipse at center, rgba(225,6,0,0.1) 0%, transparent 70%);"></div>
             </div>
             <nav class="top-nav" style="position:relative;z-index:2;">
-                <h1 style="font-size:2.8em;margin-bottom:32px;color:#fff;text-shadow:0 8px 32px #e10600,0 2px 8px #000;letter-spacing:6px;background:linear-gradient(90deg,#fff,#e10600 60%,#fff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">🏎️ F1 Manager</h1>
+                <h1 style="font-size:2.8em;margin-bottom:16px;color:#fff;text-shadow:0 8px 32px #e10600,0 2px 8px #000;letter-spacing:6px;background:linear-gradient(90deg,#fff,#e10600 60%,#fff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">🏎️ F1 Manager</h1>
                 <div class="user-info">
                     <span id="team-name"></span>
                     <span id="budget"></span>
@@ -99,17 +99,99 @@
                     </div>
                 </div>
             </nav>
-            <div class="menu-buttons" style="display:flex;flex-direction:row;align-items:center;justify-content:center;gap:32px;position:relative;z-index:2;margin-top:64px;">
-                <button onclick="showScreen('hq-screen')" style="background:rgba(225,6,0,0.18);color:#fff;border:2px solid #e10600;border-radius:18px;padding:18px 38px;font-size:1.25em;font-family:'Orbitron',Arial,sans-serif;font-weight:bold;backdrop-filter:blur(6px);box-shadow:0 2px 16px #e1060033;transition:all 0.2s;">🏢 HQ</button>
-                <button onclick="showScreen('shop-screen')" style="background:rgba(0,60,180,0.18);color:#fff;border:2px solid #2980b9;border-radius:18px;padding:18px 38px;font-size:1.25em;font-family:'Orbitron',Arial,sans-serif;font-weight:bold;backdrop-filter:blur(6px);box-shadow:0 2px 16px #2980b933;transition:all 0.2s;">🛒 Tenda</button>
-                <button onclick="showScreen('race-screen')" style="background:rgba(44,204,64,0.18);color:#fff;border:2px solid #2ecc40;border-radius:18px;padding:18px 38px;font-size:1.25em;font-family:'Orbitron',Arial,sans-serif;font-weight:bold;backdrop-filter:blur(6px);box-shadow:0 2px 16px #2ecc4033;transition:all 0.2s;">🏁 Cursa</button>
-                <button onclick="showScreen('team-screen')" style="background:rgba(0,188,212,0.18);color:#fff;border:2px solid #00bcd4;border-radius:18px;padding:18px 38px;font-size:1.25em;font-family:'Orbitron',Arial,sans-serif;font-weight:bold;backdrop-filter:blur(6px);box-shadow:0 2px 16px #00bcd433;transition:all 0.2s;">👥 Equip</button>
-                <button onclick="window.location.href='online.html'" style="background:rgba(255,255,255,0.12);color:#e10600;border:2px solid #fff;border-radius:18px;padding:18px 38px;font-size:1.25em;font-family:'Orbitron',Arial,sans-serif;font-weight:bold;backdrop-filter:blur(6px);box-shadow:0 2px 16px #fff3;transition:all 0.2s;">🌐 Modo Online</button>
+            <!-- Pantalla dividida en 2 modes -->
+            <div class="mode-selection-container" style="display:flex;flex-direction:row;align-items:stretch;justify-content:center;gap:0;position:relative;z-index:2;height:70vh;width:100%;max-width:1400px;margin:0 auto;padding:20px;">
+                <!-- Modo Carrera -->
+                <div class="mode-card mode-career" onclick="showScreen('career-menu')" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(225,6,0,0.15) 0%, rgba(225,6,0,0.05) 100%);border:3px solid #e10600;border-radius:24px 0 0 24px;cursor:pointer;transition:all 0.3s ease;position:relative;overflow:hidden;">
+                    <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at center, rgba(225,6,0,0.2) 0%, transparent 70%);pointer-events:none;"></div>
+                    <div style="font-size:5em;margin-bottom:20px;filter:drop-shadow(0 4px 20px rgba(225,6,0,0.5));">🏆</div>
+                    <h2 style="font-family:'Orbitron',Arial,sans-serif;font-size:2.2em;color:#fff;text-shadow:0 4px 20px rgba(225,6,0,0.8);margin-bottom:12px;letter-spacing:3px;">Modo Carrera</h2>
+                    <p style="font-size:1.1em;color:rgba(255,255,255,0.8);text-align:center;max-width:80%;line-height:1.5;">Gestiona el teu equip, millora les instal·lacions i competeix per ser el millor de la graella!</p>
+                    <div style="margin-top:24px;padding:12px 32px;background:rgba(225,6,0,0.3);border:2px solid #e10600;border-radius:12px;font-family:'Orbitron',Arial,sans-serif;font-weight:bold;color:#fff;transition:all 0.2s;">JUGAR</div>
+                </div>
+                <!-- Modo Online -->
+                <div id="mode-online-card" class="mode-card mode-online" onclick="tryEnterOnline()" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(0,150,255,0.15) 0%, rgba(0,150,255,0.05) 100%);border:3px solid #0096ff;border-radius:0 24px 24px 0;cursor:pointer;transition:all 0.3s ease;position:relative;overflow:hidden;">
+                    <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at center, rgba(0,150,255,0.2) 0%, transparent 70%);pointer-events:none;"></div>
+                    <!-- Candau de bloqueig -->
+                    <div id="online-lock-overlay" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;border-radius:0 21px 21px 0;">
+                        <div style="font-size:4em;margin-bottom:16px;">🔒</div>
+                        <p style="font-family:'Orbitron',Arial,sans-serif;font-size:1em;color:rgba(255,255,255,0.9);text-align:center;max-width:80%;line-height:1.5;">Completa 1 cursa i millora tots els apartats del HQ al nivell 5</p>
+                    </div>
+                    <div style="font-size:5em;margin-bottom:20px;filter:drop-shadow(0 4px 20px rgba(0,150,255,0.5));">🌐</div>
+                    <h2 style="font-family:'Orbitron',Arial,sans-serif;font-size:2.2em;color:#fff;text-shadow:0 4px 20px rgba(0,150,255,0.8);margin-bottom:12px;letter-spacing:3px;">Entrar al Online</h2>
+                    <p style="font-size:1.1em;color:rgba(255,255,255,0.8);text-align:center;max-width:80%;line-height:1.5;">Competeix contra altres jugadors en temps real i demostra qui és el millor mànager!</p>
+                    <div style="margin-top:24px;padding:12px 32px;background:rgba(0,150,255,0.3);border:2px solid #0096ff;border-radius:12px;font-family:'Orbitron',Arial,sans-serif;font-weight:bold;color:#fff;transition:all 0.2s;">ENTRAR</div>
+                </div>
             </div>
+            <style>
+                .mode-card:hover {
+                    transform: scale(1.02);
+                    box-shadow: 0 0 40px rgba(255,255,255,0.1);
+                }
+                .mode-career:hover {
+                    background: linear-gradient(180deg, rgba(225,6,0,0.25) 0%, rgba(225,6,0,0.1) 100%) !important;
+                    border-color: #ff2020 !important;
+                }
+                .mode-online:hover {
+                    background: linear-gradient(180deg, rgba(0,150,255,0.25) 0%, rgba(0,150,255,0.1) 100%) !important;
+                    border-color: #40b0ff !important;
+                }
+                .mode-online.locked {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                }
+                .mode-online.locked:hover {
+                    transform: none;
+                    box-shadow: none;
+                }
+            </style>
+        </div>
+
+        <!-- Menú Modo Carrera -->
+        <div id="career-menu" class="screen">
+            <div class="main-bg" style="position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:0;overflow:hidden;">
+                <div style="position:absolute;top:0;left:0;width:100vw;height:100vh;background:linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #0a0a1a 100%);"></div>
+                <div style="position:absolute;top:0;left:0;width:100vw;height:100vh;pointer-events:none;background:radial-gradient(ellipse at center, rgba(225,6,0,0.1) 0%, transparent 70%);"></div>
+            </div>
+            <button class="back-btn" onclick="showScreen('main-menu')" style="position:relative;z-index:2;">← Tornar</button>
+            <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;padding-top:20px;">
+                <h1 style="font-size:2.2em;margin-bottom:8px;color:#fff;text-shadow:0 4px 20px #e10600;letter-spacing:4px;font-family:'Orbitron',Arial,sans-serif;">🏆 Modo Carrera</h1>
+                <div class="user-info-career" style="margin-bottom:24px;">
+                    <span id="career-team-name" style="font-family:'Orbitron',Arial,sans-serif;color:#FFD700;font-size:1.2em;"></span>
+                    <span id="career-budget" style="font-family:'Orbitron',Arial,sans-serif;color:#2ecc40;font-size:1.1em;margin-left:20px;"></span>
+                </div>
+            </div>
+            <!-- Opcions del Modo Carrera -->
+            <div class="career-options-container" style="display:flex;flex-direction:row;align-items:stretch;justify-content:center;gap:32px;position:relative;z-index:2;width:100%;max-width:1200px;margin:0 auto;padding:20px;flex-wrap:wrap;">
+                <!-- HQ -->
+                <div class="career-option-card" onclick="showScreen('hq-screen')" style="flex:1;min-width:280px;max-width:350px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 30px;background:linear-gradient(180deg, rgba(225,6,0,0.12) 0%, rgba(225,6,0,0.04) 100%);border:2px solid #e10600;border-radius:20px;cursor:pointer;transition:all 0.3s ease;">
+                    <div style="font-size:3.5em;margin-bottom:16px;">🏢</div>
+                    <h3 style="font-family:'Orbitron',Arial,sans-serif;font-size:1.5em;color:#fff;margin-bottom:8px;">HQ</h3>
+                    <p style="font-size:0.95em;color:rgba(255,255,255,0.7);text-align:center;">Millora el motor, aerodinàmica i xassís del teu cotxe</p>
+                </div>
+                <!-- Comprar Pilots -->
+                <div class="career-option-card" onclick="showScreen('shop-screen')" style="flex:1;min-width:280px;max-width:350px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 30px;background:linear-gradient(180deg, rgba(0,60,180,0.12) 0%, rgba(0,60,180,0.04) 100%);border:2px solid #2980b9;border-radius:20px;cursor:pointer;transition:all 0.3s ease;">
+                    <div style="font-size:3.5em;margin-bottom:16px;">👨‍✈️</div>
+                    <h3 style="font-family:'Orbitron',Arial,sans-serif;font-size:1.5em;color:#fff;margin-bottom:8px;">Comprar Pilots</h3>
+                    <p style="font-size:0.95em;color:rgba(255,255,255,0.7);text-align:center;">Contracta els millors pilots per al teu equip</p>
+                </div>
+                <!-- Temporada -->
+                <div class="career-option-card" onclick="showScreen('race-screen')" style="flex:1;min-width:280px;max-width:350px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 30px;background:linear-gradient(180deg, rgba(44,204,64,0.12) 0%, rgba(44,204,64,0.04) 100%);border:2px solid #2ecc40;border-radius:20px;cursor:pointer;transition:all 0.3s ease;">
+                    <div style="font-size:3.5em;margin-bottom:16px;">🏁</div>
+                    <h3 style="font-family:'Orbitron',Arial,sans-serif;font-size:1.5em;color:#fff;margin-bottom:8px;">Temporada</h3>
+                    <p style="font-size:0.95em;color:rgba(255,255,255,0.7);text-align:center;">Competeix en les curses i guanya el campionat</p>
+                </div>
+            </div>
+            <style>
+                .career-option-card:hover {
+                    transform: translateY(-8px);
+                    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+                }
+            </style>
         </div>
 
         <div id="hq-screen" class="screen">
-            <button class="back-btn" onclick="showScreen('main-menu')">← Tornar</button>
+            <button class="back-btn" onclick="showScreen('career-menu')">← Tornar</button>
             <h2>Headquarters - Millores</h2>
             <div class="hq-container" style="display: flex; justify-content: center; align-items: center; min-height: 60vh; gap: 48px;">
                 <div class="upgrade-section">
@@ -135,7 +217,7 @@
 
         <!-- Pantalla Tenda -->
         <div id="shop-screen" class="screen">
-            <button class="back-btn" onclick="showScreen('main-menu')">← Tornar</button>
+            <button class="back-btn" onclick="showScreen('career-menu')">← Tornar</button>
             <h2 class="shop-title">🛒 Tenda - Contractar Personal</h2>
             <div class="shop-tabs">
                 <button class="tab-btn active" onclick="showShopTab('drivers')">Pilots</button>
@@ -256,7 +338,7 @@
 
         <!-- Pantalla Equip -->
         <div id="team-screen" class="screen">
-            <button class="back-btn" onclick="showScreen('main-menu')">← Tornar</button>
+            <button class="back-btn" onclick="showScreen('career-menu')">← Tornar</button>
             <h2 class="team-title">👥 El Meu Equip</h2>
             <div class="team-cards-row">
                 <div class="team-card manager-card">
@@ -373,7 +455,7 @@
 
         <!-- Pantalla Cursa -->
         <div id="race-screen" class="screen">
-            <button class="back-btn" onclick="showScreen('main-menu')">← Tornar</button>
+            <button class="back-btn" onclick="showScreen('career-menu')">← Tornar</button>
             <h2 class="race-title">🏁 Cursa</h2>
             <div class="race-container">
                 <div class="race-top-row">

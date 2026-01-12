@@ -45,6 +45,11 @@ function upgradeComponent(component) {
     updateHQDisplay();
 
     alert(`✅ ${component.toUpperCase()} millorat!\nNivell: ${user.data.upgrades[component]}\nCost: ${formatMoney(cost)}`);
+    
+    // Comprovar si s'ha desbloquejat el mode online
+    if (typeof checkOnlineUnlockAndNotify === 'function') {
+        checkOnlineUnlockAndNotify();
+    }
 }
 
 /**
