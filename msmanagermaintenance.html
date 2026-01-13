@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F1 Manager - Próximamente</title>
+    <title>MS Manager - Próximamente</title>ç
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
         
@@ -142,10 +143,6 @@
                 logoGlow 2s ease-in-out infinite,
                 logoShake 0.3s ease-in-out infinite;
             position: relative;
-            text-shadow: 
-                0 0 10px rgba(255, 215, 0, 0.8),
-                0 0 20px rgba(225, 6, 0, 0.6),
-                0 0 30px rgba(255, 215, 0, 0.4);
             filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.7));
         }
         
@@ -207,10 +204,6 @@
             animation: 
                 badgePulse 2s ease-in-out infinite,
                 badgeRotate 4s linear infinite;
-            box-shadow: 
-                0 0 20px rgba(255, 215, 0, 0.5),
-                0 0 40px rgba(255, 215, 0, 0.3),
-                inset 0 0 20px rgba(255, 215, 0, 0.2);
             position: relative;
             overflow: hidden;
         }
@@ -234,16 +227,9 @@
         @keyframes badgePulse {
             0%, 100% {
                 transform: scale(1);
-                box-shadow: 
-                    0 0 20px rgba(255, 215, 0, 0.5),
-                    0 0 40px rgba(255, 215, 0, 0.3);
             }
             50% {
                 transform: scale(1.05);
-                box-shadow: 
-                    0 0 30px rgba(255, 215, 0, 0.8),
-                    0 0 60px rgba(255, 215, 0, 0.5),
-                    0 0 90px rgba(255, 215, 0, 0.3);
             }
         }
         
@@ -270,24 +256,14 @@
             margin-bottom: 20px;
             color: rgba(255, 255, 255, 0.9);
             animation: textWave 3s ease-in-out infinite;
-            text-shadow: 
-                0 0 10px rgba(255, 215, 0, 0.5),
-                0 0 20px rgba(225, 6, 0, 0.3);
         }
         
         @keyframes textWave {
             0%, 100% {
                 transform: translateY(0) scale(1);
-                text-shadow: 
-                    0 0 10px rgba(255, 215, 0, 0.5),
-                    0 0 20px rgba(225, 6, 0, 0.3);
             }
             50% {
                 transform: translateY(-5px) scale(1.02);
-                text-shadow: 
-                    0 0 20px rgba(255, 215, 0, 0.8),
-                    0 0 40px rgba(225, 6, 0, 0.6),
-                    0 0 60px rgba(255, 215, 0, 0.4);
             }
         }
         
@@ -333,14 +309,12 @@
             color: #FFD700;
             margin-bottom: 30px;
             backdrop-filter: blur(10px);
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
         }
         
         h2 {
             font-size: clamp(1.5rem, 4vw, 2.5rem);
             margin-bottom: 20px;
             color: rgba(255, 255, 255, 0.9);
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
         }
         
         p {
@@ -413,11 +387,7 @@
         
         .feature:hover {
             border-color: #FFD700;
-            transform: translateY(-15px) rotateX(10deg) scale(1.1);
-            box-shadow: 
-                0 20px 60px rgba(255, 215, 0, 0.4),
-                0 30px 90px rgba(225, 6, 0, 0.3),
-                inset 0 0 30px rgba(255, 215, 0, 0.2);
+            transform: translateY(-10px);
             animation: featureShake 0.5s ease-in-out;
         }
         
@@ -488,8 +458,6 @@
         
         .feature:hover .feature-text {
             color: #FFD700;
-            transform: scale(1.1);
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
         }
         
         .progress-container {
@@ -502,21 +470,14 @@
             position: relative;
             overflow: hidden;
             animation: progressPulse 2s ease-in-out infinite;
-            box-shadow: 
-                0 0 20px rgba(255, 215, 0, 0.3),
-                inset 0 0 20px rgba(0, 0, 0, 0.3);
         }
         
         @keyframes progressPulse {
             0%, 100% {
-                box-shadow: 
-                    0 0 20px rgba(255, 215, 0, 0.3),
-                    inset 0 0 20px rgba(0, 0, 0, 0.3);
+                opacity: 1;
             }
             50% {
-                box-shadow: 
-                    0 0 40px rgba(255, 215, 0, 0.6),
-                    inset 0 0 30px rgba(255, 215, 0, 0.2);
+                opacity: 0.95;
             }
         }
         
@@ -560,9 +521,6 @@
                 progressShine 3s linear infinite;
             position: relative;
             overflow: hidden;
-            box-shadow: 
-                0 0 20px rgba(255, 215, 0, 0.6),
-                inset 0 0 10px rgba(255, 255, 255, 0.3);
         }
         
         @keyframes progressGrow {
@@ -648,14 +606,10 @@
             width: 300px;
             max-width: calc(100% - 120px);
             transition: all 0.3s;
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
         }
         
         .notify input:focus {
             border-color: #fff;
-            box-shadow: 
-                0 0 20px rgba(255, 215, 0, 0.5),
-                0 0 40px rgba(255, 215, 0, 0.3);
             transform: scale(1.02);
         }
         
@@ -676,7 +630,6 @@
             transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
         }
         
         .notify button::before {
@@ -698,20 +651,7 @@
         }
         
         .notify button:hover {
-            transform: scale(1.1) translateY(-3px);
-            box-shadow: 
-                0 8px 30px rgba(255, 215, 0, 0.6),
-                0 12px 50px rgba(225, 6, 0, 0.4);
-            animation: buttonPulse 0.6s ease-in-out;
-        }
-        
-        @keyframes buttonPulse {
-            0%, 100% {
-                transform: scale(1.1) translateY(-3px);
-            }
-            50% {
-                transform: scale(1.15) translateY(-5px);
-            }
+            transform: scale(1.05) translateY(-2px);
         }
         
         
@@ -973,23 +913,23 @@
     <div class="vignette"></div>
     
     <div class="container">
-        <div class="logo">🏎️ F1 MANAGER</div>
+        <div class="logo">MS MANAGER</div>
         
-        <div class="badge">🚧 EN CONSTRUCCIÓN</div>
+        <div class="badge">EN CONSTRUCCIÓN</div>
         
-        <h2>¡El mejor juego 2D sobre Fórmula 1 está llegando!</h2>
+        <h2>¡El mejor 2D sobre Motorsport!</h2>
         
-        <p>Estoy trabajando duro para ofrecerte la experiencia más completa de gestión de escuderías de F1. Carreras, estrategia, mejoras y 
+        <p>Estoy trabajando duro para ofrecerte la experiencia más completa de gestión de carreras, estrategia, mejoras y 
             ¡mucho más!</p>
         
         <div class="features">
             <div class="feature">
                 <div class="feature-icon">🏁</div>
-                <div class="feature-text">5 Circuitos</div>
+                <div class="feature-text">??? Circuitos</div>
             </div>
             <div class="feature">
                 <div class="feature-icon">👥</div>
-                <div class="feature-text">12 Pilotos Únicos</div>
+                <div class="feature-text">∞ Pilotos para escoger</div>
             </div>
             <div class="feature">
                 <div class="feature-icon">🌐</div>

@@ -661,7 +661,7 @@
 }
 
 /* ============================================
-   F1 MANAGER - ESTILS PRINCIPALS
+   iMS MANAGER - ESTILS PRINCIPALS
    Versió neta i organitzada
    ============================================ */
 
@@ -674,7 +674,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #000 url('../img/f1-manager-background.png') no-repeat center center fixed;
+    background: #000 url('../img/ims-manager-background.png') no-repeat center center fixed;
     background-size: cover;
     color: #fff;
     min-height: 100vh;
