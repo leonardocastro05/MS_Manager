@@ -29,6 +29,21 @@
             scroll-behavior: smooth;
             scroll-snap-type: x mandatory;
             display: flex;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Mejoras para móvil: scroll más controlado */
+        @media (max-width: 768px) {
+            .horizontal-scroll-wrapper {
+                scroll-snap-type: x mandatory;
+                scroll-behavior: smooth;
+                overscroll-behavior-x: contain;
+            }
+            
+            /* Evitar rebote en los bordes */
+            .horizontal-scroll-wrapper {
+                -webkit-overflow-scrolling: auto;
+            }
         }
         
         .horizontal-scroll-wrapper::-webkit-scrollbar {
@@ -803,33 +818,44 @@
         }
         
         // Actualizar los dots de navegación al hacer scroll
+        let scrollTimeout;
         wrapper.addEventListener('scroll', () => {
-            const scrollPosition = wrapper.scrollLeft;
-            const sectionWidth = window.innerWidth;
-            const currentSection = Math.round(scrollPosition / sectionWidth);
+            // Reducir la frecuencia de actualización en móvil para mejor rendimiento
+            if (scrollTimeout) {
+                clearTimeout(scrollTimeout);
+            }
             
-            navDots.forEach((dot, index) => {
-                if (index === currentSection) {
-                    dot.classList.add('active');
-                } else {
-                    dot.classList.remove('active');
-                }
-            });
-            
-            // Parallax effect per les seccions - només per títols i paràgrafs
-            sections.forEach((section, index) => {
-                const offset = scrollPosition - (index * sectionWidth);
-                const parallaxSpeed = 0.3;
+            scrollTimeout = setTimeout(() => {
+                const scrollPosition = wrapper.scrollLeft;
+                const sectionWidth = window.innerWidth;
+                const currentSection = Math.round(scrollPosition / sectionWidth);
                 
-                // Només aplicar parallax a elements que no són cards
-                if (Math.abs(offset) < sectionWidth * 1.5) {
-                    const elements = section.querySelectorAll('h2, h1, p:not(.feature-card p):not(.stat-label)');
-                    elements.forEach((el, elIndex) => {
-                        const speed = parallaxSpeed * (elIndex + 1) * 0.05;
-                        el.style.transform = `translateX(${offset * speed}px)`;
+                navDots.forEach((dot, index) => {
+                    if (index === currentSection) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+                
+                // Parallax effect per les seccions - només per títols i paràgrafs
+                // Desactivar en móvil para mejor rendimiento
+                if (!isTouchDevice) {
+                    sections.forEach((section, index) => {
+                        const offset = scrollPosition - (index * sectionWidth);
+                        const parallaxSpeed = 0.3;
+                        
+                        // Només aplicar parallax a elements que no són cards
+                        if (Math.abs(offset) < sectionWidth * 1.5) {
+                            const elements = section.querySelectorAll('h2, h1, p:not(.feature-card p):not(.stat-label)');
+                            elements.forEach((el, elIndex) => {
+                                const speed = parallaxSpeed * (elIndex + 1) * 0.05;
+                                el.style.transform = `translateX(${offset * speed}px)`;
+                            });
+                        }
                     });
                 }
-            });
+            }, isTouchDevice ? 50 : 10);
         });
         
         // Agregar click listeners a los navigation dots
@@ -853,12 +879,89 @@
         });
         
         // Soporte para rueda del ratón (scroll vertical se convierte en horizontal)
-        wrapper.addEventListener('wheel', (e) => {
-            if (e.deltaY !== 0) {
-                e.preventDefault();
-                wrapper.scrollLeft += e.deltaY;
-            }
-        }, { passive: false });
+        // Desactivado en dispositivos táctiles para evitar conflictos
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        
+        if (!isTouchDevice) {
+            wrapper.addEventListener('wheel', (e) => {
+                if (e.deltaY !== 0) {
+                    e.preventDefault();
+                    wrapper.scrollLeft += e.deltaY;
+                }
+            }, { passive: false });
+        }
+
+        // Sistema de scroll controlado en móvil - una sección a la vez
+        let touchStartX = 0;
+        let touchStartScrollLeft = 0;
+        let isTouching = false;
+        let isScrolling = false;
+        let currentSectionIndex = 0;
+        
+        if (isTouchDevice) {
+            wrapper.addEventListener('touchstart', (e) => {
+                if (isScrolling) return; // Bloquear si ya está scrolleando
+                
+                isTouching = true;
+                touchStartX = e.touches[0].pageX;
+                touchStartScrollLeft = wrapper.scrollLeft;
+                currentSectionIndex = Math.round(wrapper.scrollLeft / window.innerWidth);
+            }, { passive: true });
+            
+            wrapper.addEventListener('touchmove', (e) => {
+                if (isScrolling || !isTouching) return;
+                
+                const touchCurrentX = e.touches[0].pageX;
+                const diffX = touchStartX - touchCurrentX;
+                
+                // Si el movimiento es menor de 30px, no hacer nada
+                if (Math.abs(diffX) < 30) return;
+                
+                // Determinar dirección y bloquear scroll múltiple
+                isScrolling = true;
+                isTouching = false;
+                
+                let targetSection = currentSectionIndex;
+                
+                if (diffX > 0) {
+                    // Swipe izquierda - ir a la siguiente sección
+                    targetSection = Math.min(currentSectionIndex + 1, sections.length - 1);
+                } else {
+                    // Swipe derecha - ir a la sección anterior
+                    targetSection = Math.max(currentSectionIndex - 1, 0);
+                }
+                
+                // Forzar scroll a la sección objetivo
+                scrollToSection(targetSection);
+                
+                // Desbloquear después de la animación
+                setTimeout(() => {
+                    isScrolling = false;
+                    currentSectionIndex = targetSection;
+                }, 600);
+            }, { passive: true });
+            
+            wrapper.addEventListener('touchend', () => {
+                isTouching = false;
+                
+                // Si no se activó el scroll forzado, ajustar a la sección más cercana
+                if (!isScrolling) {
+                    const nearestSection = Math.round(wrapper.scrollLeft / window.innerWidth);
+                    if (nearestSection !== currentSectionIndex) {
+                        scrollToSection(nearestSection);
+                        currentSectionIndex = nearestSection;
+                    }
+                }
+            }, { passive: true });
+            
+            // Prevenir scroll nativo en móvil durante el control manual
+            wrapper.addEventListener('scroll', () => {
+                if (isScrolling) {
+                    // Dejar que scrollToSection maneje el scroll
+                    return;
+                }
+            }, { passive: true });
+        }
 
         // Animación de entrada mejorada para las tarjetas cuando se hacen visibles
         const observerOptions = {
@@ -951,38 +1054,41 @@
         // ============================================
         // ARROSSEGAMENT AMB RATOLÍ (DRAG TO SCROLL)
         // ============================================
-        let isDown = false;
-        let startX;
-        let scrollLeft;
-        
-        wrapper.addEventListener('mousedown', (e) => {
-            isDown = true;
-            wrapper.style.cursor = 'grabbing';
-            wrapper.style.userSelect = 'none';
-            startX = e.pageX - wrapper.offsetLeft;
-            scrollLeft = wrapper.scrollLeft;
-        });
-        
-        wrapper.addEventListener('mouseleave', () => {
-            isDown = false;
+        // Solo activar en desktop, no en dispositivos táctiles
+        if (!isTouchDevice) {
+            let isDown = false;
+            let startX;
+            let scrollLeftStart;
+            
+            wrapper.addEventListener('mousedown', (e) => {
+                isDown = true;
+                wrapper.style.cursor = 'grabbing';
+                wrapper.style.userSelect = 'none';
+                startX = e.pageX - wrapper.offsetLeft;
+                scrollLeftStart = wrapper.scrollLeft;
+            });
+            
+            wrapper.addEventListener('mouseleave', () => {
+                isDown = false;
+                wrapper.style.cursor = 'grab';
+            });
+            
+            wrapper.addEventListener('mouseup', () => {
+                isDown = false;
+                wrapper.style.cursor = 'grab';
+            });
+            
+            wrapper.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - wrapper.offsetLeft;
+                const walk = (x - startX) * 2; // Multiplicador per fer-ho més ràpid
+                wrapper.scrollLeft = scrollLeftStart - walk;
+            });
+            
+            // Canviar cursor quan es passa per sobre
             wrapper.style.cursor = 'grab';
-        });
-        
-        wrapper.addEventListener('mouseup', () => {
-            isDown = false;
-            wrapper.style.cursor = 'grab';
-        });
-        
-        wrapper.addEventListener('mousemove', (e) => {
-            if (!isDown) return;
-            e.preventDefault();
-            const x = e.pageX - wrapper.offsetLeft;
-            const walk = (x - startX) * 2; // Multiplicador per fer-ho més ràpid
-            wrapper.scrollLeft = scrollLeft - walk;
-        });
-        
-        // Canviar cursor quan es passa per sobre
-        wrapper.style.cursor = 'grab';
+        }
     </script>
 </body>
 </html>

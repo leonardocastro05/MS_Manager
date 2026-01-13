@@ -157,10 +157,10 @@ function updateUserInfo() {
 }
 
 /**
- * Generar calendari per defecte amb 5 circuits
+ * Generar calendari per defecte amb 20 circuits
  */
 function generateDefaultCalendar() {
-    const tracks = ['monaco', 'spa', 'monza', 'portimao', 'interlagos'];
+    const tracks = ['monaco', 'belgica', 'italia', 'portugal', 'brasil', 'reinounido', 'espana', 'austria', 'francia', 'alemania', 'japon', 'singapur', 'australia', 'canada', 'mexico', 'emiratosarabes', 'arabia', 'holanda', 'miami', 'lasvegas'];
     return tracks.map((track, i) => ({
         trackId: track,
         raceNumber: i + 1,

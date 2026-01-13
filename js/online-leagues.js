@@ -86,7 +86,7 @@ function getRandomTeam() {
  * Generar calendari per defecte
  */
 function generateDefaultCalendar() {
-    const tracks = ['monaco', 'spa', 'monza', 'portimao', 'interlagos'];
+    const tracks = ['monaco', 'belgica', 'italia', 'portugal', 'brasil', 'reinounido', 'espana', 'austria', 'francia', 'alemania', 'japon', 'singapur', 'australia', 'canada', 'mexico', 'emiratosarabes', 'arabia', 'holanda', 'miami', 'lasvegas'];
     return tracks.map((track, i) => ({
         trackId: track,
         raceNumber: i + 1,

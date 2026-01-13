@@ -5,6 +5,7 @@
 // Variables globals del sistema de curses
 const raceState = {
     selectedTrack: null,    // Circuit seleccionat
+    previewedTrack: null,   // Circuit en preview
     interval: null,         // Interval de la simulació
     isRunning: false,       // Si la cursa està en marxa
     positions: [],          // Array de pilots amb la seva info
@@ -12,7 +13,79 @@ const raceState = {
 };
 
 // --------------------------------------------
-// SELECCIÓ DE CIRCUIT
+// NOVA INTERFÍCIE DE SELECCIÓ DE CIRCUITS
+// --------------------------------------------
+
+/**
+ * Mostra preview d'una pista al fer clic
+ */
+function previewTrack(trackId, event) {
+    const track = gameData.tracks[trackId];
+    if (!track) return;
+    
+    raceState.previewedTrack = trackId;
+    
+    // Actualitzar visuals de la llista
+    document.querySelectorAll('.track-list-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    if (event && event.currentTarget) {
+        event.currentTarget.classList.add('active');
+    }
+    
+    // Mostrar fons de la pista amb opacitat
+    const previewBg = document.getElementById('track-preview-bg');
+    const imagePath = track.image ? `img/${track.image}` : '';
+    if (imagePath) {
+        previewBg.style.backgroundImage = `url('${imagePath}')`;
+        previewBg.classList.add('active');
+    }
+    
+    // Amagar placeholder i mostrar info
+    const placeholder = document.querySelector('.track-preview-placeholder');
+    const previewInfo = document.getElementById('track-preview-info');
+    const previewContent = document.getElementById('track-preview-content');
+    
+    if (placeholder) placeholder.style.display = 'none';
+    previewContent.style.background = 'none';
+    previewInfo.style.display = 'flex';
+    
+    // Omplir dades de la pista
+    document.getElementById('preview-track-name').textContent = track.name;
+    document.getElementById('preview-track-flag').textContent = track.flag;
+    document.getElementById('preview-track-length').textContent = track.length + ' km';
+    document.getElementById('preview-track-laps').textContent = track.laps;
+    document.getElementById('preview-track-difficulty').textContent = track.difficulty;
+    document.getElementById('preview-track-record').textContent = track.lapRecord;
+}
+
+/**
+ * Confirma la selecció de la pista i mostra l'àrea de cursa
+ */
+function confirmTrackSelection() {
+    if (!raceState.previewedTrack) return;
+    
+    raceState.selectedTrack = raceState.previewedTrack;
+    
+    // Amagar selector i mostrar àrea de cursa
+    const modernSelection = document.querySelector('.modern-track-selection');
+    const strategyPanel = document.getElementById('strategy-panel');
+    const trackDisplay = document.getElementById('track-display');
+    const raceControls = document.querySelector('.race-controls');
+    const racePositions = document.getElementById('race-positions');
+    
+    if (modernSelection) modernSelection.style.display = 'none';
+    if (strategyPanel) strategyPanel.style.display = 'block';
+    if (trackDisplay) trackDisplay.style.display = 'block';
+    if (raceControls) raceControls.style.display = 'flex';
+    if (racePositions) racePositions.style.display = 'block';
+    
+    // Mostrar la pista
+    displayTrack(raceState.selectedTrack);
+}
+
+// --------------------------------------------
+// SELECCIÓ DE CIRCUIT (LEGACY - mantenir compatibilitat)
 // --------------------------------------------
 
 /**

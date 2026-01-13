@@ -34,7 +34,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iMS Manager - Juego de Gestión</title>
+    <title>MS Manager - Juego de Gestión</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="js/libs/three.min.js"></script>
 </head>
@@ -47,7 +47,7 @@
             <div id="intro-flash" style="display:none;position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:20;background:black;opacity:0;pointer-events:none;"></div>
             <div id="intro-title" style="display:none;position:absolute;top:30%;left:0;width:100%;text-align:center;z-index:10;pointer-events:none;">
                 <h1 class="intro-title-text" style="font-size:3.5em;margin:0;text-shadow:0 8px 32px #e10600,0 2px 8px #000;letter-spacing:6px;background:linear-gradient(90deg,#fff,#e10600 60%,#fff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">
-                    🏎️ iMS Manager <span style="font-size:0.4em;display:block;margin-top:0.2em;letter-spacing:2px;">by Leonardo de Castro Ferreira</span>
+                    MS Manager <span style="font-size:0.4em;display:block;margin-top:0.2em;letter-spacing:2px;">by Leonardo de Castro Ferreira</span>
                 </h1>
             </div>
         </div>
@@ -56,7 +56,7 @@
         <div id="auth-screen" class="screen">
             <div class="auth-bg"></div>
             <div class="auth-container">
-                <h1>🏎️ iMS Manager</h1>
+                <h1>🏎️ MS Manager</h1>
                 <div class="auth-forms">
                     <div id="login-form">
                         <h2>Iniciar Sesión</h2>
@@ -82,7 +82,7 @@
                 <div style="position:absolute;top:0;left:0;width:100vw;height:100vh;pointer-events:none;background:radial-gradient(ellipse at center, rgba(225,6,0,0.1) 0%, transparent 70%);"></div>
             </div>
             <nav class="top-nav" style="position:relative;z-index:2;">
-                <h1 style="font-size:2.8em;margin-bottom:16px;color:#fff;text-shadow:0 8px 32px #e10600,0 2px 8px #000;letter-spacing:6px;background:linear-gradient(90deg,#fff,#e10600 60%,#fff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">🏎️ iMS Manager</h1>
+                <h1 style="font-size:2.8em;margin-bottom:16px;color:#fff;text-shadow:0 8px 32px #e10600,0 2px 8px #000;letter-spacing:6px;background:linear-gradient(90deg,#fff,#e10600 60%,#fff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">MS Manager</h1>
                 <div class="user-info">
                     <span id="team-name"></span>
                     <span id="budget"></span>
@@ -479,14 +479,155 @@
                         transform: translateX(0);
                     }
                 </style>
-                <div class="track-selection">
-                    <h3>Selecciona Circuito</h3>
-                    <div class="track-buttons">
-                        <button onclick="selectTrack('monaco', event)">🇲🇨 Monaco</button>
-                        <button onclick="selectTrack('spa', event)">🇧🇪 Spa-Francorchamps</button>
-                        <button onclick="selectTrack('monza', event)">🇮🇹 Monza</button>
-                        <button onclick="selectTrack('portimao', event)">🇵🇹 Portimão</button>
-                        <button onclick="selectTrack('interlagos', event)">🇧🇷 Interlagos</button>
+                <!-- Nueva interfaz de selección de pistas -->
+                <div class="modern-track-selection">
+                    <!-- Sidebar con lista de pistas -->
+                    <div class="track-sidebar">
+                        <div class="track-sidebar-header">
+                            <h3>🏁 Circuitos</h3>
+                            <span class="track-count">20 Pistas</span>
+                        </div>
+                        <div class="track-list-scroll">
+                            <div class="track-list-item" data-track="monaco" onclick="previewTrack('monaco', event)">
+                                <span class="track-flag">🇲🇨</span>
+                                <span class="track-name">Mónaco</span>
+                                <span class="track-arrow">→</span>
+                            </div>
+                            <div class="track-list-item" data-track="belgica" onclick="previewTrack('belgica', event)">
+                                <span class="track-flag">🇧🇪</span>
+                                <span class="track-name">Bélgica</span>
+                                <span class="track-arrow">→</span>
+                            </div>
+                            <div class="track-list-item" data-track="italia" onclick="previewTrack('italia', event)">
+                                <span class="track-flag">🇮🇹</span>
+                                <span class="track-name">Italia</span>
+                                <span class="track-arrow">→</span>
+                            </div>
+                            <div class="track-list-item" data-track="portugal" onclick="previewTrack('portugal', event)">
+                                <span class="track-flag">🇵🇹</span>
+                                <span class="track-name">Portugal</span>
+                                <span class="track-arrow">→</span>
+                            </div>
+                            <div class="track-list-item" data-track="brasil" onclick="previewTrack('brasil', event)">
+                                <span class="track-flag">🇧🇷</span>
+                                <span class="track-name">Brasil</span>
+                                <span class="track-arrow">→</span>
+                            </div>
+                            <div class="track-list-item" data-track="reinounido" onclick="previewTrack('reinounido', event)">
+                                <span class="track-flag">🇬🇧</span>
+                                <span class="track-name">Reino Unido</span>
+                                <span class="track-arrow">→</span>
+                            </div>
+                            <div class="track-list-item" data-track="espana" onclick="previewTrack('espana', event)">
+                                <span class="track-flag">🇪🇸</span>
+                                <span class="track-name">España</span>
+                                <span class="track-arrow">→</span>
+                            </div>
+                            <div class="track-list-item" data-track="austria" onclick="previewTrack('austria', event)">
+                                <span class="track-flag">🇦🇹</span>
+                                <span class="track-name">Austria</span>
+                                <span class="track-arrow">→</span>
+                            </div>
+                            <div class="track-list-item" data-track="francia" onclick="previewTrack('francia', event)">
+                                <span class="track-flag">🇫🇷</span>
+                                <span class="track-name">Francia</span>
+                                <span class="track-arrow">→</span>
+                            </div>
+                            <div class="track-list-item" data-track="alemania" onclick="previewTrack('alemania', event)">
+                                <span class="track-flag">🇩🇪</span>
+                                <span class="track-name">Alemania</span>
+                                <span class="track-arrow">→</span>
+                            </div>
+                            <div class="track-list-item" data-track="japon" onclick="previewTrack('japon', event)">
+                                <span class="track-flag">🇯🇵</span>
+                                <span class="track-name">Japón</span>
+                                <span class="track-arrow">→</span>
+                            </div>
+                            <div class="track-list-item" data-track="singapur" onclick="previewTrack('singapur', event)">
+                                <span class="track-flag">🇸🇬</span>
+                                <span class="track-name">Singapur</span>
+                                <span class="track-arrow">→</span>
+                            </div>
+                            <div class="track-list-item" data-track="australia" onclick="previewTrack('australia', event)">
+                                <span class="track-flag">🇦🇺</span>
+                                <span class="track-name">Australia</span>
+                                <span class="track-arrow">→</span>
+                            </div>
+                            <div class="track-list-item" data-track="canada" onclick="previewTrack('canada', event)">
+                                <span class="track-flag">🇨🇦</span>
+                                <span class="track-name">Canadá</span>
+                                <span class="track-arrow">→</span>
+                            </div>
+                            <div class="track-list-item" data-track="mexico" onclick="previewTrack('mexico', event)">
+                                <span class="track-flag">🇲🇽</span>
+                                <span class="track-name">México</span>
+                                <span class="track-arrow">→</span>
+                            </div>
+                            <div class="track-list-item" data-track="emiratosarabes" onclick="previewTrack('emiratosarabes', event)">
+                                <span class="track-flag">🇦🇪</span>
+                                <span class="track-name">Emiratos Árabes</span>
+                                <span class="track-arrow">→</span>
+                            </div>
+                            <div class="track-list-item" data-track="arabia" onclick="previewTrack('arabia', event)">
+                                <span class="track-flag">🇸🇦</span>
+                                <span class="track-name">Arabia Saudita</span>
+                                <span class="track-arrow">→</span>
+                            </div>
+                            <div class="track-list-item" data-track="holanda" onclick="previewTrack('holanda', event)">
+                                <span class="track-flag">🇳🇱</span>
+                                <span class="track-name">Holanda</span>
+                                <span class="track-arrow">→</span>
+                            </div>
+                            <div class="track-list-item" data-track="miami" onclick="previewTrack('miami', event)">
+                                <span class="track-flag">🇺🇸</span>
+                                <span class="track-name">Miami</span>
+                                <span class="track-arrow">→</span>
+                            </div>
+                            <div class="track-list-item" data-track="lasvegas" onclick="previewTrack('lasvegas', event)">
+                                <span class="track-flag">🇺🇸</span>
+                                <span class="track-name">Las Vegas</span>
+                                <span class="track-arrow">→</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Área de preview de pista -->
+                    <div class="track-preview-area" id="track-preview-area">
+                        <div class="track-preview-bg" id="track-preview-bg"></div>
+                        <div class="track-preview-content" id="track-preview-content">
+                            <div class="track-preview-placeholder">
+                                <div class="placeholder-icon">🏁</div>
+                                <h3>Selecciona un circuito</h3>
+                                <p>Haz clic en cualquier pista de la lista para ver los detalles</p>
+                            </div>
+                        </div>
+                        <div class="track-preview-info" id="track-preview-info" style="display:none;">
+                            <div class="track-info-header">
+                                <h2 id="preview-track-name"></h2>
+                                <span id="preview-track-flag" class="preview-flag"></span>
+                            </div>
+                            <div class="track-info-stats">
+                                <div class="track-stat">
+                                    <span class="stat-label">Longitud</span>
+                                    <span class="stat-value" id="preview-track-length">-</span>
+                                </div>
+                                <div class="track-stat">
+                                    <span class="stat-label">Vueltas</span>
+                                    <span class="stat-value" id="preview-track-laps">-</span>
+                                </div>
+                                <div class="track-stat">
+                                    <span class="stat-label">Dificultad</span>
+                                    <span class="stat-value" id="preview-track-difficulty">-</span>
+                                </div>
+                                <div class="track-stat">
+                                    <span class="stat-label">Récord</span>
+                                    <span class="stat-value" id="preview-track-record">-</span>
+                                </div>
+                            </div>
+                            <button class="btn-confirm-track" id="btn-confirm-track" onclick="confirmTrackSelection()">
+                                ✓ Seleccionar este circuito
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div id="strategy-panel" class="strategy-panel">
@@ -512,9 +653,8 @@
                     <!-- La pista es mostrarà aquí -->
                 </div>
                 <div class="race-controls">
-                    <button id="start-race-btn" onclick="startRace()">Comenzar Carrera</button>
-                    <button id="pause-race-btn" onclick="pauseRace()" style="display:none;">Pausar</button>
-                    <button id="toggle-path-btn" onclick="toggleTrackPathVisibility()">Mostrar trazado</button>
+                    <button id="start-race-btn" onclick="startRace()">🏁 Comenzar Carrera</button>
+                    <button id="pause-race-btn" onclick="pauseRace()" style="display:none;">⏸️ Pausar</button>
                 </div>
                 <div id="race-positions" class="race-positions">
                     <h3>Clasificación</h3>
