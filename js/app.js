@@ -267,13 +267,14 @@ function showScreen(screenId) {
 
 // Comprovar si hi ha una sessió activa en carregar la pàgina
 window.addEventListener('DOMContentLoaded', () => {
-    const currentUser = localStorage.getItem('currentUser');
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('userData');
     
     // IMPORTANT: Comentar aquesta línia per veure sempre la intro mentre desenvolupes
     // sessionStorage.removeItem('hasSeenIntro'); 
     const hasSeenIntro = sessionStorage.getItem('hasSeenIntro');
     
-    if (currentUser) {
+    if (token && userData) {
         // Si hi ha sessió, anar al menú principal
         showScreen('main-menu');
         updateUserInfo();
