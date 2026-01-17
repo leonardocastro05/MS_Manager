@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MS Manager - Home</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Fondo animado -->
+    <div class="bg-stars"></div>
+    <div class="bg-twinkling"></div>
+
+    <!-- ==========================================
+         HEADER / NAVBAR
+         ========================================== -->
+    <header class="main-header">
+        <div class="header-left">
+            <div class="logo">
+                <span class="logo-icon">MS</span>
+                <span class="logo-text">MANAGER</span>
+            </div>
+        </div>
+        
+        <nav class="header-nav">
+            <a href="#" class="nav-item active" data-section="home">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-text">Inicio</span>
+            </a>
+            <a href="#" class="nav-item" data-section="team">
+                <span class="nav-icon">⚽</span>
+                <span class="nav-text">Mi Equipo</span>
+            </a>
+            <a href="#" class="nav-item" data-section="shop">
+                <span class="nav-icon">🛒</span>
+                <span class="nav-text">Tienda</span>
+            </a>
+            <a href="#" class="nav-item" data-section="settings">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-text">Ajustes</span>
+            </a>
+        </nav>
+        
+        <div class="header-right">
+            <div class="user-stats">
+                <div class="stat-item money">
+                    <span class="stat-icon">💰</span>
+                    <span class="stat-value" id="user-money">0</span>
+                </div>
+                <div class="stat-item coins">
+                    <span class="stat-icon">🪙</span>
+                    <span class="stat-value" id="user-coins">0</span>
+                </div>
+            </div>
+            <div class="user-profile" id="user-profile-btn">
+                <div class="user-avatar">
+                    <span id="user-avatar-letter">?</span>
+                </div>
+                <div class="user-info">
+                    <span class="user-name" id="user-name">Usuario</span>
+                    <span class="user-team" id="user-team">Mi Equipo</span>
+                </div>
+                <span class="dropdown-arrow">▼</span>
+            </div>
+            
+            <!-- Dropdown del perfil -->
+            <div class="profile-dropdown" id="profile-dropdown">
+                <a href="#" class="dropdown-item">
+                    <span>👤</span> Mi Perfil
+                </a>
+                <a href="#" class="dropdown-item">
+                    <span>📊</span> Estadísticas
+                </a>
+                <a href="#" class="dropdown-item">
+                    <span>🏆</span> Logros
+                </a>
+                <div class="dropdown-divider"></div>
+                <a href="#" class="dropdown-item logout" id="logout-btn">
+                    <span>🚪</span> Cerrar Sesión
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==========================================
+         MAIN CONTENT
+         ========================================== -->
+    <main class="main-content">
+        <!-- Bienvenida -->
+        <section class="welcome-section">
+            <h1 class="welcome-title">
+                ¡Bienvenido, <span id="welcome-name">Manager</span>!
+            </h1>
+            <p class="welcome-subtitle">¿Qué quieres jugar hoy?</p>
+        </section>
+
+        <!-- ==========================================
+             GAME MODES - Dos opciones principales
+             ========================================== -->
+        <section class="game-modes">
+            <!-- MODO OFFLINE -->
+            <div class="game-mode-card offline" id="mode-offline">
+                <div class="card-glow"></div>
+                <div class="card-content">
+                    <div class="mode-icon">
+                        <div class="icon-bg">
+                            <span>🎮</span>
+                        </div>
+                    </div>
+                    <h2 class="mode-title">Modo Offline</h2>
+                    <p class="mode-description">
+                        Aprende a jugar a tu ritmo. Practica estrategias, 
+                        conoce los controles y mejora tus habilidades.
+                    </p>
+                    <ul class="mode-features">
+                        <li><span class="check">✓</span> Partidas de práctica</li>
+                        <li><span class="check">✓</span> Tutorial interactivo</li>
+                        <li><span class="check">✓</span> Sin presión de tiempo</li>
+                        <li><span class="check">✓</span> Experimenta libremente</li>
+                    </ul>
+                    <button class="mode-btn">
+                        <span>Jugar Solo</span>
+                        <div class="btn-arrow">→</div>
+                    </button>
+                </div>
+                <div class="card-decoration">
+                    <div class="deco-circle"></div>
+                    <div class="deco-lines"></div>
+                </div>
+            </div>
+
+            <!-- SEPARADOR VISUAL -->
+            <div class="modes-divider">
+                <div class="divider-line"></div>
+                <span class="divider-text">VS</span>
+                <div class="divider-line"></div>
+            </div>
+
+            <!-- MODO ONLINE -->
+            <div class="game-mode-card online" id="mode-online">
+                <div class="card-glow"></div>
+                <div class="card-content">
+                    <div class="mode-icon">
+                        <div class="icon-bg">
+                            <span>🌐</span>
+                        </div>
+                    </div>
+                    <h2 class="mode-title">Modo Online</h2>
+                    <p class="mode-description">
+                        Compite contra otros managers. Crea ligas con amigos 
+                        y demuestra quién es el mejor estratega.
+                    </p>
+                    <ul class="mode-features">
+                        <li><span class="check">✓</span> Ligas privadas con amigos</li>
+                        <li><span class="check">✓</span> Ranking competitivo</li>
+                        <li><span class="check">✓</span> Recompensas exclusivas</li>
+                        <li><span class="check">✓</span> Torneos semanales</li>
+                    </ul>
+                    <button class="mode-btn">
+                        <span>Jugar Online</span>
+                        <div class="btn-arrow">→</div>
+                    </button>
+                </div>
+                <div class="card-decoration">
+                    <div class="deco-circle"></div>
+                    <div class="deco-lines"></div>
+                </div>
+                <!-- Badge de "HOT" o "Popular" -->
+                <div class="card-badge">
+                    <span>🔥 POPULAR</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             QUICK STATS - Resumen rápido del jugador
+             ========================================== -->
+        <section class="quick-stats">
+            <div class="stat-card">
+                <div class="stat-icon-wrapper">
+                    <span>🏆</span>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number" id="stat-wins">0</span>
+                    <span class="stat-label">Victorias</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon-wrapper">
+                    <span>⚔️</span>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number" id="stat-matches">0</span>
+                    <span class="stat-label">Partidas</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon-wrapper">
+                    <span>📈</span>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number" id="stat-rank">#---</span>
+                    <span class="stat-label">Ranking</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon-wrapper">
+                    <span>🎯</span>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number" id="stat-winrate">0%</span>
+                    <span class="stat-label">Win Rate</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             NOTICIAS / EVENTOS
+             ========================================== -->
+        <section class="news-section">
+            <h3 class="section-title">
+                <span class="title-icon">📢</span>
+                Noticias y Eventos
+            </h3>
+            <div class="news-carousel">
+                <div class="news-card">
+                    <div class="news-badge new">NUEVO</div>
+                    <div class="news-image" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                        <span>🎉</span>
+                    </div>
+                    <div class="news-content">
+                        <h4>¡Bienvenido a MS Manager!</h4>
+                        <p>Comienza tu aventura como manager de fútbol.</p>
+                    </div>
+                </div>
+                
+                <div class="news-card">
+                    <div class="news-badge event">EVENTO</div>
+                    <div class="news-image" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                        <span>🏆</span>
+                    </div>
+                    <div class="news-content">
+                        <h4>Torneo de Temporada</h4>
+                        <p>Próximamente: Compite por premios increíbles.</p>
+                    </div>
+                </div>
+                
+                <div class="news-card">
+                    <div class="news-badge tip">CONSEJO</div>
+                    <div class="news-image" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                        <span>💡</span>
+                    </div>
+                    <div class="news-content">
+                        <h4>Consejo del día</h4>
+                        <p>Practica en modo offline antes de competir online.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ==========================================
+         FOOTER
+         ========================================== -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <span class="footer-version">MS Manager v2.0</span>
+            <span class="footer-separator">•</span>
+            <span class="footer-copyright">© 2026 Todos los derechos reservados</span>
+        </div>
+    </footer>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

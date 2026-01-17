@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  # ===========================================
+  # MongoDB Database
+  # ===========================================
+  mongodb:
+    image: mongo:7.0
+    container_name: msmanager-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-msmanager2026}
+      MONGO_INITDB_DATABASE: msmanager
+    volumes:
+      - mongodb_data:/data/db
+      - ./database/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    ports:
+      - "27017:27017"
+    networks:
+      - msmanager-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ===========================================
+  # Backend API (Node.js + Express)
+  # ===========================================
+  backend:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    container_name: msmanager-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 5000
+      MONGO_URI: mongodb://${MONGO_USER:-msmanager}:${MONGO_PASSWORD:-msmanager2026}@mongodb:27017/msmanager?authSource=msmanager
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      JWT_EXPIRE: 30d
+      # OAuth Google
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      # OAuth Facebook
+      FACEBOOK_APP_ID: ${FACEBOOK_APP_ID:-}
+      FACEBOOK_APP_SECRET: ${FACEBOOK_APP_SECRET:-}
+      # Frontend URL (para callbacks OAuth)
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      BACKEND_URL: ${BACKEND_URL:-http://localhost:5000}
+    ports:
+      - "5000:5000"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - msmanager-network
+    volumes:
+      - ./database:/app
+      - /app/node_modules
+
+  # ===========================================
+  # Frontend (Nginx + Static Files)
+  # ===========================================
+  frontend:
+    image: nginx:alpine
+    container_name: msmanager-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      # Mount all static content from project root
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+      - ./liga.html:/usr/share/nginx/html/liga.html:ro
+      - ./league-race.html:/usr/share/nginx/html/league-race.html:ro
+      - ./msmanager.html:/usr/share/nginx/html/msmanager.html:ro
+      - ./msmanagermaintenance.html:/usr/share/nginx/html/msmanagermaintenance.html:ro
+      - ./online.html:/usr/share/nginx/html/online.html:ro
+      - ./css:/usr/share/nginx/html/css:ro
+      - ./js:/usr/share/nginx/html/js:ro
+      - ./img:/usr/share/nginx/html/img:ro
+      - ./sounds:/usr/share/nginx/html/sounds:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - msmanager-network
+
+networks:
+  msmanager-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local

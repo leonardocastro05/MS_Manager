@@ -1,0 +1,491 @@
+/* ==========================================
+   AUTH SCREEN STYLES (Login/Register)
+   ========================================== */
+
+.auth-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    pointer-events: none;
+}
+
+.auth-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('../img/ms-manager-background.png') center/cover no-repeat fixed;
+    z-index: 1;
+    opacity: 0.15;
+}
+
+.auth-screen.visible {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: all;
+}
+
+.auth-screen.hidden {
+    display: flex !important;
+}
+
+/* ==========================================
+   AUTH CONTAINER
+   ========================================== */
+
+.auth-container {
+    position: relative;
+    z-index: 10;
+    width: 420px;
+    max-width: 95%;
+    background: rgba(15, 20, 25, 0.95);
+    border-radius: 20px;
+    padding: 40px;
+    border: 2px solid rgba(220, 38, 38, 0.3);
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.7),
+        0 0 50px rgba(220, 38, 38, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    animation: container-glow 4s ease-in-out infinite;
+}
+
+@keyframes container-glow {
+    0%, 100% { box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7), 0 0 40px rgba(220, 38, 38, 0.1); }
+    50% { box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7), 0 0 60px rgba(220, 38, 38, 0.2); }
+}
+
+/* ==========================================
+   AUTH HEADER
+   ========================================== */
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.auth-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #dc2626;
+    text-shadow: 0 0 20px rgba(220, 38, 38, 0.5);
+    letter-spacing: 0.2em;
+    margin-bottom: 5px;
+}
+
+.auth-subtitle {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+/* ==========================================
+   AUTH TABS
+   ========================================== */
+
+.auth-tabs {
+    display: flex;
+    margin-bottom: 30px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 5px;
+}
+
+.auth-tab {
+    flex: 1;
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.auth-tab:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.auth-tab.active {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.2), rgba(185, 28, 28, 0.1));
+    color: #dc2626;
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.2);
+}
+
+/* ==========================================
+   FORM STYLES
+   ========================================== */
+
+.auth-form {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.auth-form.hidden {
+    display: none;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.form-group .icon {
+    font-size: 1rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 15px 20px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-group input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: rgba(220, 38, 38, 0.5);
+    box-shadow: 
+        0 0 20px rgba(220, 38, 38, 0.1),
+        inset 0 0 20px rgba(220, 38, 38, 0.05);
+}
+
+.form-group input:valid:not(:placeholder-shown) {
+    border-color: rgba(34, 197, 94, 0.5);
+}
+
+/* ==========================================
+   PASSWORD STRENGTH INDICATOR
+   ========================================== */
+
+.password-strength {
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.strength-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.strength-bar::after {
+    content: '';
+    display: block;
+    height: 100%;
+    width: 0%;
+    background: #ff4444;
+    transition: all 0.3s ease;
+}
+
+.password-strength.weak .strength-bar::after {
+    width: 25%;
+    background: #ff4444;
+}
+
+.password-strength.fair .strength-bar::after {
+    width: 50%;
+    background: #ffaa00;
+}
+
+.password-strength.good .strength-bar::after {
+    width: 75%;
+    background: #88cc00;
+}
+
+.password-strength.strong .strength-bar::after {
+    width: 100%;
+    background: #00ff88;
+}
+
+.strength-text {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ==========================================
+   FORM OPTIONS
+   ========================================== */
+
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Custom Checkbox */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    user-select: none;
+}
+
+.checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.checkmark {
+    width: 20px;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.checkbox-container:hover .checkmark {
+    border-color: rgba(220, 38, 38, 0.5);
+}
+
+.checkbox-container input:checked ~ .checkmark {
+    background: rgba(220, 38, 38, 0.2);
+    border-color: #dc2626;
+}
+
+.checkbox-container input:checked ~ .checkmark::after {
+    content: '✓';
+    color: #dc2626;
+    font-size: 14px;
+}
+
+.forgot-password {
+    font-size: 0.85rem;
+    color: rgba(220, 38, 38, 0.7);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.forgot-password:hover {
+    color: #dc2626;
+    text-decoration: underline;
+}
+
+.checkbox-container a {
+    color: rgba(220, 38, 38, 0.7);
+    text-decoration: none;
+}
+
+.checkbox-container a:hover {
+    text-decoration: underline;
+}
+
+/* ==========================================
+   SUBMIT BUTTON
+   ========================================== */
+
+.btn-primary {
+    width: 100%;
+    padding: 16px 30px;
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(220, 38, 38, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-glow {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    transform: rotate(45deg);
+    transition: all 0.5s ease;
+    opacity: 0;
+}
+
+.btn-primary:hover .btn-glow {
+    animation: btn-shine 0.5s ease;
+}
+
+@keyframes btn-shine {
+    0% { left: -50%; opacity: 1; }
+    100% { left: 150%; opacity: 0; }
+}
+
+/* ==========================================
+   FORM MESSAGE
+   ========================================== */
+
+.form-message {
+    margin-top: 20px;
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    text-align: center;
+    display: none;
+}
+
+.form-message.error {
+    display: block;
+    background: rgba(255, 68, 68, 0.1);
+    border: 1px solid rgba(255, 68, 68, 0.3);
+    color: #ff6b6b;
+}
+
+.form-message.success {
+    display: block;
+    background: rgba(0, 255, 136, 0.1);
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    color: #00ff88;
+}
+
+/* ==========================================
+   BACK BUTTON
+   ========================================== */
+
+.back-button {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    z-index: 100;
+    padding: 12px 25px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.back-button:hover {
+    background: rgba(0, 247, 255, 0.1);
+    border-color: rgba(0, 247, 255, 0.3);
+    color: #00f7ff;
+}
+
+/* ==========================================
+   LOADING STATE
+   ========================================== */
+
+.btn-primary.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.btn-primary.loading span {
+    visibility: hidden;
+}
+
+.btn-primary.loading::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(0, 0, 0, 0.3);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 480px) {
+    .auth-container {
+        padding: 30px 25px;
+        border-radius: 15px;
+    }
+    
+    .auth-logo {
+        font-size: 1.5rem;
+    }
+    
+    .auth-tab {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .form-options {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .back-button {
+        top: 15px;
+        left: 15px;
+        padding: 10px 20px;
+    }
+}

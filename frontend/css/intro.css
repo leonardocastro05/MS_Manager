@@ -1,0 +1,323 @@
+/* ==========================================
+   INTRO / LOADING SCREEN STYLES
+   ========================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Rajdhani', sans-serif;
+    background: #0a0a0f;
+    color: #fff;
+    overflow: hidden;
+    min-height: 100vh;
+}
+
+/* ==========================================
+   MOTORSPORT BACKGROUND
+   ========================================== */
+
+.stars, .twinkling {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.stars {
+    background: url('../img/background.png') center/cover no-repeat fixed,
+                linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #0f1419 100%);
+    z-index: 0;
+}
+
+.twinkling {
+    background: radial-gradient(ellipse at top, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom, rgba(37, 99, 235, 0.1) 0%, transparent 50%);
+    z-index: 1;
+    animation: pulse-bg 8s ease-in-out infinite;
+}
+
+@keyframes pulse-bg {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+}
+
+/* ==========================================
+   INTRO SCREEN
+   ========================================== */
+
+.intro-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.intro-screen.fade-out {
+    opacity: 0;
+    transform: scale(1.1);
+    pointer-events: none;
+}
+
+.intro-content {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    perspective: 1000px;
+}
+
+/* ==========================================
+   MOTORSPORT LOGO
+   ========================================== */
+
+.logo-container {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 40px;
+    position: relative;
+}
+
+.logo-3d {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    animation: rotate-cube 10s linear infinite;
+}
+
+@keyframes rotate-cube {
+    0% { transform: rotateX(0deg) rotateY(0deg); }
+    100% { transform: rotateX(360deg) rotateY(360deg); }
+}
+
+.logo-face {
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 72px;
+    font-weight: 900;
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.15);
+    border: 2px solid rgba(59, 130, 246, 0.6);
+    border-radius: 10px;
+    box-shadow: 
+        inset 0 0 30px rgba(59, 130, 246, 0.2),
+        0 0 20px rgba(59, 130, 246, 0.4),
+        0 0 40px rgba(59, 130, 246, 0.2);
+    backdrop-filter: blur(5px);
+}
+
+.logo-face.front  { transform: translateZ(90px); }
+.logo-face.back   { transform: rotateY(180deg) translateZ(90px); }
+.logo-face.left   { transform: rotateY(-90deg) translateZ(90px); }
+.logo-face.right  { transform: rotateY(90deg) translateZ(90px); }
+.logo-face.top    { transform: rotateX(90deg) translateZ(90px); }
+.logo-face.bottom { transform: rotateX(-90deg) translateZ(90px); }
+
+/* ==========================================
+   MOTORSPORT TITLE
+   ========================================== */
+
+.title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 4rem;
+    font-weight: 900;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, #dc2626 0%, #ef4444 50%, #dc2626 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 50px;
+    position: relative;
+    animation: title-glow 3s ease-in-out infinite;
+}
+
+@keyframes title-glow {
+    0%, 100% {
+        filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5))
+                drop-shadow(0 0 20px rgba(220, 38, 38, 0.3));
+    }
+    50% {
+        filter: drop-shadow(0 0 20px rgba(220, 38, 38, 0.8))
+                drop-shadow(0 0 40px rgba(220, 38, 38, 0.5));
+    }
+}
+
+.glitch::before,
+.glitch::after {
+    display: none;
+}
+
+/* ==========================================
+   LOADING BAR
+   ========================================== */
+
+.loading-container {
+    width: 400px;
+    max-width: 90%;
+    margin: 0 auto;
+}
+
+.loading-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+}
+
+.loading-progress {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #dc2626, #ef4444, #dc2626);
+    background-size: 200% 100%;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    animation: gradient-move 2s linear infinite;
+    box-shadow: 0 0 15px rgba(220, 38, 38, 0.6);
+}
+
+@keyframes gradient-move {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+}
+
+.loading-text {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 15px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* ==========================================
+   PARTICLES
+   ========================================== */
+
+.particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #dc2626;
+    border-radius: 50%;
+    animation: float-up 4s ease-in infinite;
+    opacity: 0;
+}
+
+@keyframes float-up {
+    0% {
+        opacity: 0;
+        transform: translateY(100vh) scale(0);
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-100px) scale(1);
+    }
+}
+
+/* ==========================================
+   FOOTER
+   ========================================== */
+
+.intro-footer {
+    position: absolute;
+    bottom: 50px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    z-index: 10;
+}
+
+.intro-footer p {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+}
+
+/* ==========================================
+   UTILITY CLASSES
+   ========================================== */
+
+.hidden {
+    display: none !important;
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 768px) {
+    .title {
+        font-size: 2rem;
+        letter-spacing: 0.15em;
+    }
+    
+    .logo-container {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .logo-face {
+        width: 120px;
+        height: 120px;
+        font-size: 42px;
+    }
+    
+    .logo-face.front  { transform: translateZ(60px); }
+    .logo-face.back   { transform: rotateY(180deg) translateZ(60px); }
+    .logo-face.left   { transform: rotateY(-90deg) translateZ(60px); }
+    .logo-face.right  { transform: rotateY(90deg) translateZ(60px); }
+    .logo-face.top    { transform: rotateX(90deg) translateZ(60px); }
+    .logo-face.bottom { transform: rotateX(-90deg) translateZ(60px); }
+    
+    .loading-container {
+        width: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .title {
+        font-size: 1.5rem;
+    }
+}

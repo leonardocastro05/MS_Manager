@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MS Manager - Modo Online</title>
+    <link rel="stylesheet" href="css/online.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Fondo animado -->
+    <div class="bg-stars"></div>
+    <div class="bg-twinkling"></div>
+
+    <!-- ==========================================
+         HEADER / NAVBAR
+         ========================================== -->
+    <header class="main-header">
+        <div class="header-left">
+            <a href="dashboard.html" class="back-btn">
+                <span>←</span>
+            </a>
+            <div class="logo">
+                <span class="logo-icon">🌐</span>
+                <span class="logo-text">ONLINE</span>
+            </div>
+        </div>
+        
+        <nav class="header-nav">
+            <a href="#" class="nav-item active" data-section="home">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-text">Inicio</span>
+            </a>
+            <a href="#" class="nav-item" data-section="leagues">
+                <span class="nav-icon">🏆</span>
+                <span class="nav-text">Ligas</span>
+            </a>
+            <a href="#" class="nav-item" data-section="shop">
+                <span class="nav-icon">🛒</span>
+                <span class="nav-text">Tienda</span>
+            </a>
+            <a href="#" class="nav-item" data-section="rankings">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">Rankings</span>
+            </a>
+        </nav>
+        
+        <div class="header-right">
+            <div class="user-stats">
+                <div class="stat-item coins">
+                    <span class="stat-icon">🪙</span>
+                    <span class="stat-value" id="user-coins">—</span>
+                </div>
+                <div class="stat-item budget">
+                    <span class="stat-icon">💰</span>
+                    <span class="stat-value" id="user-budget">—</span>
+                </div>
+            </div>
+            <div class="user-level">
+                <span class="level-badge" id="user-level">—</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==========================================
+         MAIN CONTENT
+         ========================================== -->
+    <main class="main-content">
+        
+        <!-- ==========================================
+             SECTION: HOME (Resumen de cuenta)
+             ========================================== -->
+        <section id="section-home" class="content-section active">
+            <!-- Perfil del jugador -->
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <div class="avatar-frame">
+                            <span id="profile-avatar">👤</span>
+                        </div>
+                        <div class="level-ring">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="level-bg" cx="50" cy="50" r="45"/>
+                                <circle class="level-progress" id="level-progress-ring" cx="50" cy="50" r="45"/>
+                            </svg>
+                            <span class="level-number" id="profile-level">1</span>
+                        </div>
+                    </div>
+                    <div class="profile-info">
+                        <h1 class="profile-name" id="profile-name">Cargando...</h1>
+                        <p class="profile-team" id="profile-team">Equipo</p>
+                        <div class="profile-country">
+                            <span class="country-flag" id="profile-flag">🏳️</span>
+                            <span id="profile-country">España</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="xp-bar-container">
+                    <div class="xp-info">
+                        <span>XP</span>
+                        <span id="xp-text">0 / 100</span>
+                    </div>
+                    <div class="xp-bar">
+                        <div class="xp-progress" id="xp-progress"></div>
+                    </div>
+                </div>
+                
+                <div class="profile-stats">
+                    <div class="pstat">
+                        <span class="pstat-value" id="stat-races">0</span>
+                        <span class="pstat-label">Carreras</span>
+                    </div>
+                    <div class="pstat">
+                        <span class="pstat-value" id="stat-wins">0</span>
+                        <span class="pstat-label">Victorias</span>
+                    </div>
+                    <div class="pstat">
+                        <span class="pstat-value" id="stat-podiums">0</span>
+                        <span class="pstat-label">Podios</span>
+                    </div>
+                    <div class="pstat">
+                        <span class="pstat-value" id="stat-winrate">0%</span>
+                        <span class="pstat-label">Win Rate</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mis Ligas -->
+            <div class="section-header">
+                <h2><span>🏆</span> Mis Ligas</h2>
+                <button class="btn-secondary" id="btn-view-leagues">Ver Todas →</button>
+            </div>
+            
+            <div class="my-leagues-grid" id="my-leagues-container">
+                <!-- Se rellenará dinámicamente -->
+                <div class="empty-state" id="no-leagues">
+                    <span class="empty-icon">🏁</span>
+                    <p>No estás en ninguna liga</p>
+                    <button class="btn-primary" id="btn-find-league">Buscar Liga</button>
+                </div>
+            </div>
+            
+            <!-- Acciones rápidas -->
+            <div class="quick-actions">
+                <button class="action-card" id="btn-create-league">
+                    <span class="action-icon">➕</span>
+                    <span class="action-text">Crear Liga</span>
+                    <span class="action-cost">5M</span>
+                </button>
+                <button class="action-card" id="btn-join-league">
+                    <span class="action-icon">🔍</span>
+                    <span class="action-text">Buscar Liga</span>
+                </button>
+                <button class="action-card" id="btn-open-shop">
+                    <span class="action-icon">🛒</span>
+                    <span class="action-text">Tienda</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SECTION: LEAGUES (Ligas)
+             ========================================== -->
+        <section id="section-leagues" class="content-section">
+            <div class="leagues-header">
+                <h2><span>🏆</span> Ligas Disponibles</h2>
+                <div class="leagues-filters">
+                    <input type="text" id="league-search" placeholder="Buscar liga..." class="search-input">
+                    <select id="country-filter" class="filter-select">
+                        <option value="">Todos los países</option>
+                        <option value="ES">🇪🇸 España</option>
+                        <option value="MX">🇲🇽 México</option>
+                        <option value="AR">🇦🇷 Argentina</option>
+                        <option value="CO">🇨🇴 Colombia</option>
+                        <option value="US">🇺🇸 Estados Unidos</option>
+                        <option value="GB">🇬🇧 Reino Unido</option>
+                        <option value="FR">🇫🇷 Francia</option>
+                        <option value="DE">🇩🇪 Alemania</option>
+                        <option value="IT">🇮🇹 Italia</option>
+                        <option value="BR">🇧🇷 Brasil</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="leagues-grid" id="leagues-container">
+                <!-- Se rellenará dinámicamente -->
+            </div>
+            
+            <div class="leagues-pagination" id="leagues-pagination">
+                <!-- Paginación -->
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SECTION: SHOP (Tienda)
+             ========================================== -->
+        <section id="section-shop" class="content-section">
+            <h2 class="shop-title"><span>🛒</span> Tienda Online</h2>
+            
+            <!-- Paquetes de Coins -->
+            <div class="shop-category">
+                <h3><span>🪙</span> Comprar Coins</h3>
+                <p class="category-desc">Consigue coins con dinero real o mediante patrocinadores</p>
+                <div class="shop-grid" id="coin-packages">
+                    <div class="shop-item" data-package="coins_5">
+                        <div class="item-badge">BÁSICO</div>
+                        <div class="item-icon">🪙</div>
+                        <div class="item-amount">5</div>
+                        <div class="item-label">Coins</div>
+                        <button class="item-price">1,99€</button>
+                    </div>
+                    <div class="shop-item" data-package="coins_12">
+                        <div class="item-badge popular">POPULAR</div>
+                        <div class="item-icon">🪙</div>
+                        <div class="item-amount">12</div>
+                        <div class="item-label">Coins</div>
+                        <button class="item-price">4,99€</button>
+                    </div>
+                    <div class="shop-item" data-package="coins_18">
+                        <div class="item-badge">VALOR</div>
+                        <div class="item-icon">🪙</div>
+                        <div class="item-amount">18</div>
+                        <div class="item-label">Coins</div>
+                        <button class="item-price">7,99€</button>
+                    </div>
+                    <div class="shop-item" data-package="coins_30">
+                        <div class="item-badge">GRAN VALOR</div>
+                        <div class="item-icon">💰</div>
+                        <div class="item-amount">30</div>
+                        <div class="item-label">Coins</div>
+                        <button class="item-price">12,99€</button>
+                    </div>
+                    <div class="shop-item" data-package="coins_50">
+                        <div class="item-badge best">MEJOR OFERTA</div>
+                        <div class="item-icon">💎</div>
+                        <div class="item-amount">50</div>
+                        <div class="item-label">Coins</div>
+                        <button class="item-price">19,99€</button>
+                    </div>
+                    <div class="shop-item" data-package="coins_80">
+                        <div class="item-badge premium">PREMIUM</div>
+                        <div class="item-icon">👑</div>
+                        <div class="item-amount">80</div>
+                        <div class="item-label">Coins</div>
+                        <button class="item-price">29,99€</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Paquetes de Dinero del juego -->
+            <div class="shop-category">
+                <h3><span>💵</span> Comprar Dinero del Juego</h3>
+                <p class="category-desc">Usa tus coins para conseguir presupuesto</p>
+                <div class="shop-grid money-grid" id="money-packages">
+                    <div class="shop-item money" data-package="money_5m">
+                        <div class="item-icon">💵</div>
+                        <div class="item-amount">5M</div>
+                        <div class="item-label">Presupuesto</div>
+                        <button class="item-price coins-price">
+                            <span>🪙</span> 5 Coins
+                        </button>
+                    </div>
+                    <div class="shop-item money" data-package="money_10m">
+                        <div class="item-badge popular">POPULAR</div>
+                        <div class="item-icon">💵</div>
+                        <div class="item-amount">10M</div>
+                        <div class="item-label">Presupuesto</div>
+                        <button class="item-price coins-price">
+                            <span>🪙</span> 8 Coins
+                        </button>
+                    </div>
+                    <div class="shop-item money" data-package="money_30m">
+                        <div class="item-badge best">MEJOR VALOR</div>
+                        <div class="item-icon">💎</div>
+                        <div class="item-amount">30M</div>
+                        <div class="item-label">Presupuesto</div>
+                        <button class="item-price coins-price">
+                            <span>🪙</span> 15 Coins
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SECTION: RANKINGS
+             ========================================== -->
+        <section id="section-rankings" class="content-section">
+            <h2><span>📊</span> Rankings Globales</h2>
+            <div class="rankings-tabs">
+                <button class="rank-tab active" data-rank="level">Por Nivel</button>
+                <button class="rank-tab" data-rank="wins">Por Victorias</button>
+                <button class="rank-tab" data-rank="points">Por Puntos</button>
+            </div>
+            <div class="rankings-list" id="rankings-container">
+                <!-- Se rellenará dinámicamente -->
+            </div>
+        </section>
+    </main>
+
+    <!-- ==========================================
+         MODAL: Crear Liga
+         ========================================== -->
+    <div class="modal" id="modal-create-league">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🏆 Crear Nueva Liga</h2>
+                <button class="modal-close" id="close-create-league">✕</button>
+            </div>
+            <div class="modal-body">
+                <form id="create-league-form">
+                    <!-- Logo -->
+                    <div class="form-group">
+                        <label>Logo de la Liga (300x300)</label>
+                        <div class="logo-upload">
+                            <div class="logo-preview" id="league-logo-preview">
+                                <span>🏁</span>
+                            </div>
+                            <input type="file" id="league-logo-input" accept="image/*" hidden>
+                            <button type="button" class="btn-upload" id="btn-upload-logo">
+                                📷 Subir Logo
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Nombre -->
+                    <div class="form-group">
+                        <label for="league-name">Nombre de la Liga *</label>
+                        <input type="text" id="league-name" required 
+                               placeholder="Ej: Liga de Campeones" maxlength="50">
+                    </div>
+                    
+                    <!-- Descripción -->
+                    <div class="form-group">
+                        <label for="league-description">Descripción</label>
+                        <textarea id="league-description" 
+                                  placeholder="Describe tu liga, reglas, comunidad..." 
+                                  maxlength="500" rows="4"></textarea>
+                        <span class="char-count"><span id="desc-count">0</span>/500</span>
+                    </div>
+                    
+                    <!-- País -->
+                    <div class="form-group">
+                        <label for="league-country">País</label>
+                        <select id="league-country">
+                            <option value="ES">🇪🇸 España</option>
+                            <option value="MX">🇲🇽 México</option>
+                            <option value="AR">🇦🇷 Argentina</option>
+                            <option value="CO">🇨🇴 Colombia</option>
+                            <option value="US">🇺🇸 Estados Unidos</option>
+                            <option value="GB">🇬🇧 Reino Unido</option>
+                            <option value="FR">🇫🇷 Francia</option>
+                            <option value="DE">🇩🇪 Alemania</option>
+                            <option value="IT">🇮🇹 Italia</option>
+                            <option value="BR">🇧🇷 Brasil</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Horario -->
+                    <div class="form-group">
+                        <label>Horario de Carreras</label>
+                        <div class="schedule-inputs">
+                            <select id="league-day">
+                                <option value="0">Domingo</option>
+                                <option value="1">Lunes</option>
+                                <option value="2">Martes</option>
+                                <option value="3">Miércoles</option>
+                                <option value="4">Jueves</option>
+                                <option value="5">Viernes</option>
+                                <option value="6" selected>Sábado</option>
+                            </select>
+                            <input type="time" id="league-time" value="20:00">
+                        </div>
+                    </div>
+                    
+                    <!-- Configuración -->
+                    <div class="form-group">
+                        <label>Configuración</label>
+                        <div class="config-options">
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="league-private">
+                                <span class="checkmark"></span>
+                                Liga Privada (requiere código de invitación)
+                            </label>
+                            <div class="inline-option">
+                                <span>Máximo de miembros:</span>
+                                <select id="league-max-members">
+                                    <option value="10">10</option>
+                                    <option value="16">16</option>
+                                    <option value="20">20</option>
+                                    <option value="22" selected>22</option>
+                                </select>
+                            </div>
+                            <div class="inline-option">
+                                <span>Nivel mínimo:</span>
+                                <select id="league-min-level">
+                                    <option value="1" selected>1</option>
+                                    <option value="5">5</option>
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                    <option value="30">30</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-cost">
+                        <span class="cost-label">Coste de creación:</span>
+                        <span class="cost-value">💰 5,000,000</span>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" id="cancel-create-league">Cancelar</button>
+                        <button type="submit" class="btn-primary">Crear Liga</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL: Unirse a Liga
+         ========================================== -->
+    <div class="modal" id="modal-join-league">
+        <div class="modal-overlay"></div>
+        <div class="modal-content small">
+            <div class="modal-header">
+                <h2>🔑 Unirse con Código</h2>
+                <button class="modal-close" id="close-join-league">✕</button>
+            </div>
+            <div class="modal-body">
+                <form id="join-league-form">
+                    <div class="form-group">
+                        <label for="invite-code">Código de Invitación</label>
+                        <input type="text" id="invite-code" 
+                               placeholder="XXXXXXXX" maxlength="8"
+                               style="text-transform: uppercase; text-align: center; font-size: 1.5rem; letter-spacing: 0.3em;">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" id="cancel-join-league">Cancelar</button>
+                        <button type="submit" class="btn-primary">Unirse</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         TOAST NOTIFICATIONS
+         ========================================== -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="js/online.js"></script>
+</body>
+</html>
