@@ -114,7 +114,47 @@ const UserSchema = new mongoose.Schema({
             onlineWins: { type: Number, default: 0 },
             onlinePodiums: { type: Number, default: 0 }
         },
-        onlineLeagues: { type: Array, default: [] }
+        onlineLeagues: { type: Array, default: [] },
+        
+        // ===== International Ranking System =====
+        globalRanking: {
+            // Rank tiers: learner, amateur, professional, king, senna
+            rank: { 
+                type: String, 
+                enum: ['learner', 'amateur', 'professional', 'king', 'senna'], 
+                default: 'learner' 
+            },
+            // Total global wins (used for ranking)
+            totalWins: { type: Number, default: 0 },
+            // Position within current rank tier
+            position: { type: Number, default: 0 },
+            // Last season's final position (for promotion/relegation)
+            lastSeasonPosition: { type: Number, default: 0 },
+            // Season rewards history
+            rewardsHistory: [{
+                season: { type: Number },
+                rank: { type: String },
+                position: { type: Number },
+                reward: { type: Number },
+                icon: { type: String },
+                date: { type: Date }
+            }],
+            // Current season stats
+            currentSeason: {
+                wins: { type: Number, default: 0 },
+                races: { type: Number, default: 0 },
+                startDate: { type: Date },
+                endDate: { type: Date }
+            },
+            // Special badges earned
+            badges: [{
+                type: { type: String }, // 'stroll', 'a', 'p', 'goat', 'senna', 's'
+                earnedAt: { type: Date },
+                season: { type: Number }
+            }],
+            // Current active badge to display
+            activeBadge: { type: String, default: null }
+        }
     },
     
     // ===== Account Status =====
@@ -138,6 +178,8 @@ const UserSchema = new mongoose.Schema({
 UserSchema.index({ 'gameData.online.level': -1 });
 UserSchema.index({ 'gameData.wins': -1 });
 UserSchema.index({ 'gameData.points': -1 });
+UserSchema.index({ 'gameData.globalRanking.totalWins': -1 });
+UserSchema.index({ 'gameData.globalRanking.rank': 1 });
 
 // ===========================================
 // MIDDLEWARE
@@ -188,7 +230,8 @@ UserSchema.methods.getLeaderboardData = function() {
         level: this.gameData.online?.level || 1,
         wins: this.gameData.wins || 0,
         points: this.gameData.points || 0,
-        onlineWins: this.gameData.online?.onlineWins || 0
+        onlineWins: this.gameData.online?.onlineWins || 0,
+        globalRanking: this.gameData.globalRanking || { rank: 'learner', totalWins: 0, position: 0 }
     };
 };
 
@@ -235,17 +278,100 @@ UserSchema.statics.findOrCreateFromOAuth = async function(profile, provider) {
 UserSchema.statics.getLeaderboard = async function(type = 'points', limit = 100) {
     const sortField = type === 'wins' ? 'gameData.wins' : 
                       type === 'online' ? 'gameData.online.onlineWins' : 
+                      type === 'global' ? 'gameData.globalRanking.totalWins' :
                       'gameData.points';
     
     const users = await this.find({ isActive: true })
         .sort({ [sortField]: -1 })
         .limit(limit)
-        .select('username displayName teamName avatar country gameData.wins gameData.points gameData.online.level gameData.online.onlineWins');
+        .select('username displayName teamName avatar country gameData.wins gameData.points gameData.online.level gameData.online.onlineWins gameData.globalRanking');
     
     return users.map((u, index) => ({
         rank: index + 1,
         ...u.getLeaderboardData()
     }));
+};
+
+// Get global ranking with rank tiers
+UserSchema.statics.getGlobalRanking = async function() {
+    const rankTiers = ['learner', 'amateur', 'professional', 'king', 'senna'];
+    const result = {};
+    
+    for (const tier of rankTiers) {
+        const users = await this.find({ 
+            isActive: true,
+            'gameData.globalRanking.rank': tier
+        })
+        .sort({ 'gameData.globalRanking.totalWins': -1 })
+        .select('username displayName teamName avatar country gameData.online.level gameData.globalRanking');
+        
+        result[tier] = users.map((u, index) => ({
+            position: index + 1,
+            id: u._id,
+            displayName: u.displayName || u.username,
+            teamName: u.teamName,
+            avatar: u.avatar,
+            country: u.country,
+            level: u.gameData.online?.level || 1,
+            globalRanking: u.gameData.globalRanking
+        }));
+    }
+    
+    return result;
+};
+
+// Calculate rewards for end of season
+UserSchema.statics.calculateSeasonRewards = function(rank, position) {
+    const rewards = {
+        learner: { icon: 'stroll', money: 0 },
+        amateur: { icon: 'a', money: 0 },
+        professional: { icon: 'p', money: 0 },
+        king: { icon: 'goat', money: 0 },
+        senna: { icon: 's', money: 0 }
+    };
+    
+    // Amateur rewards - Top 10 share 5M
+    if (rank === 'amateur' && position <= 10) {
+        const distribution = [1000000, 900000, 750000, 650000, 550000, 450000, 350000, 200000, 100000, 50000];
+        rewards.amateur.money = distribution[position - 1] || 0;
+    }
+    
+    // Professional rewards - Top 10 share 7M
+    if (rank === 'professional' && position <= 10) {
+        const distribution = [1400000, 1260000, 1050000, 910000, 770000, 630000, 490000, 280000, 140000, 70000];
+        rewards.professional.money = distribution[position - 1] || 0;
+    }
+    
+    // King rewards - Top 5 get 7M each, 6-10 share 5M
+    if (rank === 'king') {
+        if (position <= 5) {
+            rewards.king.money = 7000000;
+        } else if (position <= 10) {
+            const distribution = [1500000, 1200000, 1000000, 800000, 500000];
+            rewards.king.money = distribution[position - 6] || 0;
+        }
+    }
+    
+    // Senna rewards - Top 3 get 15M + special icon, rest get 'S' icon
+    if (rank === 'senna') {
+        if (position <= 3) {
+            rewards.senna.money = 15000000;
+            rewards.senna.icon = 'senna';
+        }
+    }
+    
+    return rewards[rank];
+};
+
+// Check for promotion/relegation
+UserSchema.statics.shouldPromote = function(position, totalInRank) {
+    // Top 10 of server get promoted
+    return position <= 10;
+};
+
+UserSchema.statics.shouldRelegate = function(position, totalInRank) {
+    // Bottom 3 of server get relegated
+    return position > totalInRank - 3;
 };
 
 module.exports = mongoose.model('User', UserSchema);

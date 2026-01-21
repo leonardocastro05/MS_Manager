@@ -20,6 +20,18 @@ class OnlineController {
         this.currentSection = 'home';
         this.leagues = [];
         this.myLeagues = [];
+        this.globalRanking = null;
+        this.myRank = null;
+        this.currentRankingTab = 'international';
+        
+        // Rank tier configuration (should match backend)
+        this.RANK_CONFIG = {
+            learner: { name: 'Learner', icon: 'stroll', color: '#CD853F' },
+            amateur: { name: 'Amateur', icon: 'a', color: '#C0C0C0' },
+            professional: { name: 'Professional', icon: 'p', color: '#FFD700' },
+            king: { name: 'King', icon: 'goat', color: '#9B59B6' },
+            senna: { name: 'Senna', icon: 'senna', color: '#E74C3C' }
+        };
         
         this.init();
     }
@@ -239,6 +251,46 @@ class OnlineController {
     }
     
     // ==========================================
+    // INTERNATIONAL RANKING API
+    // ==========================================
+    
+    async loadGlobalRanking() {
+        try {
+            const response = await fetch(`${this.API_URL}/leaderboard/global`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                }
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                this.globalRanking = data;
+                this.renderGlobalRanking();
+            }
+        } catch (error) {
+            console.error('Error loading global ranking:', error);
+        }
+    }
+    
+    async loadMyRank() {
+        try {
+            const response = await fetch(`${this.API_URL}/leaderboard/global/my-rank`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                }
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                this.myRank = data;
+                this.renderMyRank();
+            }
+        } catch (error) {
+            console.error('Error loading my rank:', error);
+        }
+    }
+    
+    // ==========================================
     // UI UPDATES
     // ==========================================
     
@@ -432,6 +484,173 @@ class OnlineController {
     }
     
     // ==========================================
+    // INTERNATIONAL RANKING UI
+    // ==========================================
+    
+    renderGlobalRanking() {
+        if (!this.globalRanking) return;
+        
+        const { season, tiers, totalPlayers } = this.globalRanking;
+        
+        // Update season info
+        document.getElementById('current-season').textContent = season.current;
+        document.getElementById('season-days-remaining').textContent = season.daysRemaining;
+        
+        // Render each tier
+        const tierOrder = ['senna', 'king', 'professional', 'amateur', 'learner'];
+        
+        tierOrder.forEach(tierName => {
+            const players = tiers[tierName] || [];
+            const container = document.getElementById(`tier-${tierName}-players`);
+            
+            if (!container) return;
+            
+            if (players.length === 0) {
+                container.innerHTML = `
+                    <div class="no-players">
+                        <span class="no-players-icon">👤</span>
+                        <p>Nadie en este rango todavía</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = players.slice(0, 50).map((player, index) => `
+                <div class="tier-player" data-player-id="${player.id}">
+                    <span class="player-position ${index < 3 ? 'top-3' : ''}">#${player.tierPosition}</span>
+                    <div class="player-avatar">
+                        ${player.avatar 
+                            ? `<img src="${player.avatar}" alt="${player.displayName}">`
+                            : this.getCountryFlag(player.country)
+                        }
+                    </div>
+                    <div class="player-info">
+                        <div class="player-name">${player.displayName}</div>
+                        <div class="player-team">${player.teamName}</div>
+                    </div>
+                    ${player.activeBadge ? `
+                        <div class="player-badge">
+                            <img src="img/ranks/${player.activeBadge}.png" alt="${player.activeBadge}">
+                        </div>
+                    ` : ''}
+                    <div class="player-wins">
+                        ${player.totalWins}
+                        <span>victorias</span>
+                    </div>
+                </div>
+            `).join('');
+        });
+    }
+    
+    renderMyRank() {
+        if (!this.myRank) return;
+        
+        const { ranking } = this.myRank;
+        const rankConfig = this.RANK_CONFIG[ranking.rank];
+        
+        // Update my rank badge
+        const rankIcon = document.getElementById('my-rank-icon');
+        const rankName = document.getElementById('my-rank-name');
+        
+        if (rankConfig.icon === 'a' || rankConfig.icon === 'p' || rankConfig.icon === 's') {
+            rankIcon.style.display = 'none';
+            rankName.innerHTML = `<span style="font-size: 2rem; margin-right: 10px;">${rankConfig.icon.toUpperCase()}</span>${rankConfig.name}`;
+        } else {
+            rankIcon.style.display = 'block';
+            rankIcon.src = `img/ranks/${rankConfig.icon}.png`;
+            rankName.textContent = rankConfig.name;
+        }
+        
+        // Update stats
+        document.getElementById('my-global-position').textContent = ranking.globalPosition;
+        document.getElementById('my-tier-position').textContent = `${ranking.tierPosition}/${ranking.totalInTier}`;
+        document.getElementById('my-total-wins').textContent = ranking.totalWins;
+        
+        // Update status
+        const statusEl = document.getElementById('my-rank-status');
+        if (ranking.willPromote && ranking.rank !== 'senna') {
+            statusEl.className = 'my-rank-status promoting';
+            statusEl.innerHTML = '⬆️ ¡Estás en zona de ascenso!';
+        } else if (ranking.willRelegate && ranking.rank !== 'learner') {
+            statusEl.className = 'my-rank-status relegating';
+            statusEl.innerHTML = '⬇️ Cuidado, estás en zona de descenso';
+        } else {
+            statusEl.className = 'my-rank-status safe';
+            statusEl.innerHTML = '✓ Posición estable';
+        }
+    }
+    
+    switchRankingTab(tabName) {
+        this.currentRankingTab = tabName;
+        
+        const internationalSection = document.getElementById('international-ranking-section');
+        const regularRankings = document.getElementById('rankings-container');
+        
+        if (tabName === 'international') {
+            internationalSection.style.display = 'block';
+            regularRankings.style.display = 'none';
+            this.loadGlobalRanking();
+            this.loadMyRank();
+        } else {
+            internationalSection.style.display = 'none';
+            regularRankings.style.display = 'block';
+            this.loadRegularRanking(tabName);
+        }
+    }
+    
+    async loadRegularRanking(type) {
+        try {
+            const endpoint = type === 'level' ? 'online' : type;
+            const response = await fetch(`${this.API_URL}/leaderboard/${endpoint}?limit=100`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                }
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                this.renderRegularRanking(data.leaderboard, type);
+            }
+        } catch (error) {
+            console.error('Error loading ranking:', error);
+        }
+    }
+    
+    renderRegularRanking(players, type) {
+        const container = document.getElementById('rankings-container');
+        
+        if (players.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <span class="empty-icon">📊</span>
+                    <p>No hay datos de ranking disponibles</p>
+                </div>
+            `;
+            return;
+        }
+        
+        const valueKey = type === 'level' ? 'level' : type === 'wins' ? 'onlineWins' : 'points';
+        const valueLabel = type === 'level' ? 'Nivel' : type === 'wins' ? 'Victorias' : 'Puntos';
+        
+        container.innerHTML = players.map((player, index) => `
+            <div class="rank-item">
+                <span class="rank-position ${index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : ''}">${index + 1}</span>
+                <div class="rank-avatar">
+                    ${player.avatar 
+                        ? `<img src="${player.avatar}" alt="${player.displayName}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
+                        : '👤'
+                    }
+                </div>
+                <div class="rank-info">
+                    <div class="rank-name">${player.displayName}</div>
+                    <div class="rank-team">${player.teamName}</div>
+                </div>
+                <div class="rank-value">${player[valueKey] || 0}</div>
+            </div>
+        `).join('');
+    }
+    
+    // ==========================================
     // EVENT HANDLERS
     // ==========================================
     
@@ -539,7 +758,17 @@ class OnlineController {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('.rank-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                // TODO: Load rankings by type
+                const rankType = tab.dataset.rank;
+                this.switchRankingTab(rankType);
+            });
+        });
+        
+        // Tier header click to expand/collapse
+        document.querySelectorAll('.tier-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const tier = header.closest('.rank-tier');
+                const players = tier.querySelector('.tier-players');
+                players.style.display = players.style.display === 'none' ? 'block' : 'none';
             });
         });
     }
@@ -633,6 +862,9 @@ class OnlineController {
         // Load data for section
         if (section === 'leagues') {
             this.searchLeagues();
+        } else if (section === 'rankings') {
+            // Load international ranking by default
+            this.switchRankingTab('international');
         }
         
         // Update URL hash

@@ -288,12 +288,171 @@
              ========================================== -->
         <section id="section-rankings" class="content-section">
             <h2><span>📊</span> Rankings Globales</h2>
+            
+            <!-- Rankings Tabs -->
             <div class="rankings-tabs">
-                <button class="rank-tab active" data-rank="level">Por Nivel</button>
+                <button class="rank-tab active" data-rank="international">🌍 Internacional</button>
+                <button class="rank-tab" data-rank="level">Por Nivel</button>
                 <button class="rank-tab" data-rank="wins">Por Victorias</button>
                 <button class="rank-tab" data-rank="points">Por Puntos</button>
             </div>
-            <div class="rankings-list" id="rankings-container">
+            
+            <!-- International Ranking Section -->
+            <div id="international-ranking-section" class="international-ranking">
+                <!-- Season Info Banner -->
+                <div class="season-banner">
+                    <div class="season-info">
+                        <span class="season-icon">🏆</span>
+                        <div class="season-text">
+                            <h3>Temporada <span id="current-season">1</span></h3>
+                            <p>Los mejores reciben premios cada 30 días</p>
+                        </div>
+                    </div>
+                    <div class="season-timer">
+                        <span class="timer-icon">⏱️</span>
+                        <span id="season-days-remaining">--</span> días restantes
+                    </div>
+                </div>
+                
+                <!-- My Rank Card -->
+                <div class="my-rank-card" id="my-rank-card">
+                    <div class="my-rank-header">
+                        <h3><span>👤</span> Tu Posición</h3>
+                    </div>
+                    <div class="my-rank-content">
+                        <div class="my-rank-badge" id="my-rank-badge">
+                            <img src="" alt="" id="my-rank-icon">
+                            <span id="my-rank-name">Learner</span>
+                        </div>
+                        <div class="my-rank-stats">
+                            <div class="my-rank-stat">
+                                <span class="stat-value" id="my-global-position">--</span>
+                                <span class="stat-label">Posición Global</span>
+                            </div>
+                            <div class="my-rank-stat">
+                                <span class="stat-value" id="my-tier-position">--</span>
+                                <span class="stat-label">En tu Rango</span>
+                            </div>
+                            <div class="my-rank-stat">
+                                <span class="stat-value" id="my-total-wins">0</span>
+                                <span class="stat-label">Victorias Totales</span>
+                            </div>
+                        </div>
+                        <div class="my-rank-status" id="my-rank-status">
+                            <!-- Will show promotion/relegation status -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Rank Tiers -->
+                <div class="rank-tiers-container">
+                    <!-- SENNA Tier -->
+                    <div class="rank-tier senna" data-tier="senna">
+                        <div class="tier-header">
+                            <div class="tier-badge senna">
+                                <img src="img/ranks/senna.png" alt="Senna" class="tier-icon-img">
+                                <span class="tier-name">SENNA</span>
+                            </div>
+                            <div class="tier-rewards">
+                                <span class="reward-badge exclusive">TOP 3: 15M + Icono Exclusivo</span>
+                                <span class="reward-badge">Resto: Icono "S"</span>
+                            </div>
+                        </div>
+                        <div class="tier-players" id="tier-senna-players">
+                            <div class="loading-players">Cargando...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- KING Tier -->
+                    <div class="rank-tier king" data-tier="king">
+                        <div class="tier-header">
+                            <div class="tier-badge king">
+                                <img src="img/ranks/goat.png" alt="King" class="tier-icon-img">
+                                <span class="tier-name">KING</span>
+                            </div>
+                            <div class="tier-rewards">
+                                <span class="reward-badge gold">TOP 5: 7M cada uno</span>
+                                <span class="reward-badge">TOP 6-10: Reparten 5M</span>
+                            </div>
+                        </div>
+                        <div class="tier-players" id="tier-king-players">
+                            <div class="loading-players">Cargando...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- PROFESSIONAL Tier -->
+                    <div class="rank-tier professional" data-tier="professional">
+                        <div class="tier-header">
+                            <div class="tier-badge professional">
+                                <span class="tier-icon-letter">P</span>
+                                <span class="tier-name">PROFESSIONAL</span>
+                            </div>
+                            <div class="tier-rewards">
+                                <span class="reward-badge gold">TOP 10: Reparten 7M</span>
+                            </div>
+                        </div>
+                        <div class="tier-players" id="tier-professional-players">
+                            <div class="loading-players">Cargando...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- AMATEUR Tier -->
+                    <div class="rank-tier amateur" data-tier="amateur">
+                        <div class="tier-header">
+                            <div class="tier-badge amateur">
+                                <span class="tier-icon-letter">A</span>
+                                <span class="tier-name">AMATEUR</span>
+                            </div>
+                            <div class="tier-rewards">
+                                <span class="reward-badge">TOP 10: Reparten 5M</span>
+                            </div>
+                        </div>
+                        <div class="tier-players" id="tier-amateur-players">
+                            <div class="loading-players">Cargando...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- LEARNER Tier -->
+                    <div class="rank-tier learner" data-tier="learner">
+                        <div class="tier-header">
+                            <div class="tier-badge learner">
+                                <img src="img/ranks/stroll.png" alt="Learner" class="tier-icon-img">
+                                <span class="tier-name">LEARNER</span>
+                            </div>
+                            <div class="tier-rewards">
+                                <span class="reward-badge">Icono de Lance Stroll</span>
+                            </div>
+                        </div>
+                        <div class="tier-players" id="tier-learner-players">
+                            <div class="loading-players">Cargando...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Promotion/Relegation Rules -->
+                <div class="ranking-rules">
+                    <h4><span>📋</span> Reglas de Ascenso y Descenso</h4>
+                    <div class="rules-grid">
+                        <div class="rule-card promotion">
+                            <span class="rule-icon">⬆️</span>
+                            <div class="rule-text">
+                                <strong>Ascenso</strong>
+                                <p>Los TOP 10 del servidor suben de rango</p>
+                            </div>
+                        </div>
+                        <div class="rule-card relegation">
+                            <span class="rule-icon">⬇️</span>
+                            <div class="rule-text">
+                                <strong>Descenso</strong>
+                                <p>Los 3 últimos del servidor bajan de rango</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Regular Rankings List (for other tabs) -->
+            <div class="rankings-list" id="rankings-container" style="display: none;">
                 <!-- Se rellenará dinámicamente -->
             </div>
         </section>
