@@ -71,6 +71,36 @@ const LeagueSchema = new mongoose.Schema({
             podiums: { type: Number, default: 0 },
             points: { type: Number, default: 0 },
             racesCompleted: { type: Number, default: 0 }
+        },
+        // HQ (Headquarters) - Each user has their own HQ per league
+        hq: {
+            engine: { level: { type: Number, default: 1, min: 1, max: 50 } },
+            aero: { level: { type: Number, default: 1, min: 1, max: 50 } },
+            drs: { level: { type: Number, default: 1, min: 1, max: 50 } },
+            chassis: { level: { type: Number, default: 1, min: 1, max: 50 } },
+            market: { level: { type: Number, default: 1, min: 1, max: 50 } }
+        },
+        // Current pilot for this league
+        currentPilot: {
+            id: String,
+            name: String,
+            nationality: {
+                code: String,
+                flag: String,
+                name: String
+            },
+            level: Number,
+            overall: Number,
+            stats: {
+                speed: Number,
+                control: Number,
+                experience: Number
+            },
+            rarity: {
+                type: String,
+                enum: ['common', 'uncommon', 'rare', 'epic', 'legendary']
+            },
+            price: Number
         }
     }],
     

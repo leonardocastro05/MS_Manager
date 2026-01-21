@@ -373,8 +373,8 @@ class OnlineController {
         container.querySelectorAll('.league-card').forEach(card => {
             card.addEventListener('click', () => {
                 const leagueId = card.dataset.id;
-                // TODO: Navigate to league detail page
-                console.log('Open league:', leagueId);
+                // Navigate to league homepage
+                window.location.href = `league.html?id=${leagueId}`;
             });
         });
     }

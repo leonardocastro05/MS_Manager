@@ -544,4 +544,245 @@ router.get('/my-leagues', auth, async (req, res) => {
     }
 });
 
+// ===========================================
+// LEAGUE HQ ROUTES
+// ===========================================
+
+// HQ Upgrade costs (base cost * 1.2^level)
+const HQ_CONFIG = {
+    components: {
+        engine: { baseCost: 500000, maxLevel: 50 },
+        aero: { baseCost: 600000, maxLevel: 50 },
+        drs: { baseCost: 700000, maxLevel: 50 },
+        chassis: { baseCost: 800000, maxLevel: 50 },
+        market: { baseCost: 1000000, maxLevel: 50 }
+    },
+    calculateCost: (component, level) => {
+        const base = HQ_CONFIG.components[component]?.baseCost || 500000;
+        return Math.floor(base * Math.pow(1.2, level - 1));
+    }
+};
+
+// GET /api/online/leagues/:id/hq - Get user's HQ for this league
+router.get('/leagues/:id/hq', auth, async (req, res) => {
+    try {
+        const league = await League.findById(req.params.id);
+        const user = await User.findById(req.user.id);
+        
+        if (!league) {
+            return res.status(404).json({ success: false, message: 'League not found' });
+        }
+        
+        // Check if user is member
+        const memberData = league.members.find(m => m.user.toString() === req.user.id);
+        if (!memberData) {
+            return res.status(403).json({ success: false, message: 'Not a member of this league' });
+        }
+        
+        // Get or initialize user's HQ for this league
+        const userHQ = memberData.hq || {
+            engine: { level: 1 },
+            aero: { level: 1 },
+            drs: { level: 1 },
+            chassis: { level: 1 },
+            market: { level: 1 }
+        };
+        
+        // Calculate next upgrade costs
+        const hqWithCosts = {};
+        for (const [component, data] of Object.entries(userHQ)) {
+            hqWithCosts[component] = {
+                level: data.level,
+                nextCost: HQ_CONFIG.calculateCost(component, data.level + 1),
+                maxLevel: HQ_CONFIG.components[component]?.maxLevel || 50
+            };
+        }
+        
+        res.json({
+            success: true,
+            hq: hqWithCosts,
+            pilot: memberData.currentPilot || null,
+            accountLevel: user.gameData?.online?.level || 1
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// POST /api/online/leagues/:id/hq/upgrade - Upgrade a HQ component
+router.post('/leagues/:id/hq/upgrade', auth, async (req, res) => {
+    try {
+        const { component } = req.body;
+        const league = await League.findById(req.params.id);
+        const user = await User.findById(req.user.id);
+        
+        if (!league) {
+            return res.status(404).json({ success: false, message: 'League not found' });
+        }
+        
+        if (!HQ_CONFIG.components[component]) {
+            return res.status(400).json({ success: false, message: 'Invalid component' });
+        }
+        
+        // Find member
+        const memberIndex = league.members.findIndex(m => m.user.toString() === req.user.id);
+        if (memberIndex === -1) {
+            return res.status(403).json({ success: false, message: 'Not a member of this league' });
+        }
+        
+        // Initialize HQ if needed
+        if (!league.members[memberIndex].hq) {
+            league.members[memberIndex].hq = {
+                engine: { level: 1 },
+                aero: { level: 1 },
+                drs: { level: 1 },
+                chassis: { level: 1 },
+                market: { level: 1 }
+            };
+        }
+        
+        const currentLevel = league.members[memberIndex].hq[component]?.level || 1;
+        const accountLevel = user.gameData?.online?.level || 1;
+        
+        // Check level limit
+        if (currentLevel >= accountLevel) {
+            return res.status(403).json({
+                success: false,
+                message: `Account level ${accountLevel} cannot upgrade beyond level ${accountLevel}`,
+                currentLevel,
+                accountLevel
+            });
+        }
+        
+        // Check max level
+        if (currentLevel >= HQ_CONFIG.components[component].maxLevel) {
+            return res.status(400).json({
+                success: false,
+                message: 'Component already at maximum level'
+            });
+        }
+        
+        // Calculate cost
+        const cost = HQ_CONFIG.calculateCost(component, currentLevel + 1);
+        
+        // Check budget
+        if (user.gameData.budget < cost) {
+            return res.status(400).json({
+                success: false,
+                message: 'Not enough budget',
+                required: cost,
+                current: user.gameData.budget
+            });
+        }
+        
+        // Deduct cost and upgrade
+        user.gameData.budget -= cost;
+        league.members[memberIndex].hq[component].level = currentLevel + 1;
+        
+        await user.save();
+        await league.save();
+        
+        res.json({
+            success: true,
+            message: `${component} upgraded to level ${currentLevel + 1}`,
+            newLevel: currentLevel + 1,
+            newBudget: user.gameData.budget,
+            nextCost: HQ_CONFIG.calculateCost(component, currentLevel + 2)
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ===========================================
+// LEAGUE PILOT ROUTES
+// ===========================================
+
+// POST /api/online/leagues/:id/pilot/hire - Hire a pilot
+router.post('/leagues/:id/pilot/hire', auth, async (req, res) => {
+    try {
+        const { pilot } = req.body;
+        const league = await League.findById(req.params.id);
+        const user = await User.findById(req.user.id);
+        
+        if (!league) {
+            return res.status(404).json({ success: false, message: 'League not found' });
+        }
+        
+        // Find member
+        const memberIndex = league.members.findIndex(m => m.user.toString() === req.user.id);
+        if (memberIndex === -1) {
+            return res.status(403).json({ success: false, message: 'Not a member of this league' });
+        }
+        
+        // Check budget
+        if (user.gameData.budget < pilot.price) {
+            return res.status(400).json({
+                success: false,
+                message: 'Not enough budget',
+                required: pilot.price,
+                current: user.gameData.budget
+            });
+        }
+        
+        // Deduct cost and hire
+        user.gameData.budget -= pilot.price;
+        league.members[memberIndex].currentPilot = pilot;
+        
+        await user.save();
+        await league.save();
+        
+        res.json({
+            success: true,
+            message: `Hired ${pilot.name}`,
+            pilot: pilot,
+            newBudget: user.gameData.budget
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// POST /api/online/leagues/:id/pilot/sell - Sell current pilot
+router.post('/leagues/:id/pilot/sell', auth, async (req, res) => {
+    try {
+        const league = await League.findById(req.params.id);
+        const user = await User.findById(req.user.id);
+        
+        if (!league) {
+            return res.status(404).json({ success: false, message: 'League not found' });
+        }
+        
+        // Find member
+        const memberIndex = league.members.findIndex(m => m.user.toString() === req.user.id);
+        if (memberIndex === -1) {
+            return res.status(403).json({ success: false, message: 'Not a member of this league' });
+        }
+        
+        const currentPilot = league.members[memberIndex].currentPilot;
+        if (!currentPilot) {
+            return res.status(400).json({ success: false, message: 'No pilot to sell' });
+        }
+        
+        // Calculate sell price (70% of original)
+        const sellPrice = Math.floor(currentPilot.price * 0.7);
+        
+        // Add money and remove pilot
+        user.gameData.budget += sellPrice;
+        league.members[memberIndex].currentPilot = null;
+        
+        await user.save();
+        await league.save();
+        
+        res.json({
+            success: true,
+            message: `Sold pilot for ${sellPrice}`,
+            sellPrice,
+            newBudget: user.gameData.budget
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 module.exports = router;
