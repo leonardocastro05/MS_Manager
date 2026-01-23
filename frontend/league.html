@@ -683,7 +683,7 @@
             <div class="races-header">
                 <div>
                     <h2><span>🏁</span> Carreras de la Liga</h2>
-                    <p class="section-subtitle">Temporada <span id="race-season">1</span> - Carrera <span id="race-number">1</span> de <span id="total-races">20</span></p>
+                    <p class="section-subtitle">Temporada <span id="race-season">1</span> - Carrera <span id="race-number">1</span> de <span id="total-races">5</span></p>
                 </div>
                 <div class="next-race-countdown">
                     <span class="countdown-label">Próxima carrera en:</span>
@@ -704,36 +704,172 @@
                 </div>
             </div>
 
+            <!-- Race Mode Tabs -->
+            <div class="race-mode-tabs">
+                <button class="race-mode-tab active" data-mode="live">
+                    <span>🏎️</span> Carrera en Vivo
+                </button>
+                <button class="race-mode-tab" data-mode="practice">
+                    <span>🔧</span> Práctica Libre
+                </button>
+                <button class="race-mode-tab" data-mode="qualifying">
+                    <span>⏱️</span> Clasificación
+                </button>
+            </div>
+
             <!-- Current Race Track -->
             <div class="current-race-card">
-                <div class="race-track-preview">
-                    <div class="track-image-placeholder">
-                        <span>🏎️</span>
+                <div class="race-track-preview" id="track-preview-container">
+                    <!-- SVG del circuito se cargará aquí -->
+                    <div class="track-loading">
+                        <div class="loader"></div>
+                        <span>Cargando circuito...</span>
                     </div>
                 </div>
                 <div class="race-track-info">
-                    <h3 id="current-track-name">Circuit de Monaco</h3>
-                    <p class="track-location" id="current-track-location">🇲🇨 Mónaco</p>
+                    <h3 id="current-track-name">Autodromo Nazionale Monza</h3>
+                    <p class="track-location" id="current-track-location">🇮🇹 Italia</p>
+                    <div class="track-characteristics">
+                        <span class="track-type" id="track-type">⚡ Alta velocidad</span>
+                        <span class="track-difficulty" id="track-difficulty">
+                            <span>⭐</span><span>⭐</span><span>⭐</span><span class="dim">⭐</span><span class="dim">⭐</span>
+                        </span>
+                    </div>
                     <div class="track-stats">
                         <div class="track-stat">
                             <span class="stat-icon">📏</span>
-                            <span id="track-length">3.337 km</span>
+                            <span class="stat-label">Longitud</span>
+                            <span class="stat-value" id="track-length">5.793 km</span>
                         </div>
                         <div class="track-stat">
                             <span class="stat-icon">🔄</span>
-                            <span id="track-laps">78 vueltas</span>
+                            <span class="stat-label">Vueltas</span>
+                            <span class="stat-value" id="track-laps">53</span>
                         </div>
                         <div class="track-stat">
                             <span class="stat-icon">↩️</span>
-                            <span id="track-turns">19 curvas</span>
+                            <span class="stat-label">Curvas</span>
+                            <span class="stat-value" id="track-turns">11</span>
+                        </div>
+                        <div class="track-stat">
+                            <span class="stat-icon">🏎️</span>
+                            <span class="stat-label">V. Máx</span>
+                            <span class="stat-value" id="track-topspeed">350 km/h</span>
+                        </div>
+                    </div>
+                    <div class="track-drs-zones">
+                        <span class="drs-label">🟢 Zonas DRS:</span>
+                        <span id="drs-zones-count">2</span>
+                    </div>
+                </div>
+                <div class="race-status-panel">
+                    <div class="weather-info">
+                        <span class="weather-icon" id="race-weather">☀️</span>
+                        <span class="weather-text" id="race-weather-text">Soleado</span>
+                    </div>
+                    <span class="status-badge" id="race-status">Esperando</span>
+                    <div class="race-actions">
+                        <button class="btn-race btn-qualifying" id="btn-qualifying">
+                            <span>⏱️</span> Clasificar
+                        </button>
+                        <button class="btn-race btn-start-race" id="btn-start-race" disabled>
+                            <span>🏁</span> Iniciar Carrera
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Race Live View (se muestra durante la carrera) -->
+            <div class="race-live-container" id="race-live-container" style="display: none;">
+                <div class="race-live-header">
+                    <div class="race-lap-info">
+                        <span class="lap-label">VUELTA</span>
+                        <span class="lap-current" id="current-lap">0</span>
+                        <span class="lap-separator">/</span>
+                        <span class="lap-total" id="total-laps">53</span>
+                    </div>
+                    <div class="race-fastest-lap">
+                        <span class="fl-icon">🟣</span>
+                        <span class="fl-label">V. Rápida:</span>
+                        <span class="fl-time" id="fastest-lap-time">-</span>
+                        <span class="fl-driver" id="fastest-lap-driver">-</span>
+                    </div>
+                    <div class="race-controls">
+                        <button class="btn-race-control" id="btn-pause-race">⏸️</button>
+                        <button class="btn-race-control" id="btn-speed-1x" class="active">1x</button>
+                        <button class="btn-race-control" id="btn-speed-2x">2x</button>
+                        <button class="btn-race-control" id="btn-speed-5x">5x</button>
+                    </div>
+                </div>
+                
+                <div class="race-main-view">
+                    <!-- Track Visualization -->
+                    <div class="race-track-live" id="race-track-live">
+                        <!-- El SVG del circuito con coches animados -->
+                    </div>
+                    
+                    <!-- Live Standings -->
+                    <div class="race-live-standings">
+                        <h4>Clasificación en Vivo</h4>
+                        <div class="live-standings-list" id="live-standings">
+                            <!-- Se actualiza dinámicamente -->
                         </div>
                     </div>
                 </div>
-                <div class="race-status">
-                    <span class="status-badge" id="race-status">Esperando</span>
-                    <button class="btn-join-race" id="btn-join-race" disabled>
-                        <span>🏁</span> Inscribirse
-                    </button>
+                
+                <!-- Race Events Feed -->
+                <div class="race-events-feed">
+                    <h4><span>📢</span> Eventos de Carrera</h4>
+                    <div class="events-list" id="race-events-list">
+                        <!-- Eventos de carrera en tiempo real -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Race Results (se muestra al finalizar) -->
+            <div class="race-results-container" id="race-results-container" style="display: none;">
+                <div class="results-header">
+                    <h3>🏆 Resultados de Carrera</h3>
+                    <div class="results-track">
+                        <span id="results-track-name">Monza</span>
+                        <span id="results-track-flag">🇮🇹</span>
+                    </div>
+                </div>
+                
+                <div class="podium-display">
+                    <div class="podium-position second">
+                        <div class="podium-driver" id="podium-p2">-</div>
+                        <div class="podium-block">2</div>
+                    </div>
+                    <div class="podium-position first">
+                        <div class="podium-driver" id="podium-p1">-</div>
+                        <div class="podium-block">1</div>
+                    </div>
+                    <div class="podium-position third">
+                        <div class="podium-driver" id="podium-p3">-</div>
+                        <div class="podium-block">3</div>
+                    </div>
+                </div>
+                
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th>Piloto</th>
+                            <th>Tiempo</th>
+                            <th>Diferencia</th>
+                            <th>M. Vuelta</th>
+                            <th>Puntos</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-table-body">
+                        <!-- Resultados -->
+                    </tbody>
+                </table>
+                
+                <div class="results-actions">
+                    <button class="btn-secondary" id="btn-close-results">Cerrar</button>
+                    <button class="btn-primary" id="btn-next-race">Siguiente Carrera →</button>
                 </div>
             </div>
 
@@ -874,6 +1010,9 @@
          ========================================== -->
     <div class="toast-container" id="toast-container"></div>
 
+    <!-- Scripts de carreras -->
+    <script src="js/tracks-data.js"></script>
+    <script src="js/race-engine.js"></script>
     <script src="js/league.js"></script>
 </body>
 </html>

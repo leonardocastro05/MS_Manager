@@ -73,6 +73,9 @@ class LeagueController {
         this.initNavigation();
         this.startPilotRefreshTimer();
         
+        // Inicializar sistema de carreras
+        this.initRaceSystem();
+        
         console.log('League initialized successfully');
     }
     
@@ -1057,6 +1060,616 @@ class LeagueController {
         }, 3000);
     }
     
+    // ==========================================
+    // RACE SYSTEM
+    // ==========================================
+    
+    /**
+     * Inicializa el sistema de carreras
+     */
+    initRaceSystem() {
+        // Calendario de carreras de la temporada
+        this.raceCalendar = [
+            { round: 1, trackId: 'monza', status: 'current' },
+            { round: 2, trackId: 'bahrain', status: 'locked' },
+            { round: 3, trackId: 'portimao', status: 'locked' },
+            { round: 4, trackId: 'montmelo', status: 'locked' },
+            { round: 5, trackId: 'nurburgring', status: 'locked' }
+        ];
+        
+        this.currentRaceIndex = 0;
+        this.raceEngine = null;
+        this.raceVisualizer = null;
+        this.raceSpeed = 1;
+        this.isPaused = false;
+        this.hasQualified = false;
+        this.qualifyingPosition = null;
+        
+        this.renderRaceCalendar();
+        this.loadCurrentTrack();
+        this.bindRaceEvents();
+    }
+    
+    /**
+     * Vincula los eventos del sistema de carreras
+     */
+    bindRaceEvents() {
+        // Mode tabs
+        document.querySelectorAll('.race-mode-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.race-mode-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const mode = tab.dataset.mode;
+                this.handleRaceModeChange(mode);
+            });
+        });
+        
+        // Qualifying button
+        document.getElementById('btn-qualifying')?.addEventListener('click', () => {
+            this.startQualifying();
+        });
+        
+        // Start race button
+        document.getElementById('btn-start-race')?.addEventListener('click', () => {
+            this.startRace();
+        });
+        
+        // Race controls
+        document.getElementById('btn-pause-race')?.addEventListener('click', () => {
+            this.togglePause();
+        });
+        
+        document.getElementById('btn-speed-1x')?.addEventListener('click', () => this.setRaceSpeed(1));
+        document.getElementById('btn-speed-2x')?.addEventListener('click', () => this.setRaceSpeed(2));
+        document.getElementById('btn-speed-5x')?.addEventListener('click', () => this.setRaceSpeed(5));
+        
+        // Results actions
+        document.getElementById('btn-close-results')?.addEventListener('click', () => {
+            document.getElementById('race-results-container').style.display = 'none';
+        });
+        
+        document.getElementById('btn-next-race')?.addEventListener('click', () => {
+            this.advanceToNextRace();
+        });
+    }
+    
+    /**
+     * Carga y muestra el circuito actual
+     */
+    async loadCurrentTrack() {
+        const currentRace = this.raceCalendar[this.currentRaceIndex];
+        const track = TRACKS_DATA[currentRace.trackId];
+        
+        if (!track) {
+            console.error('Track not found:', currentRace.trackId);
+            return;
+        }
+        
+        // Actualizar información del circuito
+        document.getElementById('current-track-name').textContent = track.name;
+        document.getElementById('current-track-location').textContent = `${track.flag} ${track.country}`;
+        document.getElementById('track-length').textContent = `${track.length} km`;
+        document.getElementById('track-laps').textContent = track.laps;
+        document.getElementById('track-turns').textContent = track.corners?.length || '-';
+        document.getElementById('track-topspeed').textContent = `${track.characteristics?.topSpeed || 300} km/h`;
+        document.getElementById('drs-zones-count').textContent = track.drsZones?.length || 0;
+        
+        // Tipo de pista
+        const typeTexts = {
+            'high-speed': '⚡ Alta velocidad',
+            'technical': '🔧 Técnico',
+            'street': '🏙️ Urbano',
+            'mixed': '🔄 Mixto'
+        };
+        document.getElementById('track-type').textContent = typeTexts[track.type] || track.type;
+        
+        // Dificultad (estrellas)
+        const difficultyEl = document.getElementById('track-difficulty');
+        if (difficultyEl) {
+            difficultyEl.innerHTML = Array(5).fill(0).map((_, i) => 
+                `<span${i >= track.difficulty ? ' class="dim"' : ''}>⭐</span>`
+            ).join('');
+        }
+        
+        // Cargar SVG del circuito en el preview
+        await this.loadTrackSVG(track.image, 'track-preview-container');
+        
+        // Generar condiciones meteorológicas
+        this.generateRaceWeather();
+    }
+    
+    /**
+     * Carga el SVG del circuito en un contenedor
+     */
+    async loadTrackSVG(svgPath, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        try {
+            // Intentar fetch primero (funciona en servidor web)
+            try {
+                const response = await fetch(svgPath);
+                if (!response.ok) throw new Error('Fetch failed');
+                const svgText = await response.text();
+                container.innerHTML = svgText;
+            } catch (fetchError) {
+                // Si fetch falla (file:// protocol), usar object tag
+                console.log('Fetch failed, using object tag:', fetchError.message);
+                container.innerHTML = `<object data="${svgPath}" type="image/svg+xml" style="width: 100%; height: 100%;"></object>`;
+                
+                // Esperar a que cargue el object
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            // Ajustar el SVG al contenedor
+            const svg = container.querySelector('svg') || container.querySelector('object');
+            if (svg && svg.tagName === 'svg') {
+                svg.style.width = '100%';
+                svg.style.height = '100%';
+            }
+        } catch (error) {
+            console.error('Error loading track SVG:', error);
+            // Fallback: crear SVG simple con el trazado
+            this.createFallbackTrackSVG(containerId);
+        }
+    }
+    
+    /**
+     * Crea un SVG de fallback si no se puede cargar el archivo
+     */
+    createFallbackTrackSVG(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        const currentRace = this.raceCalendar[this.currentRaceIndex];
+        const track = TRACKS_DATA[currentRace.trackId];
+        
+        const svg = `
+            <svg width="100%" height="100%" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+                <rect width="500" height="400" fill="#1a472a"/>
+                <path d="${track.racingLinePath}" 
+                      fill="none" 
+                      stroke="#333333" 
+                      stroke-width="35" 
+                      stroke-linecap="round"/>
+                <path d="${track.racingLinePath}" 
+                      fill="none" 
+                      stroke="#2a2a2a" 
+                      stroke-width="30" 
+                      stroke-linecap="round"/>
+                <path d="${track.racingLinePath}" 
+                      fill="none" 
+                      stroke="#ffffff" 
+                      stroke-width="2" 
+                      stroke-dasharray="15,10" 
+                      opacity="0.4"/>
+                <text x="250" y="200" fill="#ffffff" font-size="20" text-anchor="middle" font-family="Orbitron">${track.shortName}</text>
+            </svg>
+        `;
+        
+        container.innerHTML = svg;
+    }
+    
+    /**
+     * Genera condiciones meteorológicas aleatorias
+     */
+    generateRaceWeather() {
+        const conditions = Object.entries(WEATHER_CONDITIONS);
+        const weights = [0.5, 0.25, 0.15, 0.07, 0.03];
+        
+        let random = Math.random();
+        let cumulative = 0;
+        let selectedWeather = conditions[0][1];
+        
+        for (let i = 0; i < conditions.length; i++) {
+            cumulative += weights[i];
+            if (random <= cumulative) {
+                selectedWeather = conditions[i][1];
+                break;
+            }
+        }
+        
+        this.currentWeather = selectedWeather;
+        document.getElementById('race-weather').textContent = selectedWeather.icon;
+        document.getElementById('race-weather-text').textContent = selectedWeather.name;
+    }
+    
+    /**
+     * Renderiza el calendario de carreras
+     */
+    renderRaceCalendar() {
+        const container = document.getElementById('race-calendar');
+        if (!container) return;
+        
+        container.innerHTML = this.raceCalendar.map((race, index) => {
+            const track = TRACKS_DATA[race.trackId];
+            if (!track) return '';
+            
+            return `
+                <div class="calendar-race-card ${race.status}" data-round="${race.round}">
+                    <div class="calendar-race-number">Carrera ${race.round}</div>
+                    <div class="calendar-race-flag">${track.flag}</div>
+                    <div class="calendar-race-name">${track.shortName}</div>
+                    <div class="calendar-race-status">
+                        ${race.status === 'completed' ? '✓ Completada' : 
+                          race.status === 'current' ? '▶ Actual' : 
+                          '🔒 Bloqueada'}
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // Eventos de click en las carreras
+        container.querySelectorAll('.calendar-race-card:not(.locked)').forEach(card => {
+            card.addEventListener('click', () => {
+                const round = parseInt(card.dataset.round);
+                this.selectRace(round - 1);
+            });
+        });
+    }
+    
+    /**
+     * Selecciona una carrera del calendario
+     */
+    selectRace(index) {
+        if (index < 0 || index >= this.raceCalendar.length) return;
+        if (this.raceCalendar[index].status === 'locked') return;
+        
+        this.currentRaceIndex = index;
+        this.loadCurrentTrack();
+        
+        // Actualizar estado visual
+        document.querySelectorAll('.calendar-race-card').forEach((card, i) => {
+            card.classList.toggle('current', i === index);
+        });
+    }
+    
+    /**
+     * Inicia la clasificación
+     */
+    async startQualifying() {
+        if (!this.currentPilot) {
+            this.showToast('Necesitas contratar un piloto para clasificar', 'error');
+            return;
+        }
+        
+        const currentRace = this.raceCalendar[this.currentRaceIndex];
+        const track = TRACKS_DATA[currentRace.trackId];
+        
+        this.showToast('🏎️ Iniciando clasificación...', 'info');
+        document.getElementById('race-status').textContent = 'Clasificando...';
+        
+        // Simular clasificación (tiempo basado en habilidades)
+        const baseTime = track.referenceTimes.average;
+        const pilotSkill = this.currentPilot.level / 50;
+        const hqBonus = this.calculateHQBonus();
+        
+        // Tiempo del jugador
+        const playerTime = baseTime * (1 - pilotSkill * 0.06 - hqBonus);
+        const variation = 0.995 + Math.random() * 0.01;
+        const finalTime = playerTime * variation;
+        
+        // Generar tiempos de rivales (22 pilotos totales)
+        const rivals = this.generateRivalTimes(track, 21);
+        rivals.push({ name: this.currentPilot.name, time: finalTime, isPlayer: true });
+        
+        // Ordenar por tiempo
+        rivals.sort((a, b) => a.time - b.time);
+        
+        // Encontrar posición del jugador
+        this.qualifyingPosition = rivals.findIndex(r => r.isPlayer) + 1;
+        this.qualifyingResults = rivals;
+        
+        // Mostrar resultado
+        setTimeout(() => {
+            this.hasQualified = true;
+            document.getElementById('race-status').textContent = `P${this.qualifyingPosition}`;
+            document.getElementById('btn-start-race').disabled = false;
+            
+            this.showToast(`🏁 Clasificación: P${this.qualifyingPosition} - ${this.formatLapTime(finalTime)}`, 'success');
+        }, 2000);
+    }
+    
+    /**
+     * Genera tiempos de clasificación para los rivales
+     */
+    generateRivalTimes(track, count) {
+        const baseTime = track.referenceTimes.average;
+        const rivals = [];
+        
+        for (let i = 0; i < count; i++) {
+            const skillLevel = 20 + Math.random() * 30; // Nivel 20-50
+            const skill = skillLevel / 50;
+            const time = baseTime * (1 - skill * 0.06) * (0.995 + Math.random() * 0.015);
+            
+            rivals.push({
+                id: `rival-${i}`,
+                name: this.generateRivalName(),
+                level: Math.floor(skillLevel),
+                time: time,
+                isPlayer: false
+            });
+        }
+        
+        return rivals;
+    }
+    
+    /**
+     * Genera un nombre aleatorio para un rival
+     */
+    generateRivalName() {
+        const firstNames = ['Max', 'Lewis', 'Charles', 'Carlos', 'Lando', 'Oscar', 'George', 'Fernando', 'Sergio', 'Daniel', 'Pierre', 'Yuki', 'Kevin', 'Nico', 'Valtteri', 'Zhou', 'Alex', 'Logan', 'Nyck', 'Lance'];
+        const lastNames = ['Verstappen', 'Hamilton', 'Leclerc', 'Sainz', 'Norris', 'Piastri', 'Russell', 'Alonso', 'Perez', 'Ricciardo', 'Gasly', 'Tsunoda', 'Magnussen', 'Hulkenberg', 'Bottas', 'Guanyu', 'Albon', 'Sargeant', 'De Vries', 'Stroll'];
+        
+        return `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`;
+    }
+    
+    /**
+     * Calcula el bonus total del HQ
+     */
+    calculateHQBonus() {
+        const engine = (this.hqComponents.engine?.level || 1) * 0.004;
+        const aero = (this.hqComponents.aero?.level || 1) * 0.003;
+        const drs = (this.hqComponents.drs?.level || 1) * 0.002;
+        const chassis = (this.hqComponents.chassis?.level || 1) * 0.003;
+        return engine + aero + drs + chassis;
+    }
+    
+    /**
+     * Inicia la carrera
+     */
+    async startRace() {
+        if (!this.hasQualified) {
+            this.showToast('Debes clasificar antes de correr', 'error');
+            return;
+        }
+        
+        const currentRace = this.raceCalendar[this.currentRaceIndex];
+        const track = TRACKS_DATA[currentRace.trackId];
+        
+        // Preparar participantes
+        const participants = this.qualifyingResults.map((r, index) => ({
+            pilot: {
+                id: r.isPlayer ? 'player' : r.id,
+                name: r.name,
+                level: r.isPlayer ? this.currentPilot.level : r.level
+            },
+            hq: r.isPlayer ? {
+                engine: this.hqComponents.engine?.level || 1,
+                aero: this.hqComponents.aero?.level || 1,
+                drs: this.hqComponents.drs?.level || 1,
+                chassis: this.hqComponents.chassis?.level || 1
+            } : {
+                engine: Math.ceil(r.level / 5),
+                aero: Math.ceil(r.level / 5),
+                drs: Math.ceil(r.level / 5),
+                chassis: Math.ceil(r.level / 5)
+            },
+            tyreCompound: index < 10 ? 'soft' : 'medium',
+            startPosition: index + 1
+        }));
+        
+        // Crear motor de carrera
+        this.raceEngine = new RaceEngine(currentRace.trackId, participants);
+        
+        // Mostrar vista de carrera en vivo
+        document.getElementById('race-live-container').style.display = 'block';
+        document.getElementById('total-laps').textContent = track.laps;
+        
+        // Cargar SVG en vista de carrera
+        await this.loadTrackSVG(track.image, 'race-track-live');
+        
+        // Iniciar simulación
+        this.raceEngine.raceState = 'racing';
+        this.simulateRaceLive();
+    }
+    
+    /**
+     * Simula la carrera con actualizaciones en vivo
+     */
+    async simulateRaceLive() {
+        while (this.raceEngine.currentLap < this.raceEngine.totalLaps) {
+            if (this.isPaused) {
+                await this.sleep(100);
+                continue;
+            }
+            
+            const lapResult = this.raceEngine.simulateLap();
+            
+            // Actualizar UI
+            this.updateRaceLiveUI(lapResult);
+            
+            // Esperar según velocidad
+            await this.sleep(1000 / this.raceSpeed);
+        }
+        
+        // Carrera terminada
+        this.showRaceResults();
+    }
+    
+    /**
+     * Actualiza la UI durante la carrera
+     */
+    updateRaceLiveUI(lapResult) {
+        // Vuelta actual
+        document.getElementById('current-lap').textContent = lapResult.lap;
+        
+        // Vuelta rápida
+        if (lapResult.fastestLap.pilot) {
+            document.getElementById('fastest-lap-time').textContent = lapResult.fastestLap.time !== Infinity ? 
+                this.formatLapTime(lapResult.fastestLap.time) : '-';
+            document.getElementById('fastest-lap-driver').textContent = lapResult.fastestLap.pilot?.name || '-';
+        }
+        
+        // Clasificación en vivo
+        const standingsContainer = document.getElementById('live-standings');
+        standingsContainer.innerHTML = lapResult.positions.map((p, i) => `
+            <div class="live-standing-item ${i < 3 ? 'position-' + (i + 1) : ''}">
+                <span class="standing-position">${p.position}</span>
+                <span class="standing-driver">
+                    ${p.pilot.name}
+                    <span class="tyre-indicator tyre-${p.tyreCompound}"></span>
+                </span>
+                <span class="standing-gap ${p.gap === 0 ? 'leader' : ''}">${p.gapFormatted}</span>
+            </div>
+        `).join('');
+        
+        // Eventos
+        if (lapResult.events.length > 0) {
+            const eventsContainer = document.getElementById('race-events-list');
+            lapResult.events.forEach(event => {
+                const eventEl = document.createElement('div');
+                eventEl.className = `race-event-item ${event.type}`;
+                
+                let icon = '📢';
+                let text = '';
+                
+                switch (event.type) {
+                    case 'fastest-lap':
+                        icon = '🟣';
+                        text = `${event.pilot} marca vuelta rápida: ${event.time}`;
+                        break;
+                    case 'pit-stop':
+                        icon = '🔧';
+                        text = `${event.pilot} entra a boxes (${event.time}s)`;
+                        break;
+                    case 'dnf':
+                        icon = '❌';
+                        text = `${event.pilot} abandona: ${event.reason}`;
+                        break;
+                    case 'mistake':
+                        icon = '⚠️';
+                        text = `${event.pilot}: ${event.description} (+${event.timeLoss}s)`;
+                        break;
+                }
+                
+                eventEl.innerHTML = `
+                    <span class="event-icon">${icon}</span>
+                    <span class="event-lap">V${event.lap}</span>
+                    <span class="event-text">${text}</span>
+                `;
+                
+                eventsContainer.insertBefore(eventEl, eventsContainer.firstChild);
+            });
+        }
+    }
+    
+    /**
+     * Muestra los resultados de la carrera
+     */
+    showRaceResults() {
+        const results = this.raceEngine.getRaceResults();
+        
+        // Ocultar vista en vivo
+        document.getElementById('race-live-container').style.display = 'none';
+        
+        // Mostrar resultados
+        const resultsContainer = document.getElementById('race-results-container');
+        resultsContainer.style.display = 'block';
+        
+        document.getElementById('results-track-name').textContent = results.track.shortName;
+        document.getElementById('results-track-flag').textContent = results.track.flag;
+        
+        // Podium
+        const podium = results.results.slice(0, 3);
+        document.getElementById('podium-p1').textContent = podium[0]?.pilot.name || '-';
+        document.getElementById('podium-p2').textContent = podium[1]?.pilot.name || '-';
+        document.getElementById('podium-p3').textContent = podium[2]?.pilot.name || '-';
+        
+        // Tabla de resultados
+        const tbody = document.getElementById('results-table-body');
+        tbody.innerHTML = results.results.map(r => `
+            <tr class="${r.status === 'dnf' ? 'dnf' : ''}">
+                <td class="position-cell">${r.position}</td>
+                <td>${r.pilot.name} ${r.fastestLapBonus ? '<span class="fastest-lap-indicator">🟣</span>' : ''}</td>
+                <td>${r.status === 'dnf' ? 'DNF' : r.totalTimeFormatted}</td>
+                <td>${r.gapFormatted}</td>
+                <td>${r.bestLapFormatted}</td>
+                <td class="points-cell">${r.points > 0 ? `+${r.points}` : '-'}</td>
+            </tr>
+        `).join('');
+        
+        // Encontrar resultado del jugador
+        const playerResult = results.results.find(r => r.pilot.id === 'player');
+        if (playerResult) {
+            const pointsEarned = playerResult.points;
+            this.showToast(`🏁 Has terminado P${playerResult.position} - +${pointsEarned} puntos`, 
+                playerResult.position <= 3 ? 'success' : 'info');
+            
+            // TODO: Guardar puntos en el servidor
+        }
+        
+        // Marcar carrera como completada
+        this.raceCalendar[this.currentRaceIndex].status = 'completed';
+        this.renderRaceCalendar();
+    }
+    
+    /**
+     * Avanza a la siguiente carrera
+     */
+    advanceToNextRace() {
+        document.getElementById('race-results-container').style.display = 'none';
+        
+        if (this.currentRaceIndex < this.raceCalendar.length - 1) {
+            this.currentRaceIndex++;
+            this.raceCalendar[this.currentRaceIndex].status = 'current';
+            this.hasQualified = false;
+            this.qualifyingPosition = null;
+            
+            document.getElementById('btn-start-race').disabled = true;
+            document.getElementById('race-status').textContent = 'Esperando';
+            
+            this.loadCurrentTrack();
+            this.renderRaceCalendar();
+        } else {
+            this.showToast('🏆 ¡Has completado la temporada!', 'success');
+        }
+    }
+    
+    /**
+     * Pausa/reanuda la carrera
+     */
+    togglePause() {
+        this.isPaused = !this.isPaused;
+        document.getElementById('btn-pause-race').textContent = this.isPaused ? '▶️' : '⏸️';
+    }
+    
+    /**
+     * Establece la velocidad de simulación
+     */
+    setRaceSpeed(speed) {
+        this.raceSpeed = speed;
+        document.querySelectorAll('.btn-race-control').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.getElementById(`btn-speed-${speed}x`)?.classList.add('active');
+    }
+    
+    /**
+     * Cambia el modo de carrera (live, practice, qualifying)
+     */
+    handleRaceModeChange(mode) {
+        // Por ahora solo cambia visualmente
+        console.log('Race mode changed to:', mode);
+    }
+    
+    /**
+     * Formatea tiempo de vuelta
+     */
+    formatLapTime(seconds) {
+        if (!seconds || !isFinite(seconds)) return '-';
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return mins > 0 ? `${mins}:${secs.toFixed(3).padStart(6, '0')}` : secs.toFixed(3);
+    }
+    
+    /**
+     * Helper para esperar
+     */
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    
     getMockLeagueData() {
         return {
             id: this.leagueId,
@@ -1076,7 +1689,7 @@ class LeagueController {
             currentSeason: {
                 number: 1,
                 currentRace: 1,
-                totalRaces: 20
+                totalRaces: 5
             },
             standings: []
         };
