@@ -296,7 +296,12 @@ class DashboardController {
                 this.showComingSoon('Mi Equipo');
                 break;
             case 'shop':
-                // window.location.href = '/shop.html';
+                // TODO: Implementar tienda en dashboard cuando sea necesario
+                // El sistema de compras simuladas ya está implementado en:
+                // - frontend/js/online.js (método buyCoinPackage)
+                // - frontend/js/league.js (método buyCoinPackage)
+                // - database/routes/online.js (endpoint /shop/buy-coins-simulated)
+                // Ver COMPRAS_SIMULADAS.md para más información
                 this.showComingSoon('Tienda');
                 break;
             case 'settings':

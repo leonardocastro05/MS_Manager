@@ -250,6 +250,62 @@ class OnlineController {
         }
     }
     
+    async buyCoinPackage(packageId) {
+        try {
+            // Show confirmation modal
+            const packages = {
+                'coins_5': { coins: 5, price: '1,99€' },
+                'coins_12': { coins: 12, price: '4,99€' },
+                'coins_18': { coins: 18, price: '7,99€' },
+                'coins_30': { coins: 30, price: '12,99€' },
+                'coins_50': { coins: 50, price: '19,99€' },
+                'coins_80': { coins: 80, price: '29,99€' }
+            };
+            
+            const pkg = packages[packageId];
+            if (!pkg) return;
+            
+            const confirmed = confirm(
+                `🪙 COMPRA SIMULADA (DEMO)\n\n` +
+                `Vas a recibir ${pkg.coins} coins\n` +
+                `Precio: ${pkg.price}\n\n` +
+                `⚠️ Esta es una compra simulada para desarrollo.\n` +
+                `No se realizará ningún cargo real.\n\n` +
+                `¿Continuar con la compra simulada?`
+            );
+            
+            if (!confirmed) return;
+            
+            const response = await fetch(`${this.API_URL}/online/shop/buy-coins-simulated`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                },
+                body: JSON.stringify({ packageId })
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                this.showToast(`✅ ${data.message}`, 'success');
+                // Update coins in UI
+                this.profile.coins = data.newBalance.coins;
+                this.updateHeaderStats();
+                
+                // Reload profile to ensure data is synced
+                await this.loadProfile();
+                return true;
+            } else {
+                this.showToast(data.message || 'Error en la compra simulada', 'error');
+                return false;
+            }
+        } catch (error) {
+            console.error('Error buying coin package:', error);
+            this.showToast('Error de conexión', 'error');
+            return false;
+        }
+    }
+    
     // ==========================================
     // INTERNATIONAL RANKING API
     // ==========================================
@@ -741,6 +797,16 @@ class OnlineController {
                 const packageId = item.dataset.package;
                 await this.buyMoneyPackage(packageId);
             });
+        });
+        
+        // Shop coin packages
+        document.querySelectorAll('.shop-item:not(.money)').forEach(item => {
+            const packageId = item.dataset.package;
+            if (packageId && packageId.startsWith('coins_')) {
+                item.querySelector('.item-price')?.addEventListener('click', async () => {
+                    await this.buyCoinPackage(packageId);
+                });
+            }
         });
         
         // Modal overlay click to close

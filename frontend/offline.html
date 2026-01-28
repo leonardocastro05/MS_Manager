@@ -304,13 +304,7 @@
 
                 <!-- Tracks Grid -->
                 <div class="tracks-grid" id="tracks-list">
-                    <!-- Las pistas se añadirán aquí dinámicamente -->
-                    <div class="empty-state">
-                        <div class="empty-icon">🏁</div>
-                        <h3>Circuitos Próximamente</h3>
-                        <p>Los circuitos estarán disponibles en la próxima actualización.</p>
-                        <p class="empty-note">El sistema está listo, solo faltan añadir los datos de las pistas.</p>
-                    </div>
+                    <!-- Las pistas se cargan dinámicamente desde tracks-data.js -->
                 </div>
 
                 <!-- Template para cuando tengamos pistas -->
@@ -443,6 +437,8 @@
         </main>
     </div>
 
+    <script src="js/tracks-data.js"></script>
+    <script src="js/race-engine.js"></script>
     <script src="js/offline.js"></script>
 </body>
 </html>

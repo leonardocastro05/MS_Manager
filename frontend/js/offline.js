@@ -33,6 +33,9 @@ class OfflineController {
         // Pilotos disponibles en la tienda
         this.availablePilots = [];
         
+        // Pistas disponibles (solo Bahrain y Monza por ahora)
+        this.availableTracks = ['bahrain', 'monza'];
+        
         // Timer de refresh de tienda
         this.shopRefreshTime = 300; // 5 minutos en segundos
         this.shopTimer = null;
@@ -52,7 +55,9 @@ class OfflineController {
         
         this.bindEvents();
         this.updateUI();
+        this.renderCurrentPilot();
         this.generatePilots();
+        this.loadTracks();
         this.startShopTimer();
     }
     
@@ -168,6 +173,11 @@ class OfflineController {
                 if (user.gameData.hqLevels) {
                     this.player.hqLevels = user.gameData.hqLevels;
                 }
+                
+                // Cargar piloto contratado
+                if (user.gameData.currentPilot) {
+                    this.player.currentPilot = user.gameData.currentPilot;
+                }
             }
             
             // Guardar referencia al usuario
@@ -205,6 +215,7 @@ class OfflineController {
                     chassis: this.player.car.chassis.level
                 },
                 hqLevels: this.player.hqLevels,
+                currentPilot: this.player.currentPilot,
                 online: {
                     coins: this.player.coins
                 }
@@ -783,6 +794,85 @@ class OfflineController {
         });
     }
     
+    /**
+     * Carga y renderiza las pistas disponibles
+     */
+    loadTracks() {
+        const tracksGrid = document.getElementById('tracks-grid');
+        if (!tracksGrid) return;
+        
+        // Obtener solo las pistas disponibles
+        this.availableTracks.forEach(trackId => {
+            const track = TRACKS_DATA[trackId];
+            if (track) {
+                const trackCard = this.createTrackCard(track);
+                tracksGrid.appendChild(trackCard);
+            }
+        });
+    }
+    
+    /**
+     * Crea la tarjeta HTML de una pista
+     */
+    createTrackCard(track) {
+        const card = document.createElement('div');
+        card.className = 'track-card';
+        card.innerHTML = `
+            <div class="track-image">
+                <img src="img/tracks/${track.id}.svg" alt="${track.name}">
+            </div>
+            <div class="track-info">
+                <h3>${track.shortName || track.name}</h3>
+                <div class="track-details">
+                    <span>${track.flag} ${track.country}</span>
+                    <span>📏 ${track.length} km</span>
+                    <span>🔄 ${track.laps} vueltas</span>
+                </div>
+                <div class="track-stats">
+                    <div class="stat">
+                        <span class="stat-label">Dificultad</span>
+                        <span class="stat-value">${'★'.repeat(track.difficulty)}${'☆'.repeat(5 - track.difficulty)}</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Desgaste</span>
+                        <span class="stat-value">${track.characteristics.tyreWear}</span>
+                    </div>
+                </div>
+                <button class="race-button" onclick="offlineManager.startRace('${track.id}')">
+                    <span class="button-icon">🏎️</span>
+                    Correr
+                </button>
+            </div>
+        `;
+        
+        return card;
+    }
+    
+    /**
+     * Inicia una carrera en la pista seleccionada
+     */
+    startRace(trackId) {
+        const track = TRACKS_DATA[trackId];
+        if (!track) {
+            this.showNotification('❌ Pista no encontrada', 'error');
+            return;
+        }
+        
+        // Verificar que el jugador tenga pilotos
+        if (!this.player.pilots || this.player.pilots.length === 0) {
+            this.showNotification('⚠️ Necesitas contratar pilotos antes de correr', 'warning');
+            return;
+        }
+        
+        // Mostrar mensaje y simular carrera
+        this.showNotification(`🏁 Iniciando carrera en ${track.name}...`, 'info');
+        
+        // Simular carrera después de 1 segundo
+        setTimeout(() => {
+            this.simulateRace();
+        }, 1000);
+    }
+
     /**
      * Simula una carrera rápida (para testing/desarrollo)
      */

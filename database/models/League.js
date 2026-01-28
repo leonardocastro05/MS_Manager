@@ -46,6 +46,19 @@ const LeagueSchema = new mongoose.Schema({
         }
     },
     
+    // ===== Daily Races System =====
+    dailyRaces: {
+        maxRacesPerDay: {
+            type: Number,
+            default: 5 // 5 carreras máximas por día
+        },
+        // Días de descanso (0 = Domingo, 6 = Sábado)
+        restDays: {
+            type: [Number],
+            default: [0, 6] // Sábado y Domingo son días de descanso
+        }
+    },
+    
     // ===== Creator & Members =====
     creator: {
         type: mongoose.Schema.Types.ObjectId,
@@ -79,6 +92,11 @@ const LeagueSchema = new mongoose.Schema({
             drs: { level: { type: Number, default: 1, min: 1, max: 50 } },
             chassis: { level: { type: Number, default: 1, min: 1, max: 50 } },
             market: { level: { type: Number, default: 1, min: 1, max: 50 } }
+        },
+        // Daily races tracking
+        dailyRacesCount: {
+            date: { type: Date, default: Date.now },
+            count: { type: Number, default: 0 }
         },
         // Current pilot for this league
         currentPilot: {
@@ -154,8 +172,32 @@ const LeagueSchema = new mongoose.Schema({
             position: Number,
             user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
             points: Number,
-            time: String
+            time: String,
+            xpEarned: Number
         }]
+    }],
+    
+    // ===== League Chat/Forum =====
+    chat: [{
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        },
+        username: String,
+        avatar: String,
+        message: {
+            type: String,
+            maxlength: 500
+        },
+        type: {
+            type: String,
+            enum: ['message', 'system', 'announcement', 'season_winner'],
+            default: 'message'
+        },
+        timestamp: {
+            type: Date,
+            default: Date.now
+        }
     }],
     
     // ===== Status =====
@@ -215,6 +257,7 @@ LeagueSchema.methods.getPublicInfo = function() {
         logo: this.logo,
         country: this.country,
         schedule: this.schedule,
+        dailyRaces: this.dailyRaces,
         memberCount: this.members.length,
         maxMembers: this.settings.maxMembers,
         minLevel: this.settings.minLevel,
@@ -227,6 +270,120 @@ LeagueSchema.methods.getPublicInfo = function() {
         },
         createdAt: this.createdAt
     };
+};
+
+// Check if user can race today
+LeagueSchema.methods.canUserRaceToday = function(userId) {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    
+    // Check if it's a rest day (Saturday = 6, Sunday = 0)
+    if (this.dailyRaces.restDays.includes(dayOfWeek)) {
+        return { canRace: false, reason: 'rest_day', message: 'Hoy es día de descanso (fin de semana)' };
+    }
+    
+    // Find member
+    const member = this.members.find(m => m.user.toString() === userId.toString());
+    if (!member) {
+        return { canRace: false, reason: 'not_member', message: 'No eres miembro de esta liga' };
+    }
+    
+    // Check daily race count
+    const memberDailyRaces = member.dailyRacesCount || { date: new Date(0), count: 0 };
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const raceDate = new Date(memberDailyRaces.date);
+    const raceDateStart = new Date(raceDate.getFullYear(), raceDate.getMonth(), raceDate.getDate());
+    
+    // If it's a new day, reset count
+    if (todayStart.getTime() !== raceDateStart.getTime()) {
+        return { canRace: true, racesRemaining: this.dailyRaces.maxRacesPerDay, racesToday: 0 };
+    }
+    
+    // Check if under limit
+    const racesToday = memberDailyRaces.count || 0;
+    if (racesToday >= this.dailyRaces.maxRacesPerDay) {
+        return { 
+            canRace: false, 
+            reason: 'daily_limit', 
+            message: `Has alcanzado el límite de ${this.dailyRaces.maxRacesPerDay} carreras hoy`,
+            racesToday,
+            racesRemaining: 0
+        };
+    }
+    
+    return { 
+        canRace: true, 
+        racesRemaining: this.dailyRaces.maxRacesPerDay - racesToday,
+        racesToday 
+    };
+};
+
+// Increment user's daily race count
+LeagueSchema.methods.incrementDailyRaceCount = async function(userId) {
+    const memberIndex = this.members.findIndex(m => m.user.toString() === userId.toString());
+    if (memberIndex === -1) return false;
+    
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    const memberDailyRaces = this.members[memberIndex].dailyRacesCount || { date: new Date(0), count: 0 };
+    const raceDate = new Date(memberDailyRaces.date);
+    const raceDateStart = new Date(raceDate.getFullYear(), raceDate.getMonth(), raceDate.getDate());
+    
+    if (todayStart.getTime() !== raceDateStart.getTime()) {
+        // New day, reset
+        this.members[memberIndex].dailyRacesCount = { date: today, count: 1 };
+    } else {
+        // Same day, increment
+        this.members[memberIndex].dailyRacesCount.count++;
+    }
+    
+    await this.save();
+    return true;
+};
+
+// Add chat message
+LeagueSchema.methods.addChatMessage = async function(userId, message, type = 'message') {
+    const User = mongoose.model('User');
+    const user = await User.findById(userId);
+    
+    if (!user) throw new Error('User not found');
+    
+    this.chat.push({
+        user: userId,
+        username: user.displayName || user.username,
+        avatar: user.avatar,
+        message,
+        type,
+        timestamp: new Date()
+    });
+    
+    // Limit chat history to last 500 messages
+    if (this.chat.length > 500) {
+        this.chat = this.chat.slice(-500);
+    }
+    
+    await this.save();
+    return this.chat[this.chat.length - 1];
+};
+
+// Announce season winner
+LeagueSchema.methods.announceSeasonWinner = async function() {
+    if (this.currentSeason.standings.length === 0) return;
+    
+    // Sort and get winner
+    this.updateStandings();
+    const winner = this.currentSeason.standings[0];
+    
+    const User = mongoose.model('User');
+    const winnerUser = await User.findById(winner.user);
+    
+    const winnerMessage = `🏆🎉 ¡${winnerUser?.displayName || winnerUser?.username || 'Jugador'} ha ganado la TEMPORADA ${this.currentSeason.number}! 🎉🏆\n` +
+        `📊 Estadísticas: ${winner.points} puntos | ${winner.wins} victorias | ${winner.podiums} podios`;
+    
+    await this.addChatMessage(winner.user, winnerMessage, 'season_winner');
+    
+    return { winner: winnerUser, stats: winner };
 };
 
 LeagueSchema.methods.addMember = async function(userId, role = 'member') {

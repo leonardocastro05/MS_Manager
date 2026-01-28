@@ -32,6 +32,10 @@
                 <span class="nav-icon">🏠</span>
                 <span class="nav-text">Inicio</span>
             </a>
+            <a href="#" class="nav-item" data-section="chat">
+                <span class="nav-icon">💬</span>
+                <span class="nav-text">Foro</span>
+            </a>
             <a href="#" class="nav-item" data-section="headquarters">
                 <span class="nav-icon">🏢</span>
                 <span class="nav-text">HQ</span>
@@ -168,6 +172,55 @@
                 </div>
                 <div class="mini-leaderboard" id="mini-leaderboard">
                     <!-- Se rellenará dinámicamente -->
+                </div>
+            </div>
+            
+            <!-- Daily Races Status -->
+            <div class="section-card daily-races-card">
+                <div class="section-card-header">
+                    <h3><span>🏎️</span> Carreras Hoy</h3>
+                </div>
+                <div class="daily-races-status" id="daily-races-status">
+                    <div class="races-counter">
+                        <span class="races-done" id="races-done-today">0</span>
+                        <span class="races-separator">/</span>
+                        <span class="races-max" id="races-max-daily">5</span>
+                    </div>
+                    <div class="races-remaining">
+                        <span id="races-remaining-text">5 carreras restantes hoy</span>
+                    </div>
+                    <div class="rest-day-notice" id="rest-day-notice" style="display: none;">
+                        <span class="rest-icon">😴</span>
+                        <span>Hoy es día de descanso (fin de semana)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- ==========================================
+             SECTION: CHAT (Foro de Liga)
+             ========================================== -->
+        <section id="section-chat" class="content-section">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h2><span>💬</span> Foro de la Liga</h2>
+                    <p class="chat-subtitle">Habla con los demás miembros de tu liga</p>
+                </div>
+                
+                <div class="chat-messages-container" id="chat-messages">
+                    <!-- Los mensajes se cargarán dinámicamente -->
+                    <div class="chat-loading">
+                        <div class="loader"></div>
+                        <span>Cargando mensajes...</span>
+                    </div>
+                </div>
+                
+                <div class="chat-input-container">
+                    <input type="text" id="chat-input" class="chat-input" 
+                           placeholder="Escribe un mensaje..." maxlength="500">
+                    <button class="btn-send-chat" id="btn-send-chat">
+                        <span>📤</span> Enviar
+                    </button>
                 </div>
             </div>
         </section>
@@ -450,6 +503,20 @@
              ========================================== -->
         <section id="section-shop" class="content-section">
             <h2 class="shop-title"><span>🛒</span> Tienda</h2>
+            
+            <!-- Demo Mode Notice -->
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 2px solid rgba(255,255,255,0.2);">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="font-size: 40px;">⚠️</span>
+                    <div>
+                        <h3 style="margin: 0 0 5px 0; color: #fff; font-size: 18px;">🎮 MODO DEMOSTRACIÓN</h3>
+                        <p style="margin: 0; color: rgba(255,255,255,0.9); font-size: 14px;">
+                            Las compras de coins son simuladas. No se realizarán cargos reales. 
+                            El sistema de pagos se activará cuando la web esté operativa.
+                        </p>
+                    </div>
+                </div>
+            </div>
             
             <!-- Tabs de tienda -->
             <div class="shop-tabs">
@@ -769,6 +836,9 @@
                     </div>
                     <span class="status-badge" id="race-status">Esperando</span>
                     <div class="race-actions">
+                        <button class="btn-race btn-go-live" id="btn-go-live-race">
+                            <span>🔴</span> Ir a Carrera en Vivo
+                        </button>
                         <button class="btn-race btn-qualifying" id="btn-qualifying">
                             <span>⏱️</span> Clasificar
                         </button>
@@ -860,6 +930,7 @@
                             <th>Diferencia</th>
                             <th>M. Vuelta</th>
                             <th>Puntos</th>
+                            <th>XP</th>
                         </tr>
                     </thead>
                     <tbody id="results-table-body">

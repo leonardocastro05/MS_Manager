@@ -86,6 +86,8 @@ router.put('/profile', protect, [
             if (gameData.raceHistory !== undefined) user.gameData.raceHistory = gameData.raceHistory;
             if (gameData.online !== undefined) user.gameData.online = gameData.online;
             if (gameData.onlineLeagues !== undefined) user.gameData.onlineLeagues = gameData.onlineLeagues;
+            if (gameData.hqLevels !== undefined) user.gameData.hqLevels = gameData.hqLevels;
+            if (gameData.currentPilot !== undefined) user.gameData.currentPilot = gameData.currentPilot;
         }
 
         user.lastLogin = Date.now();

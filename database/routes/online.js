@@ -8,16 +8,33 @@ const League = require('../models/League');
 // XP SYSTEM CONFIGURATION
 // ===========================================
 const XP_CONFIG = {
-    // XP needed per level (exponential growth)
-    getXpForLevel: (level) => Math.floor(100 * Math.pow(1.5, level - 1)),
+    // XP needed per level (progresivo, más fácil al principio)
+    // Nivel 1->2: 100xp, Nivel 2->3: 130xp, ..., pero más lento arriba
+    getXpForLevel: (level) => {
+        if (level <= 5) return 100 + (level - 1) * 30; // 100, 130, 160, 190, 220
+        if (level <= 15) return 250 + (level - 5) * 50; // 250, 300, 350...
+        if (level <= 30) return 750 + (level - 15) * 100; // 750, 850, 950...
+        return 2250 + (level - 30) * 200; // 2250, 2450...
+    },
     
-    // XP rewards
+    // XP rewards basados en posición de carrera
     rewards: {
-        raceWin: 100,
-        racePodium: 50,
-        raceFinish: 20,
+        // P1: 200xp
+        position1: 200,
+        // P2-P5: 150xp
+        position2to5: 150,
+        // P6+: 50xp
+        position6plus: 50,
+        // Bonus por liga
         leagueWin: 500,
         seasonPodium: 250
+    },
+    
+    // Helper para obtener XP por posición
+    getXpForPosition: (position) => {
+        if (position === 1) return XP_CONFIG.rewards.position1;
+        if (position >= 2 && position <= 5) return XP_CONFIG.rewards.position2to5;
+        return XP_CONFIG.rewards.position6plus;
     },
     
     maxLevel: 50
@@ -779,6 +796,407 @@ router.post('/leagues/:id/pilot/sell', auth, async (req, res) => {
             message: `Sold pilot for ${sellPrice}`,
             sellPrice,
             newBudget: user.gameData.budget
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ===========================================
+// DAILY RACES SYSTEM
+// ===========================================
+
+// GET /api/online/leagues/:id/daily-status - Check if user can race today
+router.get('/leagues/:id/daily-status', auth, async (req, res) => {
+    try {
+        const league = await League.findById(req.params.id);
+        
+        if (!league) {
+            return res.status(404).json({ success: false, message: 'League not found' });
+        }
+        
+        const raceStatus = league.canUserRaceToday(req.user.id);
+        
+        res.json({
+            success: true,
+            ...raceStatus,
+            maxRacesPerDay: league.dailyRaces.maxRacesPerDay,
+            restDays: league.dailyRaces.restDays,
+            isRestDay: league.dailyRaces.restDays.includes(new Date().getDay())
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// POST /api/online/leagues/:id/race/complete - Complete a race and award XP
+router.post('/leagues/:id/race/complete', auth, async (req, res) => {
+    try {
+        const { position, raceData } = req.body;
+        const league = await League.findById(req.params.id);
+        const user = await User.findById(req.user.id);
+        
+        if (!league) {
+            return res.status(404).json({ success: false, message: 'League not found' });
+        }
+        
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        
+        // Check if can race today
+        const raceStatus = league.canUserRaceToday(req.user.id);
+        if (!raceStatus.canRace) {
+            return res.status(403).json({
+                success: false,
+                message: raceStatus.message,
+                reason: raceStatus.reason
+            });
+        }
+        
+        // Calculate XP based on position
+        const xpEarned = XP_CONFIG.getXpForPosition(position);
+        
+        // Update user's XP
+        const oldLevel = calculateLevel(user.gameData.online?.xp || 0).level;
+        user.gameData.online = user.gameData.online || {};
+        user.gameData.online.xp = (user.gameData.online.xp || 0) + xpEarned;
+        user.gameData.online.totalRaces = (user.gameData.online.totalRaces || 0) + 1;
+        
+        if (position === 1) {
+            user.gameData.online.onlineWins = (user.gameData.online.onlineWins || 0) + 1;
+        }
+        if (position <= 3) {
+            user.gameData.online.onlinePodiums = (user.gameData.online.onlinePodiums || 0) + 1;
+        }
+        
+        const newLevelData = calculateLevel(user.gameData.online.xp);
+        user.gameData.online.level = newLevelData.level;
+        
+        // Increment daily race count
+        await league.incrementDailyRaceCount(req.user.id);
+        
+        // Update league standings
+        const memberIndex = league.members.findIndex(m => m.user.toString() === req.user.id);
+        if (memberIndex !== -1) {
+            league.members[memberIndex].stats.racesCompleted++;
+            if (position === 1) league.members[memberIndex].stats.wins++;
+            if (position <= 3) league.members[memberIndex].stats.podiums++;
+            
+            // Add points (F1 system)
+            const pointsTable = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
+            const points = position <= 10 ? pointsTable[position - 1] : 0;
+            league.members[memberIndex].stats.points += points;
+            
+            // Update standings
+            const standingIndex = league.currentSeason.standings.findIndex(
+                s => s.user.toString() === req.user.id
+            );
+            if (standingIndex !== -1) {
+                league.currentSeason.standings[standingIndex].points += points;
+                if (position === 1) league.currentSeason.standings[standingIndex].wins++;
+                if (position <= 3) league.currentSeason.standings[standingIndex].podiums++;
+            }
+            league.updateStandings();
+            
+            // Check if season complete (15 races)
+            league.currentSeason.currentRace++;
+            if (league.currentSeason.currentRace >= 15) {
+                // Announce winner in chat
+                await league.announceSeasonWinner();
+            }
+        }
+        
+        await user.save();
+        await league.save();
+        
+        const leveledUp = newLevelData.level > oldLevel;
+        const raceStatusAfter = league.canUserRaceToday(req.user.id);
+        
+        res.json({
+            success: true,
+            xpEarned,
+            position,
+            leveledUp,
+            newLevel: newLevelData.level,
+            xpProgress: newLevelData,
+            racesRemaining: raceStatusAfter.racesRemaining,
+            racesToday: raceStatusAfter.racesToday
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ===========================================
+// LEAGUE CHAT ROUTES
+// ===========================================
+
+// GET /api/online/leagues/:id/chat - Get league chat messages
+router.get('/leagues/:id/chat', auth, async (req, res) => {
+    try {
+        const { limit = 50, before } = req.query;
+        const league = await League.findById(req.params.id);
+        
+        if (!league) {
+            return res.status(404).json({ success: false, message: 'League not found' });
+        }
+        
+        // Check membership
+        const isMember = league.members.some(m => m.user.toString() === req.user.id);
+        if (!isMember) {
+            return res.status(403).json({ success: false, message: 'Not a member of this league' });
+        }
+        
+        let messages = league.chat || [];
+        
+        // Filter by date if 'before' provided
+        if (before) {
+            const beforeDate = new Date(before);
+            messages = messages.filter(m => new Date(m.timestamp) < beforeDate);
+        }
+        
+        // Get last N messages
+        messages = messages.slice(-parseInt(limit));
+        
+        res.json({
+            success: true,
+            messages,
+            total: league.chat.length
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// POST /api/online/leagues/:id/chat - Send a message
+router.post('/leagues/:id/chat', auth, async (req, res) => {
+    try {
+        const { message } = req.body;
+        const league = await League.findById(req.params.id);
+        
+        if (!league) {
+            return res.status(404).json({ success: false, message: 'League not found' });
+        }
+        
+        // Check membership
+        const isMember = league.members.some(m => m.user.toString() === req.user.id);
+        if (!isMember) {
+            return res.status(403).json({ success: false, message: 'Not a member of this league' });
+        }
+        
+        // Validate message
+        if (!message || message.trim().length === 0) {
+            return res.status(400).json({ success: false, message: 'Message cannot be empty' });
+        }
+        
+        if (message.length > 500) {
+            return res.status(400).json({ success: false, message: 'Message too long (max 500 chars)' });
+        }
+        
+        const newMessage = await league.addChatMessage(req.user.id, message.trim(), 'message');
+        
+        res.json({
+            success: true,
+            message: newMessage
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ===========================================
+// PAYMENT SYSTEM (Stripe Integration)
+// ===========================================
+
+// POST /api/online/shop/buy-coins-simulated - Simulate coin purchase (DEMO MODE)
+router.post('/shop/buy-coins-simulated', auth, async (req, res) => {
+    try {
+        const { packageId } = req.body;
+        const user = await User.findById(req.user.id);
+        
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        
+        const package_ = SHOP_CONFIG.coinPackages.find(p => p.id === packageId);
+        if (!package_) {
+            return res.status(400).json({ success: false, message: 'Invalid package' });
+        }
+        
+        // SIMULATED PURCHASE - Add coins immediately
+        user.gameData.online = user.gameData.online || {};
+        user.gameData.online.coins = (user.gameData.online.coins || 0) + package_.coins;
+        await user.save();
+        
+        res.json({
+            success: true,
+            message: `¡Compra simulada! Has recibido ${package_.coins} coins`,
+            simulation: true,
+            package: {
+                id: package_.id,
+                coins: package_.coins,
+                price: package_.price,
+                currency: package_.currency
+            },
+            newBalance: {
+                coins: user.gameData.online.coins
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// POST /api/online/shop/create-checkout - Create Stripe checkout session
+router.post('/shop/create-checkout', auth, async (req, res) => {
+    try {
+        const { packageId } = req.body;
+        const user = await User.findById(req.user.id);
+        
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        
+        const package_ = SHOP_CONFIG.coinPackages.find(p => p.id === packageId);
+        if (!package_) {
+            return res.status(400).json({ success: false, message: 'Invalid package' });
+        }
+        
+        // NOTE: This is a placeholder for Stripe integration
+        // To enable real payments, you need to:
+        // 1. Create a Stripe account at https://stripe.com
+        // 2. Get your API keys from Stripe Dashboard
+        // 3. Install stripe: npm install stripe
+        // 4. Configure webhook endpoint for payment confirmation
+        
+        /* 
+        // STRIPE INTEGRATION CODE:
+        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+        
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [{
+                price_data: {
+                    currency: package_.currency.toLowerCase(),
+                    product_data: {
+                        name: `${package_.coins} Coins - MS Manager`,
+                        description: `Pack de ${package_.coins} coins para MS Manager`,
+                    },
+                    unit_amount: Math.round(package_.price * 100), // Stripe uses cents
+                },
+                quantity: 1,
+            }],
+            mode: 'payment',
+            success_url: `${process.env.FRONTEND_URL}/online.html?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${process.env.FRONTEND_URL}/online.html?payment=cancelled`,
+            client_reference_id: user._id.toString(),
+            metadata: {
+                userId: user._id.toString(),
+                packageId: package_.id,
+                coins: package_.coins.toString()
+            }
+        });
+        
+        return res.json({
+            success: true,
+            checkoutUrl: session.url,
+            sessionId: session.id
+        });
+        */
+        
+        // Temporary: Return info about setting up payments
+        res.json({
+            success: false,
+            message: 'Payment system not configured yet',
+            setupInstructions: {
+                step1: 'Create a Stripe account at https://stripe.com',
+                step2: 'Get your API keys from the Stripe Dashboard',
+                step3: 'Add STRIPE_SECRET_KEY to your .env file',
+                step4: 'Uncomment the Stripe code in this route',
+                step5: 'Set up a webhook endpoint for payment confirmations'
+            },
+            package: package_
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// POST /api/online/shop/webhook - Stripe webhook for payment confirmation
+router.post('/shop/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+    // NOTE: This endpoint handles Stripe webhooks
+    // When a payment is completed, Stripe sends a notification here
+    
+    /*
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    
+    const sig = req.headers['stripe-signature'];
+    let event;
+    
+    try {
+        event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    } catch (err) {
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+    
+    if (event.type === 'checkout.session.completed') {
+        const session = event.data.object;
+        
+        // Get user and add coins
+        const userId = session.client_reference_id;
+        const coins = parseInt(session.metadata.coins);
+        
+        const user = await User.findById(userId);
+        if (user) {
+            user.gameData.online = user.gameData.online || {};
+            user.gameData.online.coins = (user.gameData.online.coins || 0) + coins;
+            await user.save();
+            
+            console.log(`Added ${coins} coins to user ${userId}`);
+        }
+    }
+    */
+    
+    res.json({ received: true });
+});
+
+// POST /api/online/shop/verify-payment - Verify a completed payment (for testing)
+router.post('/shop/verify-payment', auth, async (req, res) => {
+    try {
+        const { sessionId, packageId } = req.body;
+        const user = await User.findById(req.user.id);
+        
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        
+        const package_ = SHOP_CONFIG.coinPackages.find(p => p.id === packageId);
+        if (!package_) {
+            return res.status(400).json({ success: false, message: 'Invalid package' });
+        }
+        
+        // NOTE: In production, verify with Stripe API
+        // This is just for testing purposes
+        
+        /*
+        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        
+        if (session.payment_status !== 'paid') {
+            return res.status(400).json({ success: false, message: 'Payment not completed' });
+        }
+        
+        // Verify it's for this user
+        if (session.client_reference_id !== user._id.toString()) {
+            return res.status(403).json({ success: false, message: 'Payment not for this user' });
+        }
+        */
+        
+        res.json({
+            success: false,
+            message: 'Payment verification not implemented - use Stripe webhook'
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

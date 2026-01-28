@@ -1615,6 +1615,27 @@
     color: rgba(255, 255, 255, 0.5);
 }
 
+.btn-go-live {
+    background: linear-gradient(145deg, #ff4444, #cc0000);
+    color: #fff;
+    animation: pulse-live 2s infinite;
+}
+
+.btn-go-live:hover {
+    background: linear-gradient(145deg, #ff5555, #dd1111);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(255, 0, 0, 0.4);
+}
+
+@keyframes pulse-live {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+    }
+}
+
 /* ==========================================
    RACE LIVE VIEW
    ========================================== */
@@ -2586,3 +2607,325 @@
         text-align: center;
     }
 }
+
+/* ==========================================
+   DAILY RACES SYSTEM
+   ========================================== */
+
+.daily-races-card {
+    background: linear-gradient(145deg, rgba(0, 80, 150, 0.2), rgba(30, 30, 50, 0.9));
+    border: 1px solid rgba(0, 200, 255, 0.2);
+}
+
+.daily-races-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    gap: 15px;
+}
+
+.races-counter {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+.races-done {
+    color: #00ff88;
+}
+
+.races-separator {
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0 5px;
+}
+
+.races-max {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.races-remaining {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+.rest-day-notice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 25px;
+    background: linear-gradient(145deg, rgba(255, 200, 0, 0.2), rgba(30, 30, 50, 0.9));
+    border-radius: 12px;
+    border: 1px solid rgba(255, 200, 0, 0.3);
+    color: #ffc800;
+    font-weight: 500;
+}
+
+.rest-icon {
+    font-size: 1.5rem;
+}
+
+/* ==========================================
+   LEAGUE CHAT/FORUM
+   ========================================== */
+
+.chat-container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: linear-gradient(145deg, rgba(30, 30, 50, 0.95), rgba(20, 20, 35, 0.98));
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 180px);
+    min-height: 500px;
+}
+
+.chat-header {
+    padding: 25px;
+    background: linear-gradient(145deg, rgba(0, 100, 200, 0.3), rgba(30, 30, 50, 0.9));
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chat-header h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem;
+    color: #fff;
+    margin-bottom: 5px;
+}
+
+.chat-subtitle {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.9rem;
+}
+
+.chat-messages-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.chat-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: rgba(255, 255, 255, 0.5);
+    gap: 15px;
+}
+
+.chat-message {
+    display: flex;
+    gap: 12px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    transition: background 0.2s ease;
+}
+
+.chat-message:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.chat-message.system {
+    background: linear-gradient(145deg, rgba(0, 100, 200, 0.15), rgba(30, 30, 50, 0.9));
+    border-left: 3px solid #00c8ff;
+}
+
+.chat-message.announcement {
+    background: linear-gradient(145deg, rgba(255, 200, 0, 0.15), rgba(30, 30, 50, 0.9));
+    border-left: 3px solid #ffc800;
+}
+
+.chat-message.season_winner {
+    background: linear-gradient(145deg, rgba(255, 215, 0, 0.2), rgba(30, 30, 50, 0.9));
+    border: 2px solid rgba(255, 215, 0, 0.5);
+    padding: 20px;
+    text-align: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+.chat-message.season_winner .message-content {
+    font-size: 1.1rem;
+    white-space: pre-line;
+}
+
+.chat-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #2a2a4a, #1a1a30);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    border: 2px solid rgba(0, 200, 255, 0.3);
+    overflow: hidden;
+}
+
+.chat-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.chat-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.chat-header-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.chat-username {
+    font-weight: 600;
+    color: #00c8ff;
+}
+
+.chat-timestamp {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.chat-text {
+    color: rgba(255, 255, 255, 0.85);
+    word-wrap: break-word;
+    line-height: 1.5;
+}
+
+.chat-input-container {
+    display: flex;
+    gap: 15px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chat-input {
+    flex: 1;
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: #fff;
+    font-size: 1rem;
+    font-family: 'Rajdhani', sans-serif;
+    transition: all 0.2s ease;
+}
+
+.chat-input:focus {
+    outline: none;
+    border-color: rgba(0, 200, 255, 0.5);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.chat-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-send-chat {
+    padding: 15px 25px;
+    background: linear-gradient(145deg, #00c8ff, #0080ff);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-send-chat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 200, 255, 0.4);
+}
+
+.btn-send-chat:active {
+    transform: translateY(0);
+}
+
+.chat-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: rgba(255, 255, 255, 0.4);
+    gap: 15px;
+}
+
+.chat-empty-icon {
+    font-size: 4rem;
+    opacity: 0.5;
+}
+
+/* XP Badge */
+.xp-earned-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    background: linear-gradient(145deg, rgba(0, 255, 136, 0.2), rgba(30, 30, 50, 0.9));
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: #00ff88;
+    font-weight: 600;
+}
+
+.player-row {
+    background: linear-gradient(90deg, rgba(0, 200, 255, 0.15), transparent) !important;
+}
+
+.player-row td {
+    color: #fff !important;
+}
+
+.you-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: linear-gradient(145deg, #00c8ff, #0080ff);
+    border-radius: 10px;
+    font-size: 0.7rem;
+    color: #fff;
+    font-weight: 700;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.xp-cell {
+    white-space: nowrap;
+}
+
+/* Responsive Chat */
+@media (max-width: 768px) {
+    .chat-container {
+        height: calc(100vh - 150px);
+        border-radius: 0;
+    }
+    
+    .chat-input-container {
+        flex-direction: column;
+    }
+    
+    .btn-send-chat {
+        width: 100%;
+        justify-content: center;
+    }
+}
+

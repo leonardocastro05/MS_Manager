@@ -39,6 +39,26 @@ class LeagueController {
         // Skins comprados
         this.ownedSkins = [];
         
+        // Daily Races System
+        this.dailyRacesStatus = {
+            canRace: true,
+            racesToday: 0,
+            racesRemaining: 5,
+            isRestDay: false,
+            maxRacesPerDay: 5
+        };
+        
+        // Chat System
+        this.chatMessages = [];
+        this.chatPollingInterval = null;
+        
+        // XP System
+        this.xpConfig = {
+            position1: 200,      // P1: 200xp
+            position2to5: 150,   // P2-P5: 150xp  
+            position6plus: 50    // P6+: 50xp
+        };
+        
         this.init();
     }
     
@@ -67,11 +87,14 @@ class LeagueController {
         await this.loadLeagueData();
         await this.loadHQData();
         await this.loadPilotShop();
+        await this.loadDailyRacesStatus();
+        await this.loadChatMessages();
         
         // Inicializar eventos y navegación
         this.bindEvents();
         this.initNavigation();
         this.startPilotRefreshTimer();
+        this.startChatPolling();
         
         // Inicializar sistema de carreras
         this.initRaceSystem();
@@ -902,6 +925,26 @@ class LeagueController {
         // Shop tabs
         this.initShopTabs();
         
+        // Shop coin packages
+        document.querySelectorAll('#coin-packages .shop-item').forEach(item => {
+            const packageId = item.dataset.package;
+            if (packageId && packageId.startsWith('coins_')) {
+                item.querySelector('.item-price')?.addEventListener('click', async () => {
+                    await this.buyCoinPackage(packageId);
+                });
+            }
+        });
+        
+        // Shop money packages
+        document.querySelectorAll('#money-packages .shop-item').forEach(item => {
+            const packageId = item.dataset.package;
+            if (packageId && packageId.startsWith('money_')) {
+                item.querySelector('.item-price')?.addEventListener('click', async () => {
+                    await this.buyMoneyPackage(packageId);
+                });
+            }
+        });
+        
         // Skin purchase
         document.querySelectorAll('.btn-buy-skin:not([disabled])').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -940,6 +983,17 @@ class LeagueController {
                 // TODO: Cargar standings según tipo
             });
         });
+        
+        // Chat events
+        document.getElementById('btn-send-chat')?.addEventListener('click', () => {
+            this.sendChatMessage();
+        });
+        
+        document.getElementById('chat-input')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.sendChatMessage();
+            }
+        });
     }
     
     showBuySkinModal(skinId) {
@@ -962,12 +1016,365 @@ class LeagueController {
     }
     
     // ==========================================
+    // SHOP SYSTEM - SIMULATED PURCHASES
+    // ==========================================
+    
+    async buyCoinPackage(packageId) {
+        try {
+            const packages = {
+                'coins_5': { coins: 5, price: '1,99€' },
+                'coins_12': { coins: 12, price: '4,99€' },
+                'coins_18': { coins: 18, price: '7,99€' },
+                'coins_30': { coins: 30, price: '12,99€' },
+                'coins_50': { coins: 50, price: '19,99€' },
+                'coins_80': { coins: 80, price: '29,99€' }
+            };
+            
+            const pkg = packages[packageId];
+            if (!pkg) return;
+            
+            const confirmed = confirm(
+                `🪙 COMPRA SIMULADA (DEMO)\n\n` +
+                `Vas a recibir ${pkg.coins} coins\n` +
+                `Precio: ${pkg.price}\n\n` +
+                `⚠️ Esta es una compra simulada para desarrollo.\n` +
+                `No se realizará ningún cargo real.\n\n` +
+                `¿Continuar con la compra simulada?`
+            );
+            
+            if (!confirmed) return;
+            
+            const response = await fetch(`${this.API_URL}/online/shop/buy-coins-simulated`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                },
+                body: JSON.stringify({ packageId })
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                this.showToast(`✅ ${data.message}`, 'success');
+                // Update coins in UI
+                if (this.profile) {
+                    this.profile.gameData.online = this.profile.gameData.online || {};
+                    this.profile.gameData.online.coins = data.newBalance.coins;
+                    this.updateHeaderStats();
+                }
+                return true;
+            } else {
+                this.showToast(data.message || 'Error en la compra simulada', 'error');
+                return false;
+            }
+        } catch (error) {
+            console.error('Error buying coin package:', error);
+            this.showToast('Error de conexión', 'error');
+            return false;
+        }
+    }
+    
+    async buyMoneyPackage(packageId) {
+        try {
+            const response = await fetch(`${this.API_URL}/online/shop/buy-money`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                },
+                body: JSON.stringify({ packageId })
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                this.showToast(data.message, 'success');
+                // Update balance
+                if (this.profile) {
+                    this.profile.gameData.online.coins = data.newBalance.coins;
+                    this.profile.gameData.budget = data.newBalance.budget;
+                    this.updateHeaderStats();
+                }
+                return true;
+            } else {
+                this.showToast(data.message || 'Error en la compra', 'error');
+                return false;
+            }
+        } catch (error) {
+            console.error('Error buying money package:', error);
+            this.showToast('Error de conexión', 'error');
+            return false;
+        }
+    }
+    
+    // ==========================================
+    // DAILY RACES SYSTEM
+    // ==========================================
+    
+    async loadDailyRacesStatus() {
+        try {
+            const response = await fetch(`${this.API_URL}/online/leagues/${this.leagueId}/daily-status`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.dailyRacesStatus = {
+                    canRace: data.canRace,
+                    racesToday: data.racesToday || 0,
+                    racesRemaining: data.racesRemaining || 5,
+                    isRestDay: data.isRestDay,
+                    maxRacesPerDay: data.maxRacesPerDay || 5,
+                    reason: data.reason,
+                    message: data.message
+                };
+            }
+        } catch (error) {
+            console.error('Error loading daily races status:', error);
+            // Default: Check if weekend locally
+            const today = new Date().getDay();
+            this.dailyRacesStatus.isRestDay = (today === 0 || today === 6);
+        }
+        
+        this.updateDailyRacesUI();
+    }
+    
+    updateDailyRacesUI() {
+        const status = this.dailyRacesStatus;
+        
+        // Update counters
+        document.getElementById('races-done-today').textContent = status.racesToday;
+        document.getElementById('races-max-daily').textContent = status.maxRacesPerDay;
+        document.getElementById('races-remaining-text').textContent = 
+            `${status.racesRemaining} carreras restantes hoy`;
+        
+        // Show/hide rest day notice
+        const restDayNotice = document.getElementById('rest-day-notice');
+        const racesStatus = document.getElementById('daily-races-status');
+        
+        if (status.isRestDay) {
+            restDayNotice.style.display = 'flex';
+            // Disable race buttons
+            document.getElementById('btn-qualifying')?.setAttribute('disabled', 'disabled');
+            document.getElementById('btn-start-race')?.setAttribute('disabled', 'disabled');
+        } else {
+            restDayNotice.style.display = 'none';
+        }
+        
+        // Disable race if no races remaining
+        if (!status.canRace && !status.isRestDay) {
+            document.getElementById('btn-qualifying')?.setAttribute('disabled', 'disabled');
+            this.showToast(status.message || 'No puedes correr más hoy', 'info');
+        }
+    }
+    
+    // Calculate XP based on position
+    calculateXpForPosition(position) {
+        if (position === 1) return this.xpConfig.position1; // 200xp
+        if (position >= 2 && position <= 5) return this.xpConfig.position2to5; // 150xp
+        return this.xpConfig.position6plus; // 50xp
+    }
+    
+    // Complete race and award XP
+    async completeRace(position, raceData) {
+        try {
+            const response = await fetch(`${this.API_URL}/online/leagues/${this.leagueId}/race/complete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                },
+                body: JSON.stringify({ position, raceData })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Update daily races status
+                this.dailyRacesStatus.racesToday = data.racesToday;
+                this.dailyRacesStatus.racesRemaining = data.racesRemaining;
+                this.dailyRacesStatus.canRace = data.racesRemaining > 0;
+                this.updateDailyRacesUI();
+                
+                // Show XP earned
+                this.showXpEarnedToast(data.xpEarned, position);
+                
+                // Check for level up
+                if (data.leveledUp) {
+                    this.showLevelUpToast(data.newLevel);
+                }
+                
+                return data;
+            } else {
+                this.showToast(data.message || 'Error al completar carrera', 'error');
+                return null;
+            }
+        } catch (error) {
+            console.error('Error completing race:', error);
+            // Fallback: calculate locally
+            const xp = this.calculateXpForPosition(position);
+            this.showXpEarnedToast(xp, position);
+            return { xpEarned: xp };
+        }
+    }
+    
+    showXpEarnedToast(xp, position) {
+        const positionEmoji = position === 1 ? '🥇' : position === 2 ? '🥈' : position === 3 ? '🥉' : '🏁';
+        this.showToast(`${positionEmoji} P${position} - +${xp} XP ganados!`, 'success');
+    }
+    
+    showLevelUpToast(newLevel) {
+        this.showToast(`🎉 ¡SUBIDA DE NIVEL! Ahora eres nivel ${newLevel}`, 'success');
+    }
+    
+    // ==========================================
+    // CHAT SYSTEM
+    // ==========================================
+    
+    async loadChatMessages() {
+        try {
+            const response = await fetch(`${this.API_URL}/online/leagues/${this.leagueId}/chat?limit=50`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.chatMessages = data.messages;
+                this.renderChatMessages();
+            }
+        } catch (error) {
+            console.error('Error loading chat:', error);
+            // Show empty chat
+            this.chatMessages = [];
+            this.renderChatMessages();
+        }
+    }
+    
+    renderChatMessages() {
+        const container = document.getElementById('chat-messages');
+        if (!container) return;
+        
+        if (this.chatMessages.length === 0) {
+            container.innerHTML = `
+                <div class="chat-empty">
+                    <span class="chat-empty-icon">💬</span>
+                    <p>No hay mensajes todavía</p>
+                    <p>¡Sé el primero en escribir!</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = this.chatMessages.map(msg => this.renderChatMessage(msg)).join('');
+        
+        // Scroll to bottom
+        container.scrollTop = container.scrollHeight;
+    }
+    
+    renderChatMessage(msg) {
+        const isSystem = msg.type === 'system' || msg.type === 'announcement' || msg.type === 'season_winner';
+        const timestamp = new Date(msg.timestamp).toLocaleString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        if (msg.type === 'season_winner') {
+            return `
+                <div class="chat-message season_winner">
+                    <div class="message-content">${this.escapeHtml(msg.message)}</div>
+                    <div class="chat-timestamp">${timestamp}</div>
+                </div>
+            `;
+        }
+        
+        const avatarContent = msg.avatar 
+            ? `<img src="${msg.avatar}" alt="${msg.username}">`
+            : (msg.username?.charAt(0).toUpperCase() || '?');
+        
+        return `
+            <div class="chat-message ${msg.type || 'message'}">
+                <div class="chat-avatar">${avatarContent}</div>
+                <div class="chat-content">
+                    <div class="chat-header-row">
+                        <span class="chat-username">${this.escapeHtml(msg.username || 'Usuario')}</span>
+                        <span class="chat-timestamp">${timestamp}</span>
+                    </div>
+                    <div class="chat-text">${this.escapeHtml(msg.message)}</div>
+                </div>
+            </div>
+        `;
+    }
+    
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    async sendChatMessage() {
+        const input = document.getElementById('chat-input');
+        const message = input?.value.trim();
+        
+        if (!message) return;
+        
+        try {
+            const response = await fetch(`${this.API_URL}/online/leagues/${this.leagueId}/chat`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                },
+                body: JSON.stringify({ message })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Clear input
+                input.value = '';
+                
+                // Add message to local list
+                this.chatMessages.push(data.message);
+                this.renderChatMessages();
+            } else {
+                this.showToast(data.message || 'Error al enviar mensaje', 'error');
+            }
+        } catch (error) {
+            console.error('Error sending chat message:', error);
+            this.showToast('Error al enviar mensaje', 'error');
+        }
+    }
+    
+    startChatPolling() {
+        // Poll for new messages every 10 seconds
+        this.chatPollingInterval = setInterval(() => {
+            if (this.currentSection === 'chat') {
+                this.loadChatMessages();
+            }
+        }, 10000);
+    }
+    
+    stopChatPolling() {
+        if (this.chatPollingInterval) {
+            clearInterval(this.chatPollingInterval);
+            this.chatPollingInterval = null;
+        }
+    }
+    
+    // ==========================================
     // NAVIGATION
     // ==========================================
     
     initNavigation() {
         const hash = window.location.hash.replace('#', '');
-        if (hash && ['home', 'headquarters', 'pilots', 'shop', 'races', 'standings'].includes(hash)) {
+        if (hash && ['home', 'chat', 'headquarters', 'pilots', 'shop', 'races', 'standings'].includes(hash)) {
             this.navigateTo(hash);
         }
     }
@@ -1104,6 +1511,11 @@ class LeagueController {
             });
         });
         
+        // Go to live race button - navigates to race-live.html
+        document.getElementById('btn-go-live-race')?.addEventListener('click', () => {
+            this.goToLiveRace();
+        });
+        
         // Qualifying button
         document.getElementById('btn-qualifying')?.addEventListener('click', () => {
             this.startQualifying();
@@ -1131,6 +1543,19 @@ class LeagueController {
         document.getElementById('btn-next-race')?.addEventListener('click', () => {
             this.advanceToNextRace();
         });
+    }
+    
+    /**
+     * Navegar a la página de carrera en vivo
+     */
+    goToLiveRace() {
+        if (!this.league) {
+            this.showToast('No se ha cargado la liga', 'error');
+            return;
+        }
+        
+        // Navegar a race-live.html con el ID de la liga
+        window.location.href = `race-live.html?league=${this.league._id}`;
     }
     
     /**
@@ -1557,7 +1982,7 @@ class LeagueController {
     /**
      * Muestra los resultados de la carrera
      */
-    showRaceResults() {
+    async showRaceResults() {
         const results = this.raceEngine.getRaceResults();
         
         // Ocultar vista en vivo
@@ -1576,27 +2001,46 @@ class LeagueController {
         document.getElementById('podium-p2').textContent = podium[1]?.pilot.name || '-';
         document.getElementById('podium-p3').textContent = podium[2]?.pilot.name || '-';
         
-        // Tabla de resultados
-        const tbody = document.getElementById('results-table-body');
-        tbody.innerHTML = results.results.map(r => `
-            <tr class="${r.status === 'dnf' ? 'dnf' : ''}">
-                <td class="position-cell">${r.position}</td>
-                <td>${r.pilot.name} ${r.fastestLapBonus ? '<span class="fastest-lap-indicator">🟣</span>' : ''}</td>
-                <td>${r.status === 'dnf' ? 'DNF' : r.totalTimeFormatted}</td>
-                <td>${r.gapFormatted}</td>
-                <td>${r.bestLapFormatted}</td>
-                <td class="points-cell">${r.points > 0 ? `+${r.points}` : '-'}</td>
-            </tr>
-        `).join('');
-        
         // Encontrar resultado del jugador
         const playerResult = results.results.find(r => r.pilot.id === 'player');
-        if (playerResult) {
-            const pointsEarned = playerResult.points;
-            this.showToast(`🏁 Has terminado P${playerResult.position} - +${pointsEarned} puntos`, 
-                playerResult.position <= 3 ? 'success' : 'info');
+        const playerPosition = playerResult?.position || 0;
+        const xpEarned = this.calculateXpForPosition(playerPosition);
+        
+        // Tabla de resultados con XP
+        const tbody = document.getElementById('results-table-body');
+        tbody.innerHTML = results.results.map(r => {
+            const isPlayer = r.pilot.id === 'player';
+            const rowXp = isPlayer ? this.calculateXpForPosition(r.position) : 0;
             
-            // TODO: Guardar puntos en el servidor
+            return `
+                <tr class="${r.status === 'dnf' ? 'dnf' : ''} ${isPlayer ? 'player-row' : ''}">
+                    <td class="position-cell">${r.position}</td>
+                    <td>
+                        ${r.pilot.name} 
+                        ${r.fastestLapBonus ? '<span class="fastest-lap-indicator">🟣</span>' : ''}
+                        ${isPlayer ? '<span class="you-badge">TÚ</span>' : ''}
+                    </td>
+                    <td>${r.status === 'dnf' ? 'DNF' : r.totalTimeFormatted}</td>
+                    <td>${r.gapFormatted}</td>
+                    <td>${r.bestLapFormatted}</td>
+                    <td class="points-cell">${r.points > 0 ? `+${r.points}` : '-'}</td>
+                    <td class="xp-cell">${isPlayer ? `<span class="xp-earned-badge">+${rowXp} XP</span>` : ''}</td>
+                </tr>
+            `;
+        }).join('');
+        
+        // Guardar resultado en servidor y otorgar XP
+        if (playerResult) {
+            const currentRace = this.raceCalendar[this.currentRaceIndex];
+            const raceData = {
+                trackId: currentRace.trackId,
+                raceNumber: currentRace.round,
+                time: playerResult.totalTime,
+                points: playerResult.points
+            };
+            
+            // Completar carrera y obtener XP
+            await this.completeRace(playerPosition, raceData);
         }
         
         // Marcar carrera como completada
