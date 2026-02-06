@@ -100,13 +100,30 @@ class OnlineController {
     async loadProfile() {
         try {
             console.log('Loading profile from:', `${this.API_URL}/user/profile`);
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                console.warn('No auth token found, redirecting to login');
+                window.location.href = 'index.html';
+                return;
+            }
+            
             const response = await fetch(`${this.API_URL}/user/profile`, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 }
             });
             
             console.log('Response status:', response.status);
+            
+            // Handle token expired or invalid
+            if (response.status === 401) {
+                console.warn('Token invalid or expired, redirecting to login');
+                localStorage.removeItem('authToken');
+                window.location.href = 'index.html';
+                return;
+            }
+            
             const data = await response.json();
             console.log('Profile data received:', data);
             
@@ -116,11 +133,44 @@ class OnlineController {
                 this.updateProfileUI();
             } else {
                 console.error('Profile load failed:', data);
-                this.showToast('Error al cargar perfil', 'error');
+                // Try to show page with limited data
+                this.profile = this.getProfileFromToken(token);
+                if (this.profile) {
+                    this.updateProfileUI();
+                    this.showToast('Perfil cargado parcialmente', 'warning');
+                } else {
+                    this.showToast('Error al cargar perfil', 'error');
+                }
             }
         } catch (error) {
             console.error('Error loading profile:', error);
-            this.showToast('Error de conexión al cargar perfil', 'error');
+            // Try to recover with token data
+            const token = localStorage.getItem('authToken');
+            this.profile = this.getProfileFromToken(token);
+            if (this.profile) {
+                this.updateProfileUI();
+                this.showToast('Modo offline - datos del perfil limitados', 'warning');
+            } else {
+                this.showToast('Error de conexión al cargar perfil', 'error');
+            }
+        }
+    }
+    
+    /**
+     * Extract basic profile info from JWT token as fallback
+     */
+    getProfileFromToken(token) {
+        try {
+            if (!token) return null;
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            return {
+                username: payload.username || 'Usuario',
+                teamName: payload.teamName || 'Mi Equipo',
+                gameData: { budget: 0, online: { coins: 0, xp: 0 } }
+            };
+        } catch (e) {
+            console.error('Error decoding token:', e);
+            return null;
         }
     }
     

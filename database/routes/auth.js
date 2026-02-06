@@ -93,13 +93,48 @@ router.post('/register', [
             success: true,
             message: 'Account created successfully',
             user: user.getPublicProfile(),
-            token
+            token,
+            isNewUser: true
         });
     } catch (error) {
         console.error('Register error:', error);
         res.status(500).json({
             success: false,
             message: 'Server error during registration'
+        });
+    }
+});
+
+// ===========================================
+// @route   GET /api/auth/recent-registrations
+// @desc    Get users registered in the last X minutes
+// @access  Public
+// ===========================================
+router.get('/recent-registrations', async (req, res) => {
+    try {
+        const minutesAgo = parseInt(req.query.minutes) || 5;
+        const since = new Date(Date.now() - minutesAgo * 60 * 1000);
+        
+        const recentUsers = await User.find({
+            createdAt: { $gte: since }
+        })
+        .select('username displayName teamName createdAt')
+        .sort({ createdAt: -1 })
+        .limit(10);
+        
+        res.json({
+            success: true,
+            users: recentUsers.map(u => ({
+                username: u.displayName || u.username,
+                teamName: u.teamName,
+                joinedAt: u.createdAt
+            }))
+        });
+    } catch (error) {
+        console.error('Recent registrations error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
         });
     }
 });

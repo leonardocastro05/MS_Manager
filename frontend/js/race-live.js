@@ -28,6 +28,11 @@ class RaceLiveController {
         this.selectedTyre = 'medium';
         this.selectedFuel = 20;
         
+        // Race duration config - 10 minutes = 600 seconds
+        this.RACE_DURATION_MS = 10 * 60 * 1000; // 10 minutes in milliseconds
+        this.raceStartTime = null;
+        this.raceElapsedTime = 0;
+        
         this.init();
     }
     
@@ -627,9 +632,10 @@ class RaceLiveController {
                         lights.style.display = 'none';
                         this.race.status = 'racing';
                         this.race.currentLap = 1;
+                        this.raceStartTime = Date.now(); // Track real start time
                         this.updateUI();
                         this.startRaceSimulation();
-                        this.addChatMessage('Sistema', '🏁 ¡Luces apagadas! ¡Comienza la carrera!', true);
+                        this.addChatMessage('Sistema', '🏁 ¡Luces apagadas! ¡Comienza la carrera de 10 minutos!', true);
                     }, 1000);
                 }, delay);
             }
@@ -652,11 +658,33 @@ class RaceLiveController {
     simulateRaceTick() {
         if (this.race.status !== 'racing') return;
         
+        // Check if race time has elapsed (10 minutes)
+        this.raceElapsedTime = Date.now() - this.raceStartTime;
+        const raceTimeRemaining = this.RACE_DURATION_MS - this.raceElapsedTime;
+        
+        // Update time display
+        this.updateRaceTimeDisplay(raceTimeRemaining);
+        
+        // Check for race end by time (only announce once)
+        if (raceTimeRemaining <= 0 && !this.race.finalLap) {
+            this.addChatMessage('Sistema', '🏁 ¡Última vuelta! El tiempo se ha agotado.', true);
+            // Let current lap finish, then end race
+            this.race.finalLap = true;
+            // Set the lap to complete as the leader's current lap
+            const leader = this.race.liveState.participants
+                .filter(p => p.status === 'racing')
+                .sort((a, b) => b.currentLap - a.currentLap || b.trackProgress - a.trackProgress)[0];
+            if (leader) {
+                this.race.finalLapNumber = leader.currentLap;
+            }
+        }
+        
         this.race.liveState.participants.forEach(p => {
             if (p.status !== 'racing') return;
             
             // Calculate speed based on car performance and tyres
-            const baseSpeed = 0.5 + Math.random() * 0.3;
+            // Adjusted for 10-minute race (~15-20 laps)
+            const baseSpeed = 0.6 + Math.random() * 0.25;
             const tyreEffect = p.tyres.wear / 100;
             const fuelEffect = 1 - (p.fuel.current / 200) * 0.1;
             
@@ -669,6 +697,14 @@ class RaceLiveController {
             if (p.trackProgress >= 100) {
                 p.trackProgress -= 100;
                 p.currentLap++;
+                
+                // Check if this is the final lap after time ended
+                if (this.race.finalLap && p.currentLap > this.race.finalLapNumber) {
+                    p.status = 'finished';
+                    this.addChatMessage('Sistema', `🏁 ${p.pilotName} cruza la línea de meta en P${p.position}`, true);
+                    this.checkRaceFinish();
+                    return;
+                }
                 
                 // Generate lap time
                 const baseLapTime = 90000; // 1:30.000
@@ -765,6 +801,33 @@ class RaceLiveController {
                 p.interval = `+${Math.abs(interval * 0.02).toFixed(3)}`;
             }
         });
+    }
+    
+    /**
+     * Actualizar display del tiempo restante de carrera
+     */
+    updateRaceTimeDisplay(remainingMs) {
+        const timerElement = document.getElementById('race-time-remaining');
+        if (!timerElement) return;
+        
+        if (remainingMs <= 0) {
+            timerElement.textContent = 'ÚLTIMA VUELTA';
+            timerElement.style.color = '#ff4444';
+            return;
+        }
+        
+        const totalSeconds = Math.ceil(remainingMs / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        
+        timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        // Change color when less than 2 minutes
+        if (remainingMs < 120000) {
+            timerElement.style.color = '#ff8800';
+        } else {
+            timerElement.style.color = '';
+        }
     }
     
     /**
@@ -1041,18 +1104,47 @@ class RaceLiveController {
         
         // Close finish modal
         document.getElementById('close-finish-modal')?.addEventListener('click', () => {
-            window.location.href = `league.html?id=${this.leagueId}`;
+            this.stopUpdates();
+            window.location.href = this.leagueId ? `league.html?id=${this.leagueId}` : 'online.html';
         });
         
-        // Back button
-        document.getElementById('back-btn')?.addEventListener('click', (e) => {
+        // Back button - manejar salida de carrera de forma segura
+        document.getElementById('back-btn')?.addEventListener('click', async (e) => {
             e.preventDefault();
-            if (this.race.status === 'racing') {
-                if (!confirm('¿Seguro que quieres abandonar la carrera?')) {
+            
+            if (this.race && this.race.status === 'racing') {
+                if (!confirm('¿Seguro que quieres abandonar la carrera? Perderás tu progreso actual.')) {
                     return;
                 }
+                
+                // Notify server that player is leaving
+                try {
+                    await fetch(`${this.apiBaseUrl}/race/${this.raceId}/participant`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${this.token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            action: 'retire',
+                            data: { reason: 'player_left' }
+                        })
+                    });
+                } catch (error) {
+                    console.log('Could not notify server of retirement');
+                }
             }
-            window.location.href = `league.html?id=${this.leagueId}`;
+            
+            // Stop all intervals before navigating
+            this.stopUpdates();
+            
+            // Small delay to ensure cleanup
+            setTimeout(() => {
+                const targetUrl = this.leagueId 
+                    ? `league.html?id=${this.leagueId}` 
+                    : 'online.html';
+                window.location.href = targetUrl;
+            }, 100);
         });
     }
     
@@ -1065,15 +1157,15 @@ class RaceLiveController {
             this.updateRaceTimer();
         }, 1000);
         
-        // Poll race state every 2 seconds
+        // Poll race state every 5 seconds (reduced from 2s to lower server load)
         this.stateInterval = setInterval(async () => {
             await this.pollRaceState();
-        }, 2000);
+        }, 5000);
         
-        // Poll chat every 3 seconds
+        // Poll chat every 5 seconds (reduced from 3s to lower server load)
         this.chatInterval = setInterval(async () => {
             await this.pollChat();
-        }, 3000);
+        }, 5000);
     }
     
     /**

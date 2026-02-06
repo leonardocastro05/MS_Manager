@@ -536,6 +536,43 @@ router.put('/leagues/:id', auth, async (req, res) => {
     }
 });
 
+// DELETE /api/online/leagues/:id - Delete a league (owner only)
+router.delete('/leagues/:id', auth, async (req, res) => {
+    try {
+        const league = await League.findById(req.params.id);
+        const user = await User.findById(req.user.id);
+        
+        if (!league) {
+            return res.status(404).json({ success: false, message: 'League not found' });
+        }
+        
+        // Solo el creador puede eliminar la liga
+        if (league.creator.toString() !== req.user.id) {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Only the league creator can delete this league' 
+            });
+        }
+        
+        // Eliminar la liga de todos los miembros
+        const memberIds = league.members.map(m => m.user);
+        await User.updateMany(
+            { _id: { $in: memberIds } },
+            { $pull: { 'gameData.onlineLeagues': league._id } }
+        );
+        
+        // Eliminar la liga
+        await League.findByIdAndDelete(req.params.id);
+        
+        res.json({
+            success: true,
+            message: 'League deleted successfully'
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // GET /api/online/my-leagues - Get user's leagues
 router.get('/my-leagues', auth, async (req, res) => {
     try {

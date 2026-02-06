@@ -460,7 +460,7 @@ class LeagueController {
         // Home section
         document.getElementById('league-name-display').textContent = this.league.name;
         document.getElementById('league-desc-display').textContent = this.league.description || 'Sin descripción';
-        document.getElementById('league-members').textContent = `${this.league.memberCount || 1}/${this.league.settings?.maxMembers || 22}`;
+        document.getElementById('league-members').textContent = `${this.league.memberCount || this.league.members?.length || 1}/${this.league.settings?.maxMembers || 22}`;
         document.getElementById('league-country').textContent = this.getCountryName(this.league.country);
         
         const schedule = this.league.schedule;
@@ -475,6 +475,40 @@ class LeagueController {
         if (season) {
             document.getElementById('current-season').textContent = season.number || 1;
             document.getElementById('next-race').textContent = `${season.currentRace || 1} de ${season.totalRaces || 20}`;
+        }
+        
+        // Show/hide delete button based on creator status
+        const deleteBtn = document.getElementById('btn-delete-league');
+        const leaveBtn = document.getElementById('btn-leave-league');
+        
+        if (deleteBtn && leaveBtn && this.profile) {
+            // Multiple ways to check if user is the creator/owner
+            const myUserId = this.profile._id || this.profile.id;
+            const creatorId = this.league.creator?._id || this.league.creator;
+            
+            // Check direct creator match
+            const isCreatorDirect = creatorId && myUserId && 
+                                    creatorId.toString() === myUserId.toString();
+            
+            // Check if user has owner role in members
+            const isOwnerRole = this.league.members && this.league.members.some(m => {
+                const memberUserId = m.user?._id || m.user;
+                return memberUserId && myUserId && 
+                       memberUserId.toString() === myUserId.toString() && 
+                       m.role === 'owner';
+            });
+            
+            const isCreator = isCreatorDirect || isOwnerRole;
+            
+            console.log('League owner check:', { myUserId, creatorId, isCreatorDirect, isOwnerRole, isCreator });
+            
+            if (isCreator) {
+                deleteBtn.classList.remove('hidden');
+                leaveBtn.classList.add('hidden'); // Creator can't leave, only delete
+            } else {
+                deleteBtn.classList.add('hidden');
+                leaveBtn.classList.remove('hidden');
+            }
         }
         
         // Update mini leaderboard
@@ -994,6 +1028,94 @@ class LeagueController {
                 this.sendChatMessage();
             }
         });
+        
+        // Leave League button
+        document.getElementById('btn-leave-league')?.addEventListener('click', () => {
+            this.showLeaveLeagueConfirm();
+        });
+        
+        // Delete League button (only for creator)
+        document.getElementById('btn-delete-league')?.addEventListener('click', () => {
+            this.showDeleteLeagueConfirm();
+        });
+    }
+    
+    // ==========================================
+    // LEAVE / DELETE LEAGUE
+    // ==========================================
+    
+    showLeaveLeagueConfirm() {
+        const leagueName = this.league?.name || 'esta liga';
+        
+        if (confirm(`¿Estás seguro de que quieres salir de "${leagueName}"?\n\nPerderás todo tu progreso en esta liga incluyendo:\n• Tu piloto contratado\n• Todas las mejoras de HQ\n• Tu posición en la clasificación\n\nEsta acción no se puede deshacer.`)) {
+            this.leaveLeague();
+        }
+    }
+    
+    async leaveLeague() {
+        try {
+            const response = await fetch(`${this.API_URL}/online/leagues/${this.leagueId}/leave`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.showToast('Has salido de la liga correctamente', 'success');
+                setTimeout(() => {
+                    window.location.href = 'online.html';
+                }, 1500);
+            } else {
+                this.showToast(data.message || 'Error al salir de la liga', 'error');
+            }
+        } catch (error) {
+            console.error('Error leaving league:', error);
+            this.showToast('Error de conexión', 'error');
+        }
+    }
+    
+    showDeleteLeagueConfirm() {
+        const leagueName = this.league?.name || 'esta liga';
+        const memberCount = this.league?.memberCount || this.league?.members?.length || 0;
+        
+        if (confirm(`⚠️ ATENCIÓN: Vas a ELIMINAR "${leagueName}"\n\nEsto afectará a ${memberCount} miembro(s):\n• Se eliminará TODO el historial de la liga\n• Todos los miembros perderán su progreso\n• Los datos de carreras serán borrados\n• Las mejoras de todos los jugadores se perderán\n\n¿Estás COMPLETAMENTE seguro?`)) {
+            // Segunda confirmación por seguridad
+            const confirmText = prompt('Escribe "ELIMINAR" para confirmar la eliminación de la liga:');
+            if (confirmText === 'ELIMINAR') {
+                this.deleteLeague();
+            } else {
+                this.showToast('Eliminación cancelada', 'info');
+            }
+        }
+    }
+    
+    async deleteLeague() {
+        try {
+            const response = await fetch(`${this.API_URL}/online/leagues/${this.leagueId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.showToast('Liga eliminada correctamente', 'success');
+                setTimeout(() => {
+                    window.location.href = 'online.html';
+                }, 1500);
+            } else {
+                this.showToast(data.message || 'Error al eliminar la liga', 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting league:', error);
+            this.showToast('Error de conexión', 'error');
+        }
     }
     
     showBuySkinModal(skinId) {

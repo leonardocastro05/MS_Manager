@@ -122,6 +122,65 @@
     color: #00c8ff;
 }
 
+/* League Actions (Leave/Delete) */
+.league-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-leave-league,
+.btn-delete-league {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 1px solid;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-leave-league {
+    background: linear-gradient(145deg, rgba(255, 180, 0, 0.15), rgba(200, 140, 0, 0.1));
+    border-color: rgba(255, 180, 0, 0.4);
+    color: #ffb400;
+}
+
+.btn-leave-league:hover {
+    background: linear-gradient(145deg, rgba(255, 180, 0, 0.25), rgba(200, 140, 0, 0.2));
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(255, 180, 0, 0.2);
+}
+
+.btn-delete-league {
+    background: linear-gradient(145deg, rgba(255, 60, 60, 0.15), rgba(200, 40, 40, 0.1));
+    border-color: rgba(255, 60, 60, 0.4);
+    color: #ff4444;
+}
+
+.btn-delete-league:hover {
+    background: linear-gradient(145deg, rgba(255, 60, 60, 0.25), rgba(200, 40, 40, 0.2));
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(255, 60, 60, 0.2);
+}
+
+.btn-leave-league .btn-icon,
+.btn-delete-league .btn-icon {
+    font-size: 1.1rem;
+}
+
+.btn-leave-league.hidden,
+.btn-delete-league.hidden {
+    display: none;
+}
+
 /* Quick Stats Row */
 .quick-stats-row {
     display: grid;
@@ -2924,6 +2983,28 @@
     }
     
     .btn-send-chat {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* League Actions Responsive */
+    .league-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn-leave-league,
+    .btn-delete-league {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .league-banner {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .league-season-info {
         width: 100%;
         justify-content: center;
     }

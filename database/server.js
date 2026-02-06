@@ -39,10 +39,10 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Rate Limiting
+// Rate Limiting - General API
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100,
+    max: 200, // Increased for general use
     message: {
         success: false,
         message: 'Too many requests, please try again later'
@@ -50,6 +50,22 @@ const limiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false
 });
+
+// More permissive limiter for race endpoints (frequent polling needed)
+const raceLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 120, // 2 requests per second max
+    message: {
+        success: false,
+        message: 'Too many race requests, please slow down'
+    },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
+// Apply race limiter first (more specific)
+app.use('/api/race/', raceLimiter);
+// General limiter for other endpoints
 app.use('/api/', limiter);
 
 // Stricter limit for auth endpoints
