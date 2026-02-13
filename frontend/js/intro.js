@@ -1,195 +1,680 @@
 /**
- * MS Manager - Intro/Loading Screen Controller
- * Gestiona la animación de carga y transición al login
+ * MS Manager - Optimized 3D Cinematic Intro
+ * High-performance Three.js racing intro
+ * Optimized for smooth 60fps on all devices
  */
 
-class IntroController {
+class CinematicIntro3D {
     constructor() {
+        this.scene = null;
+        this.camera = null;
+        this.renderer = null;
+        this.cars = [];
+        this.animationId = null;
+        this.startTime = 0;
+        this.isRunning = false;
+        this.titleShown = false;
+        
+        // Performance settings
+        this.targetFPS = 60;
+        this.lastFrameTime = 0;
+        this.frameInterval = 1000 / this.targetFPS;
+        
+        // Timing
+        this.introDuration = 7000; // 7 seconds
+        this.flashTimes = [1.5, 3.0, 4.5]; // Camera change moments
+        
+        // DOM elements
+        this.canvas = null;
         this.introScreen = document.getElementById('intro-screen');
         this.authScreen = document.getElementById('auth-screen');
         this.loadingProgress = document.getElementById('loading-progress');
         this.loadingText = document.getElementById('loading-text');
-        this.particlesContainer = document.getElementById('particles');
-        
-        this.isLoading = true;
-        this.loadingComplete = false;
-        this.progress = 0;
         
         this.loadingMessages = [
-            'Inicializando sistemas...',
-            'Cargando módulos de seguridad...',
-            'Estableciendo conexión...',
-            'Verificando integridad...',
-            'Preparando interfaz...',
-            'Sistema listo'
+            'Cargando circuito...',
+            'Preparando monoplazas...',
+            'Verificando telemetría...',
+            'Posicionando en parrilla...',
+            'Calentando neumáticos...',
+            '¡LUCES APAGADAS!'
         ];
         
-        this.init();
+        this.progress = 0;
     }
     
-    init() {
-        this.createParticles();
-        this.startLoading();
-        this.bindEvents();
-    }
-    
-    /**
-     * Crea partículas decorativas animadas
-     */
-    createParticles() {
-        const particleCount = 30;
+    async init() {
+        // Check if Three.js is available
+        if (typeof THREE === 'undefined') {
+            console.warn('Three.js not loaded, falling back to CSS intro');
+            this.fallbackToCSSIntro();
+            return;
+        }
         
-        for (let i = 0; i < particleCount; i++) {
-            const particle = document.createElement('div');
-            particle.classList.add('particle');
-            
-            // Posición aleatoria horizontal
-            particle.style.left = Math.random() * 100 + '%';
-            
-            // Delay aleatorio para que no aparezcan todas a la vez
-            particle.style.animationDelay = Math.random() * 4 + 's';
-            
-            // Tamaño aleatorio
-            const size = Math.random() * 4 + 2;
-            particle.style.width = size + 'px';
-            particle.style.height = size + 'px';
-            
-            // Color aleatorio entre cyan y verde
-            const hue = Math.random() * 60 + 160; // 160-220 (cyan a verde)
-            particle.style.background = `hsl(${hue}, 100%, 50%)`;
-            particle.style.boxShadow = `0 0 ${size * 2}px hsl(${hue}, 100%, 50%)`;
-            
-            this.particlesContainer.appendChild(particle);
+        try {
+            this.setupRenderer();
+            this.setupScene();
+            this.setupCamera();
+            this.setupLighting();
+            this.createTrack();
+            this.createFinishLine();
+            this.createCars();
+            this.bindEvents();
+            this.startLoading();
+            this.start();
+        } catch (error) {
+            console.error('3D Intro error:', error);
+            this.fallbackToCSSIntro();
         }
     }
     
-    /**
-     * Simula el proceso de carga
-     */
-    startLoading() {
-        const loadingDuration = 3000; // 3 segundos de carga
-        const updateInterval = 50;
-        const steps = loadingDuration / updateInterval;
-        const progressIncrement = 100 / steps;
+    setupRenderer() {
+        this.canvas = document.getElementById('intro-canvas');
+        if (!this.canvas) {
+            // Create canvas if not exists
+            this.canvas = document.createElement('canvas');
+            this.canvas.id = 'intro-canvas';
+            this.canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;';
+            this.introScreen.insertBefore(this.canvas, this.introScreen.firstChild);
+        }
         
-        let currentStep = 0;
+        this.renderer = new THREE.WebGLRenderer({
+            canvas: this.canvas,
+            antialias: true,
+            alpha: true,
+            powerPreference: 'high-performance',
+            stencil: false,
+            depth: true
+        });
+        
+        // Limit pixel ratio for performance
+        const pixelRatio = Math.min(window.devicePixelRatio, 1.5);
+        this.renderer.setPixelRatio(pixelRatio);
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        
+        // Optimized shadow settings
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.BasicShadowMap; // Fastest shadow type
+        
+        // Tone mapping for cinematic look
+        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        this.renderer.toneMappingExposure = 1.2;
+    }
+    
+    setupScene() {
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0x0a0a15);
+        this.scene.fog = new THREE.Fog(0x0a0a15, 40, 120);
+    }
+    
+    setupCamera() {
+        this.camera = new THREE.PerspectiveCamera(
+            60,
+            window.innerWidth / window.innerHeight,
+            0.5,
+            200
+        );
+        this.camera.position.set(0, 3, -10);
+        this.camera.lookAt(0, 0, 10);
+    }
+    
+    setupLighting() {
+        // Ambient light - soft global illumination
+        const ambient = new THREE.AmbientLight(0x404060, 0.8);
+        this.scene.add(ambient);
+        
+        // Main directional light (sun) - with shadows
+        const sun = new THREE.DirectionalLight(0xffffff, 1.5);
+        sun.position.set(-5, 15, -5);
+        sun.castShadow = true;
+        
+        // Optimized shadow camera
+        sun.shadow.camera.left = -20;
+        sun.shadow.camera.right = 20;
+        sun.shadow.camera.top = 20;
+        sun.shadow.camera.bottom = -20;
+        sun.shadow.camera.near = 1;
+        sun.shadow.camera.far = 50;
+        sun.shadow.mapSize.width = 1024; // Lower resolution for performance
+        sun.shadow.mapSize.height = 1024;
+        sun.shadow.bias = -0.001;
+        this.scene.add(sun);
+        
+        // Back rim light for drama
+        const backLight = new THREE.DirectionalLight(0x4488ff, 0.5);
+        backLight.position.set(0, 5, 20);
+        this.scene.add(backLight);
+        
+        // Red accent light from behind
+        const redLight = new THREE.PointLight(0xff2200, 0.8, 30);
+        redLight.position.set(0, 2, 25);
+        this.scene.add(redLight);
+    }
+    
+    createTrack() {
+        // Single track plane (optimized - one draw call)
+        const trackGeo = new THREE.PlaneGeometry(16, 150, 1, 1);
+        const trackMat = new THREE.MeshStandardMaterial({
+            color: 0x1a1a1a,
+            roughness: 0.9,
+            metalness: 0
+        });
+        const track = new THREE.Mesh(trackGeo, trackMat);
+        track.rotation.x = -Math.PI / 2;
+        track.position.z = 40;
+        track.receiveShadow = true;
+        this.scene.add(track);
+        
+        // Track lines using a single merged geometry
+        this.createTrackLines();
+        
+        // Side barriers (simplified)
+        this.createBarriers();
+    }
+    
+    createTrackLines() {
+        // White side lines
+        const lineGeo = new THREE.BoxGeometry(0.3, 0.05, 150);
+        const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        
+        const leftLine = new THREE.Mesh(lineGeo, lineMat);
+        leftLine.position.set(-7, 0.03, 40);
+        this.scene.add(leftLine);
+        
+        const rightLine = new THREE.Mesh(lineGeo, lineMat);
+        rightLine.position.set(7, 0.03, 40);
+        this.scene.add(rightLine);
+        
+        // Center dashed line (fewer segments)
+        const dashGroup = new THREE.Group();
+        const dashGeo = new THREE.BoxGeometry(0.2, 0.05, 2);
+        const dashMat = new THREE.MeshBasicMaterial({ color: 0xffcc00 });
+        
+        for (let z = -30; z < 110; z += 8) {
+            const dash = new THREE.Mesh(dashGeo, dashMat);
+            dash.position.set(0, 0.03, z);
+            dashGroup.add(dash);
+        }
+        this.scene.add(dashGroup);
+    }
+    
+    createBarriers() {
+        // Red/white barriers using instanced rendering concept
+        // But simpler - just two long boxes per side
+        const barrierGeo = new THREE.BoxGeometry(0.8, 0.8, 150);
+        
+        // Create striped material with canvas texture (lightweight)
+        const stripedTexture = this.createStripedTexture();
+        const barrierMat = new THREE.MeshStandardMaterial({
+            map: stripedTexture,
+            roughness: 0.8
+        });
+        
+        const leftBarrier = new THREE.Mesh(barrierGeo, barrierMat);
+        leftBarrier.position.set(-9, 0.4, 40);
+        this.scene.add(leftBarrier);
+        
+        const rightBarrier = new THREE.Mesh(barrierGeo, barrierMat);
+        rightBarrier.position.set(9, 0.4, 40);
+        this.scene.add(rightBarrier);
+    }
+    
+    createStripedTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 64;
+        canvas.height = 64;
+        const ctx = canvas.getContext('2d');
+        
+        // Red and white stripes
+        const stripeHeight = 8;
+        for (let i = 0; i < canvas.height; i += stripeHeight * 2) {
+            ctx.fillStyle = '#dc2626';
+            ctx.fillRect(0, i, canvas.width, stripeHeight);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, i + stripeHeight, canvas.width, stripeHeight);
+        }
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(1, 20);
+        return texture;
+    }
+    
+    createFinishLine() {
+        // Checkered finish line texture
+        const checkerCanvas = document.createElement('canvas');
+        checkerCanvas.width = 128;
+        checkerCanvas.height = 32;
+        const ctx = checkerCanvas.getContext('2d');
+        
+        const size = 16;
+        for (let x = 0; x < checkerCanvas.width; x += size) {
+            for (let y = 0; y < checkerCanvas.height; y += size) {
+                ctx.fillStyle = ((x / size + y / size) % 2 === 0) ? '#ffffff' : '#000000';
+                ctx.fillRect(x, y, size, size);
+            }
+        }
+        
+        const checkerTexture = new THREE.CanvasTexture(checkerCanvas);
+        
+        const finishGeo = new THREE.PlaneGeometry(14, 3);
+        const finishMat = new THREE.MeshBasicMaterial({
+            map: checkerTexture,
+            side: THREE.DoubleSide
+        });
+        
+        const finishLine = new THREE.Mesh(finishGeo, finishMat);
+        finishLine.rotation.x = -Math.PI / 2;
+        finishLine.position.set(0, 0.02, -10);
+        this.scene.add(finishLine);
+        
+        // Simple finish gantry (archway)
+        const gantryMat = new THREE.MeshStandardMaterial({
+            color: 0xe10600,
+            emissive: 0xe10600,
+            emissiveIntensity: 0.3,
+            metalness: 0.7,
+            roughness: 0.3
+        });
+        
+        // Pillars
+        const pillarGeo = new THREE.BoxGeometry(0.5, 5, 0.5);
+        const leftPillar = new THREE.Mesh(pillarGeo, gantryMat);
+        leftPillar.position.set(-8, 2.5, -8);
+        this.scene.add(leftPillar);
+        
+        const rightPillar = new THREE.Mesh(pillarGeo, gantryMat);
+        rightPillar.position.set(8, 2.5, -8);
+        this.scene.add(rightPillar);
+        
+        // Top bar
+        const topGeo = new THREE.BoxGeometry(17, 0.6, 0.6);
+        const topBar = new THREE.Mesh(topGeo, gantryMat);
+        topBar.position.set(0, 5, -8);
+        this.scene.add(topBar);
+    }
+    
+    createCars() {
+        const carConfigs = [
+            { color: 0xdc2626, x: -2, z: 60, speed: 1.0 },   // Red - Leader
+            { color: 0x2563eb, x: 2, z: 63, speed: 0.97 },   // Blue
+            { color: 0x16a34a, x: -1, z: 66, speed: 0.95 },  // Green
+            { color: 0xf97316, x: 1, z: 69, speed: 0.93 },   // Orange
+            { color: 0x06b6d4, x: 0, z: 72, speed: 0.91 }    // Cyan
+        ];
+        
+        carConfigs.forEach((cfg, index) => {
+            const car = this.createSimpleCar(cfg.color);
+            car.position.set(cfg.x * 2.5, 0.2, cfg.z);
+            car.userData = { speed: cfg.speed, baseZ: cfg.z, index };
+            this.cars.push(car);
+            this.scene.add(car);
+        });
+    }
+    
+    createSimpleCar(color) {
+        const group = new THREE.Group();
+        
+        const bodyMat = new THREE.MeshStandardMaterial({
+            color: color,
+            metalness: 0.8,
+            roughness: 0.2
+        });
+        
+        const darkMat = new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            metalness: 0.3,
+            roughness: 0.8
+        });
+        
+        // Main body (simplified F1 shape)
+        const bodyGeo = new THREE.BoxGeometry(1, 0.3, 4);
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.y = 0.25;
+        body.castShadow = true;
+        group.add(body);
+        
+        // Nose cone
+        const noseGeo = new THREE.BoxGeometry(0.4, 0.2, 1.2);
+        const nose = new THREE.Mesh(noseGeo, bodyMat);
+        nose.position.set(0, 0.15, -2.4);
+        group.add(nose);
+        
+        // Cockpit
+        const cockpitGeo = new THREE.BoxGeometry(0.6, 0.3, 1.2);
+        const cockpit = new THREE.Mesh(cockpitGeo, darkMat);
+        cockpit.position.set(0, 0.45, -0.3);
+        group.add(cockpit);
+        
+        // Front wing
+        const fwingGeo = new THREE.BoxGeometry(2, 0.08, 0.5);
+        const fwing = new THREE.Mesh(fwingGeo, bodyMat);
+        fwing.position.set(0, 0.08, -2.8);
+        group.add(fwing);
+        
+        // Rear wing
+        const rwingGeo = new THREE.BoxGeometry(1.4, 0.5, 0.1);
+        const rwing = new THREE.Mesh(rwingGeo, bodyMat);
+        rwing.position.set(0, 0.7, 1.8);
+        group.add(rwing);
+        
+        // Wheels (4 simple cylinders)
+        const wheelGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.3, 12);
+        const wheelMat = new THREE.MeshStandardMaterial({
+            color: 0x1a1a1a,
+            roughness: 0.9
+        });
+        
+        const wheelPositions = [
+            [-0.65, 0, -1.5],
+            [0.65, 0, -1.5],
+            [-0.65, 0, 1.2],
+            [0.65, 0, 1.2]
+        ];
+        
+        wheelPositions.forEach(pos => {
+            const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+            wheel.rotation.z = Math.PI / 2;
+            wheel.position.set(...pos);
+            wheel.userData.isWheel = true;
+            group.add(wheel);
+        });
+        
+        // Rear light
+        const lightGeo = new THREE.BoxGeometry(0.6, 0.1, 0.05);
+        const lightMat = new THREE.MeshBasicMaterial({
+            color: 0xff0000
+        });
+        const rearLight = new THREE.Mesh(lightGeo, lightMat);
+        rearLight.position.set(0, 0.35, 2);
+        group.add(rearLight);
+        
+        return group;
+    }
+    
+    startLoading() {
+        const duration = this.introDuration - 500;
+        const interval = 50;
+        const steps = duration / interval;
+        const increment = 100 / steps;
         
         const loadingInterval = setInterval(() => {
-            // Incremento con algo de variación para parecer más realista
-            const variance = (Math.random() - 0.5) * 2;
-            this.progress = Math.min(100, this.progress + progressIncrement + variance);
+            this.progress = Math.min(100, this.progress + increment + (Math.random() - 0.5));
             
-            // Actualizar barra de progreso
-            this.loadingProgress.style.width = this.progress + '%';
+            if (this.loadingProgress) {
+                this.loadingProgress.style.width = this.progress + '%';
+            }
             
-            // Actualizar texto de carga
-            const messageIndex = Math.floor((this.progress / 100) * (this.loadingMessages.length - 1));
-            this.loadingText.textContent = this.loadingMessages[messageIndex];
-            
-            currentStep++;
+            if (this.loadingText) {
+                const msgIndex = Math.floor((this.progress / 100) * (this.loadingMessages.length - 1));
+                this.loadingText.textContent = this.loadingMessages[Math.min(msgIndex, this.loadingMessages.length - 1)];
+            }
             
             if (this.progress >= 100) {
                 clearInterval(loadingInterval);
-                this.loadingProgress.style.width = '100%';
-                this.loadingText.textContent = this.loadingMessages[this.loadingMessages.length - 1];
-                this.loadingComplete = true;
-                
-                // Añadir efecto visual de completado
-                this.loadingProgress.style.boxShadow = '0 0 20px rgba(0, 255, 136, 0.8)';
-                this.loadingProgress.style.background = 'linear-gradient(90deg, #00ff88, #00f7ff, #00ff88)';
+                if (this.loadingText) this.loadingText.textContent = '¡SEMÁFORO EN VERDE!';
             }
-        }, updateInterval);
+        }, interval);
     }
     
-    /**
-     * Vincula eventos de teclado y click
-     */
-    bindEvents() {
-        // Transición al presionar cualquier tecla
-        document.addEventListener('keydown', (e) => {
-            if (this.loadingComplete && this.isLoading) {
-                this.transitionToAuth();
-            }
-        });
+    start() {
+        this.isRunning = true;
+        this.startTime = performance.now();
+        this.animate();
+    }
+    
+    animate() {
+        if (!this.isRunning) return;
         
-        // Transición al hacer click
-        this.introScreen.addEventListener('click', () => {
-            if (this.loadingComplete && this.isLoading) {
-                this.transitionToAuth();
-            }
-        });
+        this.animationId = requestAnimationFrame(() => this.animate());
         
-        // Botón volver a intro
-        const backButton = document.getElementById('back-to-intro');
-        if (backButton) {
-            backButton.addEventListener('click', () => {
-                this.transitionToIntro();
+        const now = performance.now();
+        const elapsed = (now - this.startTime) / 1000;
+        
+        // Frame rate limiting for consistent performance
+        if (now - this.lastFrameTime < this.frameInterval * 0.8) return;
+        this.lastFrameTime = now;
+        
+        // Update cars
+        this.updateCars(elapsed);
+        
+        // Update camera (cinematic angles)
+        this.updateCamera(elapsed);
+        
+        // Flash effects at camera changes
+        this.updateFlash(elapsed);
+        
+        // Check for title show
+        if (this.cars[0] && this.cars[0].position.z < -5 && !this.titleShown) {
+            this.titleShown = true;
+            this.showTitle();
+        }
+        
+        // Render
+        this.renderer.render(this.scene, this.camera);
+    }
+    
+    updateCars(elapsed) {
+        const acceleration = Math.min(elapsed / 1.2, 1);
+        
+        this.cars.forEach((car, index) => {
+            const speed = car.userData.speed * 0.7 * acceleration;
+            car.position.z -= speed;
+            
+            // Subtle lateral movement
+            car.position.x += Math.sin(elapsed * 2 + index) * 0.004;
+            
+            // Rotate wheels
+            car.children.forEach(child => {
+                if (child.userData.isWheel) {
+                    child.rotation.x -= speed * 0.6;
+                }
             });
+            
+            // Subtle vibration at speed
+            if (acceleration > 0.5) {
+                car.position.y = 0.2 + Math.sin(elapsed * 25 + index) * 0.008;
+            }
+        });
+    }
+    
+    updateCamera(elapsed) {
+        const lead = this.cars[0];
+        if (!lead) return;
+        
+        if (elapsed < 1.5) {
+            // Angle 1: Side tracking shot
+            const t = elapsed / 1.5;
+            this.camera.position.set(
+                -10 + t * 4,
+                2.5 + Math.sin(t * Math.PI) * 0.5,
+                lead.position.z + 8
+            );
+            this.camera.lookAt(lead.position);
+            
+        } else if (elapsed < 3.0) {
+            // Angle 2: Rear view, camera pulling back
+            const t = (elapsed - 1.5) / 1.5;
+            this.camera.position.set(
+                Math.sin(t * 2) * 0.5,
+                2 + t * 0.5,
+                lead.position.z + 6 + t * 4
+            );
+            this.camera.lookAt(lead.position.x, 0.3, lead.position.z);
+            
+        } else if (elapsed < 4.5) {
+            // Angle 3: Low front view
+            const t = (elapsed - 3.0) / 1.5;
+            this.camera.position.set(
+                Math.sin(elapsed * 2) * 2,
+                0.8,
+                lead.position.z - 8
+            );
+            this.camera.lookAt(lead.position.x, 0.5, lead.position.z);
+            
+        } else {
+            // Angle 4: Finish line view
+            const t = (elapsed - 4.5) / 2;
+            this.camera.position.set(
+                Math.sin(t * 0.5) * 4,
+                2 + t,
+                -14
+            );
+            this.camera.lookAt(0, 0.5, lead.position.z);
         }
     }
     
-    /**
-     * Transición de intro a pantalla de auth
-     */
+    updateFlash(elapsed) {
+        const flashEl = document.getElementById('flash-overlay');
+        if (!flashEl) return;
+        
+        let intensity = 0;
+        
+        this.flashTimes.forEach(time => {
+            if (elapsed >= time - 0.02 && elapsed < time + 0.15) {
+                const t = (elapsed - (time - 0.02)) / 0.17;
+                intensity = Math.max(intensity, t < 0.2 ? t * 5 : (1 - t) * 1.25);
+            }
+        });
+        
+        flashEl.style.opacity = intensity * 0.8;
+    }
+    
+    showTitle() {
+        const titleOverlay = document.querySelector('.title-overlay');
+        if (titleOverlay) {
+            titleOverlay.style.opacity = '1';
+            titleOverlay.style.transform = 'scale(1)';
+        }
+        
+        // Auto transition after title
+        setTimeout(() => this.transitionToAuth(), 2500);
+    }
+    
     transitionToAuth() {
-        if (!this.isLoading) return;
-        this.isLoading = false;
+        if (!this.introScreen || !this.authScreen) return;
+        if (this.introScreen.classList.contains('fade-out')) return;
         
-        // Efecto de sonido (opcional - descomentar si se añade audio)
-        // this.playTransitionSound();
+        // Final flash
+        const flashEl = document.getElementById('flash-overlay');
+        if (flashEl) {
+            flashEl.style.opacity = '0.9';
+            setTimeout(() => flashEl.style.opacity = '0', 200);
+        }
         
-        // Fade out de la intro
         this.introScreen.classList.add('fade-out');
         
-        // Mostrar auth después de la transición
         setTimeout(() => {
+            this.cleanup();
             this.introScreen.style.display = 'none';
             this.authScreen.classList.remove('hidden');
+            this.authScreen.style.opacity = '0';
             
-            // Trigger reflow para la animación
-            void this.authScreen.offsetWidth;
-            this.authScreen.classList.add('visible');
-        }, 800);
+            requestAnimationFrame(() => {
+                this.authScreen.style.transition = 'opacity 0.8s ease';
+                this.authScreen.style.opacity = '1';
+            });
+        }, 1000);
     }
     
-    /**
-     * Volver a la intro desde auth
-     */
-    transitionToIntro() {
-        this.authScreen.classList.remove('visible');
+    cleanup() {
+        this.isRunning = false;
+        
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+        }
+        
+        window.removeEventListener('resize', this.onResize);
+        
+        // Dispose Three.js resources
+        if (this.renderer) {
+            this.renderer.dispose();
+        }
+        
+        if (this.scene) {
+            this.scene.traverse(obj => {
+                if (obj.geometry) obj.geometry.dispose();
+                if (obj.material) {
+                    if (Array.isArray(obj.material)) {
+                        obj.material.forEach(m => m.dispose());
+                    } else {
+                        obj.material.dispose();
+                    }
+                }
+            });
+        }
+        
+        this.scene = null;
+        this.camera = null;
+        this.renderer = null;
+        this.cars = [];
+    }
+    
+    onResize = () => {
+        if (!this.camera || !this.renderer) return;
+        
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        
+        const pixelRatio = Math.min(window.devicePixelRatio, 1.5);
+        this.renderer.setPixelRatio(pixelRatio);
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+    
+    bindEvents() {
+        window.addEventListener('resize', this.onResize);
+        
+        // Skip button
+        const skipBtn = document.getElementById('skip-intro');
+        if (skipBtn) {
+            skipBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.transitionToAuth();
+            });
+        }
+        
+        // Keyboard skip
+        document.addEventListener('keydown', (e) => {
+            if ((e.code === 'Space' || e.code === 'Enter') && this.progress > 70) {
+                e.preventDefault();
+                this.transitionToAuth();
+            }
+        });
+    }
+    
+    fallbackToCSSIntro() {
+        // If Three.js fails, use a simple CSS animation
+        console.log('Using CSS fallback intro');
+        
+        this.startLoading();
         
         setTimeout(() => {
-            this.authScreen.classList.add('hidden');
-            this.introScreen.style.display = 'flex';
-            this.introScreen.classList.remove('fade-out');
-            this.isLoading = true;
-        }, 500);
-    }
-    
-    /**
-     * Reproduce sonido de transición (opcional)
-     */
-    playTransitionSound() {
-        // Crear un sonido simple con Web Audio API
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
-        
-        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.2);
+            this.transitionToAuth();
+        }, this.introDuration);
     }
 }
 
-// Inicializar cuando el DOM esté listo
+// Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    window.introController = new IntroController();
+    // Check if already logged in
+    const token = localStorage.getItem('authToken');
+    if (token) {
+        fetch('http://localhost:5000/api/user/profile', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(res => {
+            if (res.ok) {
+                window.location.href = 'dashboard.html';
+            } else {
+                localStorage.removeItem('authToken');
+                new CinematicIntro3D().init();
+            }
+        })
+        .catch(() => {
+            new CinematicIntro3D().init();
+        });
+    } else {
+        new CinematicIntro3D().init();
+    }
 });

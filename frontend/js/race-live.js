@@ -28,8 +28,8 @@ class RaceLiveController {
         this.selectedTyre = 'medium';
         this.selectedFuel = 20;
         
-        // Race duration config - 10 minutes = 600 seconds
-        this.RACE_DURATION_MS = 10 * 60 * 1000; // 10 minutes in milliseconds
+        // Race duration config - 5 minutes = 300 seconds
+        this.RACE_DURATION_MS = 5 * 60 * 1000; // 5 minutes in milliseconds
         this.raceStartTime = null;
         this.raceElapsedTime = 0;
         
@@ -635,7 +635,7 @@ class RaceLiveController {
                         this.raceStartTime = Date.now(); // Track real start time
                         this.updateUI();
                         this.startRaceSimulation();
-                        this.addChatMessage('Sistema', '🏁 ¡Luces apagadas! ¡Comienza la carrera de 10 minutos!', true);
+                        this.addChatMessage('Sistema', '🏁 ¡Luces apagadas! ¡Comienza la carrera de 5 minutos!', true);
                     }, 1000);
                 }, delay);
             }
