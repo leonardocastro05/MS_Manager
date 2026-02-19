@@ -420,18 +420,68 @@ class RaceVisualizer {
     }
     
     /**
-     * Inicializa el visualizador cargando el SVG del circuito
+     * Inicializa el visualizador
+     * Intenta cargar el SVG externo; si no tiene #racing-line usa racingLinePath de TRACKS_DATA
      */
     async initialize() {
-        // Cargar SVG del circuito
-        const response = await fetch(this.track.image);
-        const svgText = await response.text();
-        
-        this.container.innerHTML = svgText;
-        this.svg = this.container.querySelector('svg');
-        
-        // Obtener el path de racing line
-        this.racingPath = this.svg.querySelector('#racing-line');
+        const VIEW_W = 500;
+        const VIEW_H = 380;
+
+        try {
+            const response = await fetch(this.track.image);
+            const svgText = await response.text();
+
+            this.container.innerHTML = svgText;
+            this.svg = this.container.querySelector('svg');
+
+            // Normalizar el viewBox al espacio 500×380 que usan los waypoints
+            this.svg.setAttribute('viewBox', `0 0 ${VIEW_W} ${VIEW_H}`);
+            this.svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+            this.svg.style.cssText = 'width:100%;height:100%;';
+
+            // Si no hay #racing-line en el SVG, construirlo desde TRACKS_DATA
+            this.racingPath = this.svg.querySelector('#racing-line');
+
+            if (!this.racingPath && this.track.racingLinePath) {
+                this.racingPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                this.racingPath.setAttribute('id', 'racing-line');
+                this.racingPath.setAttribute('d', this.track.racingLinePath);
+                this.racingPath.setAttribute('fill', 'none');
+                this.racingPath.setAttribute('stroke', 'rgba(255,255,255,0.25)');
+                this.racingPath.setAttribute('stroke-width', '2');
+                this.svg.appendChild(this.racingPath);
+            }
+
+        } catch (e) {
+            // Fallback: crear SVG mínimo con PNG y racing line
+            console.warn('SVG load failed, using fallback visualizer', e);
+            this.svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            this.svg.setAttribute('viewBox', `0 0 ${VIEW_W} ${VIEW_H}`);
+            this.svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+            this.svg.style.cssText = 'width:100%;height:100%;background:#111;';
+
+            // Imagen de fondo: PNG del circuito
+            const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+            img.setAttribute('href', this.track.thumbnail);
+            img.setAttribute('x', '0'); img.setAttribute('y', '0');
+            img.setAttribute('width', VIEW_W); img.setAttribute('height', VIEW_H);
+            img.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+            this.svg.appendChild(img);
+
+            if (this.track.racingLinePath) {
+                this.racingPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                this.racingPath.setAttribute('id', 'racing-line');
+                this.racingPath.setAttribute('d', this.track.racingLinePath);
+                this.racingPath.setAttribute('fill', 'none');
+                this.racingPath.setAttribute('stroke', 'rgba(255,255,255,0.25)');
+                this.racingPath.setAttribute('stroke-width', '2');
+                this.svg.appendChild(this.racingPath);
+            }
+
+            this.container.innerHTML = '';
+            this.container.appendChild(this.svg);
+        }
+
         this.pathLength = this.racingPath?.getTotalLength() || 0;
     }
     

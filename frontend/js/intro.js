@@ -41,17 +41,19 @@ class CinematicIntro3D {
         ];
         
         this.progress = 0;
+        this.isLoopMode = false;
     }
     
     async init() {
         // Check if Three.js is available
         if (typeof THREE === 'undefined') {
             console.warn('Three.js not loaded, falling back to CSS intro');
-            this.fallbackToCSSIntro();
+            this.skipVideoAndStart();
             return;
         }
         
         try {
+            // Build the 3D scene silently while the video plays
             this.setupRenderer();
             this.setupScene();
             this.setupCamera();
@@ -60,12 +62,40 @@ class CinematicIntro3D {
             this.createFinishLine();
             this.createCars();
             this.bindEvents();
-            this.startLoading();
+            // Start rendering silently (hidden behind the video)
             this.start();
         } catch (error) {
             console.error('3D Intro error:', error);
-            this.fallbackToCSSIntro();
+            this.skipVideoAndStart();
         }
+    }
+
+    // Called when video ends or is skipped
+    onVideoEnd() {
+        const videoIntro = document.getElementById('video-intro');
+        if (!videoIntro) { this.startLoading(); return; }
+
+        videoIntro.classList.add('fade-out');
+
+        setTimeout(() => {
+            videoIntro.style.display = 'none';
+            // Reveal the 3D canvas and start the cinematic cameras
+            this.introScreen.style.opacity = '1';
+            this.introScreen.style.transition = 'opacity 0.6s ease';
+            this.introScreen.style.pointerEvents = 'auto';
+            // Restart the animation clock so cameras start from 0
+            this.startTime = performance.now();
+            this.titleShown = false;
+            this.startLoading();
+        }, 1000);
+    }
+
+    skipVideoAndStart() {
+        const videoIntro = document.getElementById('video-intro');
+        if (videoIntro) videoIntro.style.display = 'none';
+        this.introScreen.style.opacity = '1';
+        this.introScreen.style.pointerEvents = 'auto';
+        this.fallbackToCSSIntro();
     }
     
     setupRenderer() {
@@ -445,8 +475,8 @@ class CinematicIntro3D {
         // Flash effects at camera changes
         this.updateFlash(elapsed);
         
-        // Check for title show
-        if (this.cars[0] && this.cars[0].position.z < -5 && !this.titleShown) {
+        // Check for title show (only during initial intro, not in loop mode)
+        if (!this.isLoopMode && this.cars[0] && this.cars[0].position.z < -5 && !this.titleShown) {
             this.titleShown = true;
             this.showTitle();
         }
@@ -456,7 +486,7 @@ class CinematicIntro3D {
     }
     
     updateCars(elapsed) {
-        const acceleration = Math.min(elapsed / 1.2, 1);
+        const acceleration = this.isLoopMode ? 1 : Math.min(elapsed / 1.2, 1);
         
         this.cars.forEach((car, index) => {
             const speed = car.userData.speed * 0.7 * acceleration;
@@ -476,12 +506,31 @@ class CinematicIntro3D {
             if (acceleration > 0.5) {
                 car.position.y = 0.2 + Math.sin(elapsed * 25 + index) * 0.008;
             }
+            
+            // Loop reset: teleport cars back to start when they go too far
+            if (this.isLoopMode && car.position.z < -60) {
+                const startPositions = [-2, 2, -1, 1, 0];
+                car.position.z = car.userData.baseZ;
+                car.position.x = startPositions[index] * 2.5;
+            }
         });
     }
     
     updateCamera(elapsed) {
         const lead = this.cars[0];
         if (!lead) return;
+        
+        // In loop mode: smooth side-tracking camera that follows the lead car
+        if (this.isLoopMode) {
+            const loopTime = performance.now() / 1000;
+            this.camera.position.set(
+                Math.sin(loopTime * 0.25) * 12,
+                2.5 + Math.sin(loopTime * 0.15) * 1.2,
+                lead.position.z + 10
+            );
+            this.camera.lookAt(lead.position.x, 0.4, lead.position.z);
+            return;
+        }
         
         if (elapsed < 1.5) {
             // Angle 1: Side tracking shot
@@ -526,6 +575,7 @@ class CinematicIntro3D {
     }
     
     updateFlash(elapsed) {
+        if (this.isLoopMode) return;
         const flashEl = document.getElementById('flash-overlay');
         if (!flashEl) return;
         
@@ -566,9 +616,30 @@ class CinematicIntro3D {
         this.introScreen.classList.add('fade-out');
         
         setTimeout(() => {
-            this.cleanup();
-            this.introScreen.style.display = 'none';
+            // Switch intro to background loop mode (canvas keeps rendering)
+            this.introScreen.classList.remove('fade-out');
+            this.introScreen.classList.add('bg-mode');
+            
+            // Hide all intro UI, keep only the canvas
+            const uiElements = this.introScreen.querySelectorAll(
+                '.intro-overlay, .title-overlay, .loading-container, #skip-intro'
+            );
+            uiElements.forEach(el => { el.style.display = 'none'; });
+            
+            // Reset cars to starting positions for seamless loop
+            const startPositions = [-2, 2, -1, 1, 0];
+            this.cars.forEach((car, i) => {
+                car.position.z = car.userData.baseZ;
+                car.position.x = startPositions[i] * 2.5;
+                car.position.y = 0.2;
+            });
+            
+            // Activate loop mode
+            this.isLoopMode = true;
+            
+            // Show auth screen on top
             this.authScreen.classList.remove('hidden');
+            this.authScreen.classList.add('visible');
             this.authScreen.style.opacity = '0';
             
             requestAnimationFrame(() => {
@@ -625,7 +696,7 @@ class CinematicIntro3D {
     bindEvents() {
         window.addEventListener('resize', this.onResize);
         
-        // Skip button
+        // Skip 3D intro button
         const skipBtn = document.getElementById('skip-intro');
         if (skipBtn) {
             skipBtn.addEventListener('click', (e) => {
@@ -633,12 +704,34 @@ class CinematicIntro3D {
                 this.transitionToAuth();
             });
         }
+
+        // Skip video button
+        const skipVideoBtn = document.getElementById('skip-video');
+        if (skipVideoBtn) {
+            skipVideoBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.onVideoEnd();
+            });
+        }
+
+        // Video ended event
+        const video = document.getElementById('intro-video');
+        if (video) {
+            video.addEventListener('ended', () => this.onVideoEnd());
+            // Fallback: if video fails to load/play, skip it
+            video.addEventListener('error', () => this.onVideoEnd());
+        }
         
         // Keyboard skip
         document.addEventListener('keydown', (e) => {
-            if ((e.code === 'Space' || e.code === 'Enter') && this.progress > 70) {
+            if (e.code === 'Space' || e.code === 'Escape' || e.code === 'Enter') {
                 e.preventDefault();
-                this.transitionToAuth();
+                const videoIntro = document.getElementById('video-intro');
+                if (videoIntro && videoIntro.style.display !== 'none') {
+                    this.onVideoEnd();
+                } else if (this.progress > 70) {
+                    this.transitionToAuth();
+                }
             }
         });
     }
@@ -668,13 +761,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = 'dashboard.html';
             } else {
                 localStorage.removeItem('authToken');
-                new CinematicIntro3D().init();
+                startIntro();
             }
         })
         .catch(() => {
-            new CinematicIntro3D().init();
+            startIntro();
         });
     } else {
-        new CinematicIntro3D().init();
+        startIntro();
     }
 });
+
+function startIntro() {
+    const intro = new CinematicIntro3D();
+    intro.init();
+
+    // Autoplay might be blocked on some browsers — treat it as "video ended"
+    const video = document.getElementById('intro-video');
+    if (video) {
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(() => {
+                // Autoplay blocked: skip straight to 3D
+                intro.onVideoEnd();
+            });
+        }
+    }
+}

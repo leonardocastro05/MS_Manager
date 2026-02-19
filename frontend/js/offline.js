@@ -33,8 +33,8 @@ class OfflineController {
         // Pilotos disponibles en la tienda
         this.availablePilots = [];
         
-        // Pistas disponibles (solo Bahrain y Monza por ahora)
-        this.availableTracks = ['bahrain', 'monza'];
+        // Pistas disponibles
+        this.availableTracks = ['bahrain', 'monza', 'portimao', 'montmelo', 'nurburgring'];
         
         // Timer de refresh de tienda
         this.shopRefreshTime = 300; // 5 minutos en segundos
@@ -798,7 +798,7 @@ class OfflineController {
      * Carga y renderiza las pistas disponibles
      */
     loadTracks() {
-        const tracksGrid = document.getElementById('tracks-grid');
+        const tracksGrid = document.getElementById('tracks-list');
         if (!tracksGrid) return;
         
         // Obtener solo las pistas disponibles
@@ -819,7 +819,7 @@ class OfflineController {
         card.className = 'track-card';
         card.innerHTML = `
             <div class="track-image">
-                <img src="img/tracks/${track.id}.svg" alt="${track.name}">
+                <img src="${track.thumbnail}" alt="${track.name}" onerror="this.src='img/tracks/${track.id}.svg'">
             </div>
             <div class="track-info">
                 <h3>${track.shortName || track.name}</h3>

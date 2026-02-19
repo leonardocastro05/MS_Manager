@@ -125,7 +125,7 @@ const TRACKS_DATA = {
         type: 'mixed',
         difficulty: 3,
         image: 'img/tracks/bahrain.svg',
-        thumbnail: 'img/tracks/bahrain.jpg',
+        thumbnail: 'img/tracks/bahrain.png',
         characteristics: {
             topSpeed: 320,
             avgSpeed: 205,
@@ -135,11 +135,92 @@ const TRACKS_DATA = {
             tyreWear: 'high',
             fuelConsumption: 'medium'
         },
-        waypoints: [], // Se rellenará
-        corners: [],
-        sectors: [],
-        drsZones: [],
-        referenceTimes: { pole: 89.474, fastestLap: 90.432, average: 92.0 }
+
+        drsZones: [
+            { start: 27, end: 29, name: 'Recta principal' },
+            { start: 1,  end: 2,  name: 'Recta DRS S/F' }
+        ],
+
+        sectors: [
+            { id: 1, name: 'Sector 1', startWaypoint: 0,  endWaypoint: 7,  type: 'technical' },
+            { id: 2, name: 'Sector 2', startWaypoint: 8,  endWaypoint: 18, type: 'mixed' },
+            { id: 3, name: 'Sector 3', startWaypoint: 19, endWaypoint: 29, type: 'speed' }
+        ],
+
+        corners: [
+            { id: 1,  name: 'Turn 1',          waypoint: 3,  type: 'hairpin', angle: 130, speed: 100 },
+            { id: 2,  name: 'Turn 2-3',        waypoint: 6,  type: 'chicane', angle: 70,  speed: 130 },
+            { id: 3,  name: 'Turn 4',          waypoint: 8,  type: 'medium',  angle: 90,  speed: 155 },
+            { id: 4,  name: 'Turn 6-7',        waypoint: 11, type: 'fast',    angle: 60,  speed: 200 },
+            { id: 5,  name: 'T10-T11 Hairpin', waypoint: 17, type: 'hairpin', angle: 190, speed: 65  },
+            { id: 6,  name: 'Turn 12',         waypoint: 21, type: 'fast',    angle: 50,  speed: 255 },
+            { id: 7,  name: 'Turn 13-14',      waypoint: 23, type: 'chicane', angle: 80,  speed: 170 },
+            { id: 8,  name: 'Turn 15',         waypoint: 25, type: 'fast',    angle: 55,  speed: 220 }
+        ],
+
+        // Waypoints para la IA — coordenadas en espacio 500×380
+        waypoints: [
+            { id: 0,  x: 350, y: 90,  type: 'start',     speed: 0,   throttle: 1.0, brake: 0   },
+            { id: 1,  x: 385, y: 88,  type: 'drs-start', speed: 280, throttle: 1.0, brake: 0,   drs: true },
+            { id: 2,  x: 425, y: 86,  type: 'straight',  speed: 315, throttle: 1.0, brake: 0,   drs: true },
+            { id: 3,  x: 452, y: 94,  type: 'brake',     speed: 260, throttle: 0,   brake: 0.9, corner: 'Turn 1' },
+            { id: 4,  x: 460, y: 120, type: 'apex',      speed: 100, throttle: 0.3, brake: 0.4  },
+            { id: 5,  x: 452, y: 150, type: 'exit',      speed: 160, throttle: 0.8, brake: 0   },
+            { id: 6,  x: 436, y: 172, type: 'apex',      speed: 130, throttle: 0.5, brake: 0.2, corner: 'Turn 2-3' },
+            { id: 7,  x: 420, y: 190, type: 'exit',      speed: 178, throttle: 0.85, brake: 0  },
+            { id: 8,  x: 396, y: 177, type: 'brake',     speed: 190, throttle: 0.1, brake: 0.6, corner: 'Turn 4' },
+            { id: 9,  x: 376, y: 190, type: 'apex',      speed: 155, throttle: 0.6, brake: 0   },
+            { id: 10, x: 358, y: 207, type: 'exit',      speed: 188, throttle: 0.9, brake: 0   },
+            { id: 11, x: 338, y: 230, type: 'apex',      speed: 200, throttle: 0.8, brake: 0.1, corner: 'Turn 6-7' },
+            { id: 12, x: 318, y: 250, type: 'exit',      speed: 222, throttle: 1.0, brake: 0   },
+            { id: 13, x: 296, y: 264, type: 'apex',      speed: 242, throttle: 1.0, brake: 0   },
+            { id: 14, x: 270, y: 276, type: 'straight',  speed: 280, throttle: 1.0, brake: 0   },
+            { id: 15, x: 246, y: 285, type: 'brake',     speed: 240, throttle: 0,   brake: 0.8, corner: 'T10-T11 Hairpin' },
+            { id: 16, x: 222, y: 292, type: 'apex',      speed: 80,  throttle: 0.2, brake: 0.5 },
+            { id: 17, x: 198, y: 293, type: 'apex',      speed: 65,  throttle: 0.3, brake: 0.3 },
+            { id: 18, x: 183, y: 282, type: 'exit',      speed: 92,  throttle: 0.75, brake: 0  },
+            { id: 19, x: 172, y: 262, type: 'straight',  speed: 152, throttle: 1.0, brake: 0   },
+            { id: 20, x: 160, y: 240, type: 'straight',  speed: 213, throttle: 1.0, brake: 0   },
+            { id: 21, x: 155, y: 218, type: 'apex',      speed: 257, throttle: 0.9, brake: 0.1, corner: 'Turn 12' },
+            { id: 22, x: 150, y: 196, type: 'brake',     speed: 202, throttle: 0,   brake: 0.5, corner: 'Turn 13-14' },
+            { id: 23, x: 146, y: 178, type: 'apex',      speed: 170, throttle: 0.5, brake: 0.1 },
+            { id: 24, x: 156, y: 163, type: 'exit',      speed: 196, throttle: 0.9, brake: 0   },
+            { id: 25, x: 184, y: 150, type: 'apex',      speed: 222, throttle: 0.9, brake: 0.05, corner: 'Turn 15' },
+            { id: 26, x: 230, y: 137, type: 'straight',  speed: 267, throttle: 1.0, brake: 0   },
+            { id: 27, x: 282, y: 115, type: 'drs-start', speed: 300, throttle: 1.0, brake: 0,   drs: true },
+            { id: 28, x: 322, y: 100, type: 'straight',  speed: 312, throttle: 1.0, brake: 0,   drs: true },
+            { id: 29, x: 350, y: 90,  type: 'finish',    speed: 318, throttle: 1.0, brake: 0   }
+        ],
+
+        // Racing line SVG path (viewBox 500×380)
+        racingLinePath: `M 350,90
+           L 385,88 L 425,86
+           Q 458,90 460,120
+           Q 455,150 436,172
+           Q 420,190 396,177
+           Q 376,190 358,207
+           Q 338,230 318,250
+           Q 296,264 270,276
+           L 246,285
+           Q 222,293 198,293
+           Q 183,282 172,262
+           L 160,240
+           Q 155,218 150,196
+           Q 146,178 156,163
+           Q 184,150 230,137
+           L 282,115 L 322,100 L 350,90`,
+
+        referenceTimes: {
+            pole: 89.474,
+            fastestLap: 90.432,
+            average: 92.0
+        },
+
+        pitLane: {
+            entry: { x: 355, y: 83 },
+            exit:  { x: 290, y: 88 },
+            timeLoss: 21
+        }
     },
     
     portimao: {
@@ -181,7 +262,7 @@ const TRACKS_DATA = {
         type: 'technical',
         difficulty: 4,
         image: 'img/tracks/montmelo.svg',
-        thumbnail: 'img/tracks/montmelo.jpg',
+        thumbnail: 'img/tracks/montmelo.png',
         characteristics: {
             topSpeed: 320,
             avgSpeed: 195,

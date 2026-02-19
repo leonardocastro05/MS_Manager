@@ -12,10 +12,21 @@
 </head>
 <body>
     <!-- ==========================================
+         VIDEO INTRO SCREEN
+         ========================================== -->
+    <div id="video-intro" class="video-intro">
+        <video id="intro-video" class="intro-video" autoplay muted playsinline preload="auto">
+            <source src="img/videos/intro-msmanager.mp4" type="video/mp4">
+        </video>
+        <div class="video-overlay"></div>
+        <button id="skip-video" class="skip-intro">SALTAR</button>
+    </div>
+
+    <!-- ==========================================
          3D CINEMATIC INTRO SCREEN
          Optimized Three.js racing intro
          ========================================== -->
-    <div id="intro-screen" class="intro-screen">
+    <div id="intro-screen" class="intro-screen" style="opacity:0;pointer-events:none;">
         
         <!-- 3D Canvas -->
         <canvas id="intro-canvas"></canvas>
