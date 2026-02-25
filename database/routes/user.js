@@ -90,6 +90,8 @@ router.put('/profile', protect, [
             if (gameData.currentPilot !== undefined) user.gameData.currentPilot = gameData.currentPilot;
         }
 
+        // Marcar gameData como modificado (necesario para campos Mixed)
+        user.markModified('gameData');
         user.lastLogin = Date.now();
         await user.save();
 
@@ -142,6 +144,7 @@ router.put('/gamedata', protect, async (req, res) => {
         if (online !== undefined) user.gameData.online = online;
         if (onlineLeagues !== undefined) user.gameData.onlineLeagues = onlineLeagues;
 
+        user.markModified('gameData');
         await user.save();
 
         res.json({

@@ -116,6 +116,9 @@ const UserSchema = new mongoose.Schema({
         },
         onlineLeagues: { type: Array, default: [] },
         
+        // Offline mode pilot
+        currentPilot: { type: mongoose.Schema.Types.Mixed, default: null },
+        
         // ===== International Ranking System =====
         globalRanking: {
             // Rank tiers: learner, amateur, professional, king, senna

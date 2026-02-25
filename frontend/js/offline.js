@@ -858,9 +858,9 @@ class OfflineController {
             return;
         }
         
-        // Verificar que el jugador tenga pilotos
-        if (!this.player.pilots || this.player.pilots.length === 0) {
-            this.showNotification('⚠️ Necesitas contratar pilotos antes de correr', 'warning');
+        // Verificar que el jugador tenga un piloto contratado
+        if (!this.player.currentPilot) {
+            this.showNotification('⚠️ Necesitas contratar un piloto antes de correr', 'warning');
             return;
         }
         
