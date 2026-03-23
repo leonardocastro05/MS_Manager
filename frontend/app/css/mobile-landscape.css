@@ -1,0 +1,99 @@
+/* ============================================
+   MOBILE LANDSCAPE FORCE
+   Fuerza orientación horizontal en móviles.
+   Si el dispositivo está en portrait, rota
+   todo el viewport -90° para simular landscape.
+   ============================================ */
+
+/* ---------- Portrait overlay / aviso ---------- */
+#portrait-blocker {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: #0a0a14;
+    color: #fff;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    font-family: 'Orbitron', sans-serif;
+    text-align: center;
+    padding: 24px;
+}
+
+#portrait-blocker .rotate-icon {
+    font-size: 3.5rem;
+    animation: rotateHint 2s ease-in-out infinite;
+}
+
+#portrait-blocker .rotate-msg {
+    font-size: 1rem;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+#portrait-blocker .rotate-btn {
+    margin-top: 12px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #000;
+    background: linear-gradient(135deg, #FFD700, #ffaa00);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 32px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+#portrait-blocker .rotate-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4);
+}
+
+@keyframes rotateHint {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-20deg); }
+    75% { transform: rotate(20deg); }
+}
+
+/* ---------- Cuando se activa la rotación CSS ---------- */
+.force-landscape-active #portrait-blocker {
+    display: none !important;          /* ya estamos en landscape forzado */
+}
+
+/* ---------- Rotación CSS en portrait ---------- */
+@media screen and (orientation: portrait) and (max-width: 1024px) {
+
+    /* Mostrar aviso mientras NO se haya activado la rotación forzada */
+    #portrait-blocker {
+        display: flex;
+    }
+
+    /* Cuando JS añade la clase, rotamos todo el contenido */
+    .force-landscape-active {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vh;       /* height del viewport pasa a ser nuestro width */
+        height: 100vw;      /* width del viewport pasa a ser nuestro height */
+        transform: rotate(-90deg);
+        transform-origin: top left;
+        /* Mover al sitio correcto tras rotar */
+        top: 100%;
+        left: 0;
+        overflow: hidden;
+    }
+
+    .force-landscape-active #portrait-blocker {
+        display: none !important;
+    }
+}
+
+/* En landscape real, ocultar blocker siempre */
+@media screen and (orientation: landscape) {
+    #portrait-blocker {
+        display: none !important;
+    }
+}

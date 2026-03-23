@@ -31,7 +31,7 @@ app.use(helmet({
 // CORS Configuration
 const corsOptions = {
     origin: process.env.NODE_ENV === 'production' 
-        ? [process.env.FRONTEND_URL, /\.yourdomain\.com$/]
+        ? [process.env.FRONTEND_URL, process.env.BACKEND_URL, /\.duckdns\.org$/]
         : '*',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

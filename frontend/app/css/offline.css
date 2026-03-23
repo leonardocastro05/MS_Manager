@@ -1,0 +1,1265 @@
+/* ==========================================
+   OFFLINE MODE STYLES
+   ========================================== */
+
+/* Layout */
+.offline-layout {
+    display: flex;
+    min-height: 100vh;
+    padding-top: var(--header-height);
+}
+
+/* ==========================================
+   SIDEBAR NAVIGATION
+   ========================================== */
+
+.offline-sidebar {
+    position: fixed;
+    left: 0;
+    top: var(--header-height);
+    width: 250px;
+    height: calc(100vh - var(--header-height));
+    background: rgba(10, 15, 30, 0.95);
+    border-right: 1px solid var(--border-color);
+    padding: 20px 0;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 15px;
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 18px 20px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 3px;
+    background: var(--primary);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.sidebar-item:hover {
+    background: rgba(0, 247, 255, 0.05);
+    border-color: rgba(0, 247, 255, 0.2);
+    color: var(--text-primary);
+}
+
+.sidebar-item.active {
+    background: rgba(0, 247, 255, 0.1);
+    border-color: rgba(0, 247, 255, 0.3);
+    color: var(--primary);
+}
+
+.sidebar-item.active::before {
+    transform: scaleY(1);
+}
+
+.item-icon {
+    font-size: 1.5rem;
+}
+
+.item-text {
+    flex: 1;
+    letter-spacing: 0.05em;
+}
+
+.item-badge {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    color: var(--text-muted);
+}
+
+.sidebar-item.active .item-badge {
+    background: rgba(0, 247, 255, 0.2);
+    color: var(--primary);
+}
+
+/* ==========================================
+   MAIN CONTENT AREA
+   ========================================== */
+
+.offline-content {
+    flex: 1;
+    margin-left: 250px;
+    padding: 30px;
+    position: relative;
+    z-index: 10;
+}
+
+.content-section {
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+
+.content-section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Section Header */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+}
+
+.section-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.title-icon {
+    font-size: 2.2rem;
+}
+
+.section-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-left: 60px;
+}
+
+/* ==========================================
+   HQ SECTION - CAR UPGRADES
+   ========================================== */
+
+#section-hq {
+    position: relative;
+}
+
+#section-hq::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('../img/ms-manager-hq-background.png') center/cover no-repeat fixed;
+    opacity: 0.3;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.car-overall-stats {
+    background: rgba(0, 247, 255, 0.1);
+    border: 2px solid rgba(0, 247, 255, 0.3);
+    border-radius: 15px;
+    padding: 20px 30px;
+    text-align: center;
+}
+
+.overall-rating {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.rating-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.rating-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--primary);
+    text-shadow: 0 0 20px rgba(0, 247, 255, 0.5);
+}
+
+/* Car Display */
+.car-display {
+    margin-bottom: 40px;
+    padding: 40px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.car-illustration {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.car-part {
+    aspect-ratio: 1;
+    background: linear-gradient(135deg, rgba(0, 247, 255, 0.1), rgba(0, 150, 255, 0.05));
+    border: 2px solid rgba(0, 247, 255, 0.3);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.car-part::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(0, 247, 255, 0.2), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.car-part:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 247, 255, 0.2);
+    border-color: rgba(0, 247, 255, 0.6);
+}
+
+.car-part:hover::before {
+    opacity: 1;
+}
+
+.part-label {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    z-index: 2;
+}
+
+/* Upgrades Grid */
+.upgrades-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 25px;
+}
+
+.upgrade-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 25px;
+    transition: all 0.3s ease;
+}
+
+.upgrade-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    border-color: var(--border-glow);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.component-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(0, 247, 255, 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+}
+
+.component-info {
+    flex: 1;
+}
+
+.component-info h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.3rem;
+    margin-bottom: 3px;
+}
+
+.component-info p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.component-level {
+    margin-left: auto;
+}
+
+.level-badge {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.card-body {
+    margin-bottom: 20px;
+}
+
+.stat-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.stat-label {
+    min-width: 100px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.stat-bar {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.stat-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    border-radius: 4px;
+    transition: width 0.5s ease;
+    box-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+}
+
+.stat-value {
+    min-width: 30px;
+    text-align: right;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.upgrade-cost {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.cost-icon {
+    font-size: 1.3rem;
+}
+
+.cost-value {
+    color: #ffd700;
+}
+
+.btn-upgrade {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 25px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border: none;
+    border-radius: 10px;
+    color: #000;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-upgrade:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 25px rgba(0, 247, 255, 0.3);
+}
+
+.btn-upgrade:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ==========================================
+   RACES SECTION
+   ========================================== */
+
+#section-races {
+    position: relative;
+}
+
+#section-races::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('../img/ms-manager-backgrounds.png') center/cover no-repeat fixed;
+    opacity: 0.3;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.tracks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 40px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
+    border: 2px dashed var(--border-color);
+}
+
+.empty-icon {
+    font-size: 5rem;
+    margin-bottom: 20px;
+    opacity: 0.3;
+}
+
+.empty-state h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+}
+
+.empty-note {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* Track Cards (para cuando se implementen) */
+.track-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.track-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.track-image {
+    position: relative;
+    height: 180px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    overflow: hidden;
+}
+
+.track-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.track-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.track-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 6px 15px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.track-info {
+    padding: 20px;
+}
+
+.track-info h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+.track-details {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.track-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.3rem;
+    margin-bottom: 5px;
+}
+
+.track-location {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+}
+
+.track-stats {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.track-stats .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.track-stats .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.track-stats .stat-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.race-button {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.race-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 30px rgba(245, 87, 108, 0.5);
+}
+
+.race-button .button-icon {
+    font-size: 1.2rem;
+}
+
+.track-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.track-actions {
+    padding: 0 20px 20px;
+}
+
+.btn-race {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.btn-race:hover {
+    transform: scale(1.03);
+    box-shadow: 0 10px 25px rgba(245, 87, 108, 0.3);
+}
+
+/* ==========================================
+   PILOTS SECTION
+   ========================================== */
+
+#section-pilots {
+    position: relative;
+}
+
+#section-pilots::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('../img/ms-manager-shop-background.png') center/cover no-repeat fixed;
+    opacity: 0.3;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.shop-refresh {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-refresh {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: rgba(0, 247, 255, 0.1);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-refresh:hover {
+    background: rgba(0, 247, 255, 0.2);
+    border-color: var(--border-glow);
+}
+
+.refresh-icon {
+    font-size: 1.2rem;
+    animation: rotate 2s linear infinite paused;
+}
+
+.btn-refresh:hover .refresh-icon {
+    animation-play-state: running;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.refresh-timer {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--accent);
+}
+
+.subsection-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    color: var(--text-secondary);
+}
+
+/* Current Pilot */
+.current-pilot-section {
+    margin-bottom: 50px;
+}
+
+.pilot-card-large {
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: 20px;
+    padding: 40px;
+    min-height: 200px;
+}
+
+.pilot-card-large.current {
+    border-color: var(--accent);
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.1);
+}
+
+.pilot-placeholder {
+    text-align: center;
+    padding: 40px;
+}
+
+.placeholder-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 20px;
+    opacity: 0.3;
+}
+
+/* Pilot Shop Grid */
+.pilot-shop-section {
+    margin-top: 40px;
+}
+
+.pilots-shop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+.pilot-card {
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.pilot-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.pilot-rarity {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+}
+
+.pilot-rarity.common { background: linear-gradient(90deg, #9ca3af, #d1d5db); }
+.pilot-rarity.rare { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+.pilot-rarity.epic { background: linear-gradient(90deg, #a855f7, #c084fc); }
+.pilot-rarity.legendary { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+
+.pilot-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.pilot-avatar {
+    width: 60px;
+    height: 60px;
+    background: rgba(0, 247, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+.pilot-info {
+    flex: 1;
+}
+
+.pilot-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    margin-bottom: 3px;
+}
+
+.pilot-nationality {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.pilot-overall {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 1.3rem;
+    color: #000;
+}
+
+.pilot-stats {
+    margin-bottom: 20px;
+}
+
+.pilot-stat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.pilot-stat .stat-label {
+    min-width: 90px;
+    font-size: 0.85rem;
+}
+
+.stat-bar-mini {
+    flex: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.stat-fill-mini {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+.stat-num {
+    min-width: 25px;
+    text-align: right;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.pilot-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.pilot-price {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.price-icon {
+    font-size: 1.2rem;
+}
+
+.price-value {
+    color: #ffd700;
+}
+
+.btn-hire {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, var(--accent), #00cc70);
+    border: none;
+    border-radius: 8px;
+    color: #000;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-hire:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 255, 136, 0.3);
+}
+
+.btn-hire:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ==========================================
+   HEADER ADJUSTMENTS
+   ========================================== */
+
+.back-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.back-link:hover {
+    background: rgba(0, 247, 255, 0.1);
+    border-color: var(--border-glow);
+    color: var(--text-primary);
+}
+
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: 20px;
+}
+
+.page-title h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+
+@media (max-width: 1024px) {
+    .offline-sidebar {
+        width: 80px;
+    }
+    
+    .offline-content {
+        margin-left: 80px;
+    }
+    
+    .item-text,
+    .item-badge {
+        display: none;
+    }
+    
+    .sidebar-item {
+        justify-content: center;
+        padding: 18px;
+    }
+}
+
+@media (max-width: 768px) {
+    .offline-sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        top: 0;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .offline-content {
+        margin-left: 0;
+        padding: 20px 15px;
+    }
+    
+    .sidebar-nav {
+        flex-direction: row;
+        overflow-x: auto;
+    }
+    
+    .sidebar-item {
+        flex-direction: column;
+        min-width: 100px;
+        padding: 15px 10px;
+        gap: 8px;
+    }
+    
+    .item-text {
+        display: block;
+        font-size: 0.85rem;
+    }
+    
+    .item-badge {
+        display: none;
+    }
+    
+    .upgrades-grid,
+    .pilots-shop-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .car-illustration {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ==========================================
+   RACE SETUP MODAL
+   ========================================== */
+
+.race-setup-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(6px);
+    animation: rs-fade-in 0.2s ease;
+}
+
+.race-setup-overlay[style*="display:none"],
+.race-setup-overlay[style*="display: none"] {
+    display: none !important;
+}
+
+@keyframes rs-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.race-setup-modal {
+    background: linear-gradient(160deg, #0f1923 0%, #1a2535 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    width: min(900px, 96vw);
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 32px;
+    position: relative;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+    animation: rs-slide-up 0.25s ease;
+}
+
+@keyframes rs-slide-up {
+    from { transform: translateY(30px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+.race-setup-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+.race-setup-close:hover { background: rgba(255, 90, 90, 0.35); }
+
+/* Header: circuit image + track info */
+.race-setup-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+
+.race-setup-circuit-img-wrap {
+    border-radius: 14px;
+    overflow: hidden;
+    background: #111;
+    aspect-ratio: 16/9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.race-setup-circuit-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+
+    display: block;
+}
+
+.race-setup-track-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+}
+
+.rs-flag {
+    font-size: 2.4rem;
+    line-height: 1;
+}
+
+.race-setup-track-info h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.3rem;
+    color: #fff;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.race-setup-track-info p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.rs-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+.rs-meta span { display: flex; align-items: center; gap: 4px; }
+
+/* Section label */
+.race-setup-section { margin-bottom: 24px; }
+.race-setup-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin: 0 0 14px;
+}
+
+/* Tyre selector */
+.tyre-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.tyre-option { cursor: pointer; }
+.tyre-option input { display: none; }
+
+.tyre-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 12px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.tyre-option input:checked + .tyre-card {
+    border-color: var(--accent, #e94560);
+    background: rgba(233, 69, 96, 0.12);
+    box-shadow: 0 0 18px rgba(233, 69, 96, 0.25);
+}
+
+.tyre-card:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.tyre-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 3px solid rgba(0,0,0,0.4);
+}
+.tyre-dot.soft   { background: #FF3333; }
+.tyre-dot.medium { background: #FFD700; }
+.tyre-dot.hard   { background: #FFFFFF; }
+
+.tyre-letter {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #fff;
+}
+
+.tyre-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #fff;
+}
+
+.tyre-desc {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+/* Start button */
+.race-setup-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-start-race {
+    padding: 14px 40px;
+    background: linear-gradient(135deg, #f5576c, #f093fb);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+}
+.btn-start-race:hover {
+    transform: scale(1.04);
+    box-shadow: 0 12px 35px rgba(245, 87, 108, 0.5);
+}
+
+@media (max-width: 640px) {
+    .race-setup-header { grid-template-columns: 1fr; }
+    .tyre-selector { grid-template-columns: 1fr; }
+    .race-setup-modal { padding: 20px 16px; }
+}

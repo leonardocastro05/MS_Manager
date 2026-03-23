@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MS Manager - El Mejor Juego de Gestión de Motorsport</title>
+    <meta name="description" content="Gestiona tu escudería, mejora tu monoplaza, contrata pilotos y compite en ligas online. ¡El mejor juego de gestión de Motorsport!">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- ========== NAVBAR ========== -->
+    <nav class="navbar">
+        <div class="nav-logo">
+            <span class="logo-ms">MS</span><span class="logo-manager">MANAGER</span>
+        </div>
+        <div class="nav-links">
+            <a href="#hero" class="nav-link active" data-section="0">Inicio</a>
+            <a href="#features" class="nav-link" data-section="1">Juego</a>
+            <a href="#tracks" class="nav-link" data-section="2">Circuitos</a>
+            <a href="#cta" class="nav-link" data-section="3">Jugar</a>
+        </div>
+        <a href="app/index.html" class="nav-play-btn">▶ JUGAR</a>
+    </nav>
+
+    <!-- ========== HORIZONTAL SCROLL ========== -->
+    <div class="horizontal-scroll-wrapper">
+
+        <!-- ===== HERO ===== -->
+        <section id="hero" class="section hero">
+            <div class="hero-bg-overlay"></div>
+            <div class="hero-particles" id="particles"></div>
+            <div class="hero-content">
+                <div class="hero-badge">🏆 TEMPORADA 2026</div>
+                <h1>MS <span class="accent">MANAGER</span></h1>
+                <p class="hero-subtitle">Construye tu imperio del Motorsport</p>
+                <p class="hero-desc">Gestiona tu escudería, mejora tu monoplaza, contrata a los mejores pilotos y domina el campeonato mundial.</p>
+                <div class="cta-buttons">
+                    <a href="app/index.html" class="btn btn-primary">
+                        <span class="btn-icon">🏁</span> Jugar Ahora
+                    </a>
+                    <button class="btn btn-secondary" onclick="scrollToSection(1)">
+                        <span class="btn-icon">📖</span> Descubre Más
+                    </button>
+                </div>
+                <div class="hero-stats-bar">
+                    <div class="hero-stat">
+                        <span class="hero-stat-num" data-target="5">0</span>
+                        <span class="hero-stat-label">Circuitos</span>
+                    </div>
+                    <div class="hero-stat-divider"></div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-num">∞</span>
+                        <span class="hero-stat-label">Pilotos</span>
+                    </div>
+                    <div class="hero-stat-divider"></div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-num">ONLINE</span>
+                        <span class="hero-stat-label">Multijugador</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-scroll-hint">
+                <span>DESLIZA</span>
+                <div class="scroll-arrow">→</div>
+            </div>
+        </section>
+
+        <!-- ===== FEATURES ===== -->
+        <section id="features" class="section features">
+            <div class="section-inner">
+                <div class="section-header">
+                    <span class="section-tag">GAME FEATURES</span>
+                    <h2>Tu Camino a la <span class="accent">Victoria</span></h2>
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card" data-delay="0">
+                        <div class="feature-card-glow"></div>
+                        <div class="feature-icon-wrap">
+                            <span class="feature-icon">🏢</span>
+                        </div>
+                        <h3>Sede Central (HQ)</h3>
+                        <p>Mejora motor, aerodinámica, DRS y chasis. Cada inversión te acerca al podio.</p>
+                        <div class="feature-tag">ESTRATEGIA</div>
+                    </div>
+                    <div class="feature-card" data-delay="100">
+                        <div class="feature-card-glow"></div>
+                        <div class="feature-icon-wrap">
+                            <span class="feature-icon">👨‍✈️</span>
+                        </div>
+                        <h3>Contrata Pilotos</h3>
+                        <p>Ficha pilotos con habilidades únicas. La combinación perfecta marca la diferencia.</p>
+                        <div class="feature-tag">GESTIÓN</div>
+                    </div>
+                    <div class="feature-card" data-delay="200">
+                        <div class="feature-card-glow"></div>
+                        <div class="feature-icon-wrap">
+                            <span class="feature-icon">🏁</span>
+                        </div>
+                        <h3>Carreras en Vivo</h3>
+                        <p>Controla la estrategia en tiempo real: neumáticos, DRS, combustible y más.</p>
+                        <div class="feature-tag">ACCIÓN</div>
+                    </div>
+                    <div class="feature-card" data-delay="300">
+                        <div class="feature-card-glow"></div>
+                        <div class="feature-icon-wrap">
+                            <span class="feature-icon">🌐</span>
+                        </div>
+                        <h3>Ligas Online</h3>
+                        <p>Crea ligas, compite contra jugadores reales y escala en el ranking mundial.</p>
+                        <div class="feature-tag">ONLINE</div>
+                    </div>
+                    <div class="feature-card" data-delay="400">
+                        <div class="feature-card-glow"></div>
+                        <div class="feature-icon-wrap">
+                            <span class="feature-icon">💰</span>
+                        </div>
+                        <h3>Patrocinadores</h3>
+                        <p>Consigue contratos con sponsors para financiar tu equipo y crecer más rápido.</p>
+                        <div class="feature-tag">ECONOMÍA</div>
+                    </div>
+                    <div class="feature-card" data-delay="500">
+                        <div class="feature-card-glow"></div>
+                        <div class="feature-icon-wrap">
+                            <span class="feature-icon">🎨</span>
+                        </div>
+                        <h3>Personalización</h3>
+                        <p>Diseña tu monoplaza con colores y acabados únicos. Destaca en la parrilla.</p>
+                        <div class="feature-tag">ESTILO</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== TRACKS ===== -->
+        <section id="tracks" class="section tracks">
+            <div class="section-inner">
+                <div class="section-header">
+                    <span class="section-tag">CIRCUITOS</span>
+                    <h2>Circuitos <span class="accent">Legendarios</span></h2>
+                </div>
+                <div class="tracks-showcase">
+                    <div class="track-card active" data-track="monza">
+                        <img src="app/img/tracks/race-tracks/monza.png" alt="Monza" class="track-img">
+                        <div class="track-info">
+                            <h3>Monza</h3>
+                            <span class="track-country">🇮🇹 Italia</span>
+                        </div>
+                    </div>
+                    <div class="track-card" data-track="montmelo">
+                        <img src="app/img/tracks/race-tracks/montmelo.png" alt="Montmeló" class="track-img">
+                        <div class="track-info">
+                            <h3>Montmeló</h3>
+                            <span class="track-country">🇪🇸 España</span>
+                        </div>
+                    </div>
+                    <div class="track-card" data-track="nurburgring">
+                        <img src="app/img/tracks/race-tracks/nurburgring.png" alt="Nürburgring" class="track-img">
+                        <div class="track-info">
+                            <h3>Nürburgring</h3>
+                            <span class="track-country">🇩🇪 Alemania</span>
+                        </div>
+                    </div>
+                    <div class="track-card" data-track="bahrain">
+                        <img src="app/img/tracks/race-tracks/bahrain.png" alt="Bahrain" class="track-img">
+                        <div class="track-info">
+                            <h3>Bahrain</h3>
+                            <span class="track-country">🇧🇭 Bahréin</span>
+                        </div>
+                    </div>
+                    <div class="track-card" data-track="portimao">
+                        <img src="app/img/tracks/race-tracks/portimao.png" alt="Portimão" class="track-img">
+                        <div class="track-info">
+                            <h3>Portimão</h3>
+                            <span class="track-country">🇵🇹 Portugal</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== CTA FINAL ===== -->
+        <section id="cta" class="section cta-final">
+            <div class="cta-bg-grid"></div>
+            <div class="cta-content">
+                <div class="cta-flag">🏁</div>
+                <h2>¿Preparado para la <span class="accent">Victoria</span>?</h2>
+                <p>Crea tu equipo, domina las carreras y conviértete en leyenda del Motorsport.</p>
+                <a href="app/index.html" class="btn btn-primary btn-lg">
+                    <span class="btn-icon">🚀</span> Empezar a Jugar
+                </a>
+                <div class="cta-footer-info">
+                    <span>✅ Gratis</span>
+                    <span>✅ Sin descargas</span>
+                    <span>✅ Multijugador</span>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // ============================================
+        // HORIZONTAL SCROLL ENGINE
+        // ============================================
+        const wrapper = document.querySelector('.horizontal-scroll-wrapper');
+        const sections = document.querySelectorAll('.section');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        function scrollToSection(index) {
+            wrapper.scrollTo({ left: window.innerWidth * index, behavior: 'smooth' });
+        }
+
+        // Update active nav link on scroll
+        wrapper.addEventListener('scroll', () => {
+            const idx = Math.round(wrapper.scrollLeft / window.innerWidth);
+            navLinks.forEach((link, i) => {
+                link.classList.toggle('active', i === idx);
+            });
+        });
+
+        // Nav link clicks
+        navLinks.forEach((link, i) => link.addEventListener('click', (e) => {
+            e.preventDefault();
+            scrollToSection(i);
+        }));
+
+        // Mouse wheel → horizontal
+        wrapper.addEventListener('wheel', (e) => {
+            if (e.deltaY !== 0) {
+                e.preventDefault();
+                wrapper.scrollLeft += e.deltaY;
+            }
+        }, { passive: false });
+
+        // Keyboard arrows
+        document.addEventListener('keydown', (e) => {
+            const idx = Math.round(wrapper.scrollLeft / window.innerWidth);
+            if (e.key === 'ArrowRight' && idx < sections.length - 1) scrollToSection(idx + 1);
+            if (e.key === 'ArrowLeft' && idx > 0) scrollToSection(idx - 1);
+        });
+
+        // Drag scroll
+        let isDragging = false, dragStartX, dragScrollLeft;
+        wrapper.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            wrapper.style.cursor = 'grabbing';
+            dragStartX = e.pageX;
+            dragScrollLeft = wrapper.scrollLeft;
+        });
+        ['mouseleave', 'mouseup'].forEach(evt =>
+            wrapper.addEventListener(evt, () => { isDragging = false; wrapper.style.cursor = 'grab'; })
+        );
+        wrapper.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            wrapper.scrollLeft = dragScrollLeft - (e.pageX - dragStartX) * 2;
+        });
+        wrapper.style.cursor = 'grab';
+
+        // ============================================
+        // CARD ANIMATIONS (IntersectionObserver)
+        // ============================================
+        const cardObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const delay = entry.target.dataset.delay || 0;
+                    setTimeout(() => entry.target.classList.add('visible'), delay);
+                } else {
+                    entry.target.classList.remove('visible');
+                }
+            });
+        }, { threshold: 0.1, root: wrapper });
+
+        document.querySelectorAll('.feature-card, .track-card').forEach(card => {
+            card.classList.add('card-animated');
+            cardObserver.observe(card);
+        });
+
+        // ============================================
+        // HERO STAT COUNTER
+        // ============================================
+        document.querySelectorAll('.hero-stat-num[data-target]').forEach(el => {
+            const target = parseInt(el.dataset.target);
+            let current = 0;
+            const step = Math.ceil(target / 60);
+            const timer = setInterval(() => {
+                current += step;
+                if (current >= target) { el.textContent = target; clearInterval(timer); }
+                else el.textContent = current;
+            }, 30);
+        });
+
+        // ============================================
+        // PARTICLES (lightweight)
+        // ============================================
+        const particlesEl = document.getElementById('particles');
+        if (particlesEl) {
+            for (let i = 0; i < 30; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.cssText = `
+                    left: ${Math.random() * 100}%;
+                    top: ${Math.random() * 100}%;
+                    width: ${2 + Math.random() * 4}px;
+                    height: ${2 + Math.random() * 4}px;
+                    animation-delay: ${Math.random() * 5}s;
+                    animation-duration: ${3 + Math.random() * 4}s;
+                `;
+                particlesEl.appendChild(p);
+            }
+        }
+
+        // ============================================
+        // 3D CARD TILT
+        // ============================================
+        document.querySelectorAll('.feature-card, .track-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width - 0.5;
+                const y = (e.clientY - rect.top) / rect.height - 0.5;
+                card.style.transform = `translateY(-8px) scale(1.02) rotateX(${-y * 10}deg) rotateY(${x * 10}deg)`;
+            });
+            card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+        });
+
+        // Global
+        window.scrollToSection = scrollToSection;
+    </script>
+</body>
+</html>

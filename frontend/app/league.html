@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MS Manager - Liga</title>
+    <link rel="stylesheet" href="css/online.css">
+    <link rel="stylesheet" href="css/league.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/mobile-landscape.css">
+</head>
+<body>
+    <!-- Fondo animado -->
+    <div class="bg-stars"></div>
+    <div class="bg-twinkling"></div>
+
+    <!-- ==========================================
+         HEADER / NAVBAR
+         ========================================== -->
+    <header class="main-header">
+        <div class="header-left">
+            <a href="online.html" class="back-btn">
+                <span>←</span>
+            </a>
+            <div class="logo league-logo-header">
+                <span class="logo-icon" id="header-league-logo">🏆</span>
+                <span class="logo-text" id="header-league-name">Liga</span>
+            </div>
+        </div>
+        
+        <nav class="header-nav">
+            <a href="#" class="nav-item active" data-section="home">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-text">Inicio</span>
+            </a>
+            <a href="#" class="nav-item" data-section="chat">
+                <span class="nav-icon">💬</span>
+                <span class="nav-text">Foro</span>
+            </a>
+            <a href="#" class="nav-item" data-section="headquarters">
+                <span class="nav-icon">🏢</span>
+                <span class="nav-text">HQ</span>
+            </a>
+            <a href="#" class="nav-item" data-section="pilots">
+                <span class="nav-icon">👨‍✈️</span>
+                <span class="nav-text">Pilotos</span>
+            </a>
+            <a href="#" class="nav-item" data-section="shop">
+                <span class="nav-icon">🛒</span>
+                <span class="nav-text">Tienda</span>
+            </a>
+            <a href="#" class="nav-item" data-section="races">
+                <span class="nav-icon">🏁</span>
+                <span class="nav-text">Carreras</span>
+            </a>
+            <a href="#" class="nav-item" data-section="standings">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">Clasificación</span>
+            </a>
+        </nav>
+        
+        <div class="header-right">
+            <div class="user-stats">
+                <div class="stat-item coins">
+                    <span class="stat-icon">🪙</span>
+                    <span class="stat-value" id="user-coins">—</span>
+                </div>
+                <div class="stat-item budget">
+                    <span class="stat-icon">💰</span>
+                    <span class="stat-value" id="user-budget">—</span>
+                </div>
+            </div>
+            <div class="user-level">
+                <span class="level-badge" id="user-level">—</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==========================================
+         MAIN CONTENT
+         ========================================== -->
+    <main class="main-content">
+        
+        <!-- ==========================================
+             SECTION: HOME (Resumen de Liga)
+             ========================================== -->
+        <section id="section-home" class="content-section active">
+            <!-- Liga Info Card -->
+            <div class="league-info-card">
+                <div class="league-banner">
+                    <div class="league-avatar">
+                        <span id="league-logo-display">🏆</span>
+                    </div>
+                    <div class="league-details">
+                        <h1 id="league-name-display">Nombre de la Liga</h1>
+                        <p class="league-desc-short" id="league-desc-display">Descripción de la liga</p>
+                        <div class="league-meta">
+                            <span><span class="meta-icon">👥</span> <span id="league-members">0/22</span> miembros</span>
+                            <span><span class="meta-icon">🌍</span> <span id="league-country">España</span></span>
+                            <span><span class="meta-icon">📅</span> <span id="league-schedule">Sábados 20:00</span></span>
+                        </div>
+                    </div>
+                    <div class="league-season-info">
+                        <div class="season-card">
+                            <span class="season-label">Temporada</span>
+                            <span class="season-value" id="current-season">1</span>
+                        </div>
+                        <div class="race-card">
+                            <span class="race-label">Próxima Carrera</span>
+                            <span class="race-value" id="next-race">1 de 20</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- League Actions: Leave/Delete -->
+                <div class="league-actions">
+                    <button class="btn-leave-league" id="btn-leave-league" title="Salir de la liga">
+                        <span class="btn-icon">🚪</span>
+                        <span class="btn-text">Salir de la Liga</span>
+                    </button>
+                    <button class="btn-delete-league hidden" id="btn-delete-league" title="Eliminar liga (solo creador)">
+                        <span class="btn-icon">🗑️</span>
+                        <span class="btn-text">Eliminar Liga</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="quick-stats-row">
+                <div class="quick-stat-card">
+                    <span class="qs-icon">🏆</span>
+                    <div class="qs-info">
+                        <span class="qs-value" id="my-position">-</span>
+                        <span class="qs-label">Mi Posición</span>
+                    </div>
+                </div>
+                <div class="quick-stat-card">
+                    <span class="qs-icon">⭐</span>
+                    <div class="qs-info">
+                        <span class="qs-value" id="my-points">0</span>
+                        <span class="qs-label">Mis Puntos</span>
+                    </div>
+                </div>
+                <div class="quick-stat-card">
+                    <span class="qs-icon">🏎️</span>
+                    <div class="qs-info">
+                        <span class="qs-value" id="car-rating">0</span>
+                        <span class="qs-label">Rating Coche</span>
+                    </div>
+                </div>
+                <div class="quick-stat-card">
+                    <span class="qs-icon">👨‍✈️</span>
+                    <div class="qs-info">
+                        <span class="qs-value" id="pilot-level">-</span>
+                        <span class="qs-label">Nivel Piloto</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="home-quick-actions">
+                <button class="quick-action-btn" id="btn-go-hq">
+                    <span class="qa-icon">🏢</span>
+                    <span class="qa-text">Mejorar HQ</span>
+                </button>
+                <button class="quick-action-btn" id="btn-go-pilots">
+                    <span class="qa-icon">👨‍✈️</span>
+                    <span class="qa-text">Tienda Pilotos</span>
+                </button>
+                <button class="quick-action-btn" id="btn-go-shop">
+                    <span class="qa-icon">🛒</span>
+                    <span class="qa-text">Tienda</span>
+                </button>
+                <button class="quick-action-btn" id="btn-go-races">
+                    <span class="qa-icon">🏁</span>
+                    <span class="qa-text">Carreras</span>
+                </button>
+            </div>
+            
+            <!-- Mini Leaderboard -->
+            <div class="section-card">
+                <div class="section-card-header">
+                    <h3><span>📊</span> Top 5 Clasificación</h3>
+                    <button class="btn-secondary btn-sm" id="btn-view-standings">Ver Todo →</button>
+                </div>
+                <div class="mini-leaderboard" id="mini-leaderboard">
+                    <!-- Se rellenará dinámicamente -->
+                </div>
+            </div>
+            
+            <!-- Daily Races Status -->
+            <div class="section-card daily-races-card">
+                <div class="section-card-header">
+                    <h3><span>🏎️</span> Carreras Hoy</h3>
+                </div>
+                <div class="daily-races-status" id="daily-races-status">
+                    <div class="races-counter">
+                        <span class="races-done" id="races-done-today">0</span>
+                        <span class="races-separator">/</span>
+                        <span class="races-max" id="races-max-daily">5</span>
+                    </div>
+                    <div class="races-remaining">
+                        <span id="races-remaining-text">5 carreras restantes hoy</span>
+                    </div>
+                    <div class="rest-day-notice" id="rest-day-notice" style="display: none;">
+                        <span class="rest-icon">😴</span>
+                        <span>Hoy es día de descanso (fin de semana)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- ==========================================
+             SECTION: CHAT (Foro de Liga)
+             ========================================== -->
+        <section id="section-chat" class="content-section">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h2><span>💬</span> Foro de la Liga</h2>
+                    <p class="chat-subtitle">Habla con los demás miembros de tu liga</p>
+                </div>
+                
+                <div class="chat-messages-container" id="chat-messages">
+                    <!-- Los mensajes se cargarán dinámicamente -->
+                    <div class="chat-loading">
+                        <div class="loader"></div>
+                        <span>Cargando mensajes...</span>
+                    </div>
+                </div>
+                
+                <div class="chat-input-container">
+                    <input type="text" id="chat-input" class="chat-input" 
+                           placeholder="Escribe un mensaje..." maxlength="500">
+                    <button class="btn-send-chat" id="btn-send-chat">
+                        <span>📤</span> Enviar
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SECTION: HEADQUARTERS (Mejoras)
+             ========================================== -->
+        <section id="section-headquarters" class="content-section">
+            <div class="hq-header">
+                <div class="hq-title-section">
+                    <h2><span>🏢</span> Headquarters</h2>
+                    <p class="hq-subtitle">Mejora tu equipo para dominar las carreras</p>
+                </div>
+                <div class="hq-overall">
+                    <div class="overall-card">
+                        <span class="overall-label">Rating Total</span>
+                        <span class="overall-value" id="hq-total-rating">5</span>
+                        <span class="overall-max">/50</span>
+                    </div>
+                    <div class="level-limit-info">
+                        <span class="limit-icon">🔒</span>
+                        <span>Nivel máximo de mejoras: <strong id="max-upgrade-level">1</strong></span>
+                        <small>(Basado en tu nivel de cuenta: <span id="account-level-display">1</span>)</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HQ Upgrades Grid -->
+            <div class="hq-grid">
+                <!-- MOTOR -->
+                <div class="hq-card" data-component="engine">
+                    <div class="hq-card-icon">
+                        <span>🔧</span>
+                    </div>
+                    <div class="hq-card-content">
+                        <h3>Motor</h3>
+                        <p class="hq-card-desc">Controla la potencia del monoplaza en las carreras</p>
+                        <div class="hq-level-display">
+                            <span class="current-level">Nivel <span id="engine-level">1</span></span>
+                            <div class="level-bar">
+                                <div class="level-fill" id="engine-fill" style="width: 2%"></div>
+                            </div>
+                            <span class="max-level">/50</span>
+                        </div>
+                        <div class="hq-stats">
+                            <div class="hq-stat">
+                                <span class="stat-name">Potencia</span>
+                                <span class="stat-value" id="engine-power">+10</span>
+                            </div>
+                            <div class="hq-stat">
+                                <span class="stat-name">Aceleración</span>
+                                <span class="stat-value" id="engine-accel">+5</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hq-card-footer">
+                        <div class="upgrade-cost">
+                            <span class="cost-icon">💰</span>
+                            <span class="cost-value" id="engine-cost">500,000</span>
+                        </div>
+                        <button class="btn-upgrade-hq" data-component="engine">
+                            <span>Mejorar</span>
+                            <span class="btn-icon">⬆️</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- AERODINÁMICA -->
+                <div class="hq-card" data-component="aero">
+                    <div class="hq-card-icon">
+                        <span>✈️</span>
+                    </div>
+                    <div class="hq-card-content">
+                        <h3>Aerodinámica</h3>
+                        <p class="hq-card-desc">Controla cómo de rápido hace las curvas el monoplaza</p>
+                        <div class="hq-level-display">
+                            <span class="current-level">Nivel <span id="aero-level">1</span></span>
+                            <div class="level-bar">
+                                <div class="level-fill" id="aero-fill" style="width: 2%"></div>
+                            </div>
+                            <span class="max-level">/50</span>
+                        </div>
+                        <div class="hq-stats">
+                            <div class="hq-stat">
+                                <span class="stat-name">Downforce</span>
+                                <span class="stat-value" id="aero-downforce">+8</span>
+                            </div>
+                            <div class="hq-stat">
+                                <span class="stat-name">Curvas</span>
+                                <span class="stat-value" id="aero-curves">+6</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hq-card-footer">
+                        <div class="upgrade-cost">
+                            <span class="cost-icon">💰</span>
+                            <span class="cost-value" id="aero-cost">600,000</span>
+                        </div>
+                        <button class="btn-upgrade-hq" data-component="aero">
+                            <span>Mejorar</span>
+                            <span class="btn-icon">⬆️</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- DRS -->
+                <div class="hq-card" data-component="drs">
+                    <div class="hq-card-icon">
+                        <span>⚡</span>
+                    </div>
+                    <div class="hq-card-content">
+                        <h3>DRS</h3>
+                        <p class="hq-card-desc">Controla la potencia del DRS en las zonas de activación</p>
+                        <div class="hq-level-display">
+                            <span class="current-level">Nivel <span id="drs-level">1</span></span>
+                            <div class="level-bar">
+                                <div class="level-fill" id="drs-fill" style="width: 2%"></div>
+                            </div>
+                            <span class="max-level">/50</span>
+                        </div>
+                        <div class="hq-stats">
+                            <div class="hq-stat">
+                                <span class="stat-name">Velocidad Punta</span>
+                                <span class="stat-value" id="drs-speed">+12</span>
+                            </div>
+                            <div class="hq-stat">
+                                <span class="stat-name">Eficiencia</span>
+                                <span class="stat-value" id="drs-efficiency">+4</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hq-card-footer">
+                        <div class="upgrade-cost">
+                            <span class="cost-icon">💰</span>
+                            <span class="cost-value" id="drs-cost">700,000</span>
+                        </div>
+                        <button class="btn-upgrade-hq" data-component="drs">
+                            <span>Mejorar</span>
+                            <span class="btn-icon">⬆️</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CHASIS -->
+                <div class="hq-card" data-component="chassis">
+                    <div class="hq-card-icon">
+                        <span>🏎️</span>
+                    </div>
+                    <div class="hq-card-content">
+                        <h3>Chasis</h3>
+                        <p class="hq-card-desc">Controla la durabilidad del monoplaza durante la carrera</p>
+                        <div class="hq-level-display">
+                            <span class="current-level">Nivel <span id="chassis-level">1</span></span>
+                            <div class="level-bar">
+                                <div class="level-fill" id="chassis-fill" style="width: 2%"></div>
+                            </div>
+                            <span class="max-level">/50</span>
+                        </div>
+                        <div class="hq-stats">
+                            <div class="hq-stat">
+                                <span class="stat-name">Durabilidad</span>
+                                <span class="stat-value" id="chassis-durability">+10</span>
+                            </div>
+                            <div class="hq-stat">
+                                <span class="stat-name">Resistencia</span>
+                                <span class="stat-value" id="chassis-resistance">+5</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hq-card-footer">
+                        <div class="upgrade-cost">
+                            <span class="cost-icon">💰</span>
+                            <span class="cost-value" id="chassis-cost">800,000</span>
+                        </div>
+                        <button class="btn-upgrade-hq" data-component="chassis">
+                            <span>Mejorar</span>
+                            <span class="btn-icon">⬆️</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- MERCADO -->
+                <div class="hq-card special" data-component="market">
+                    <div class="hq-card-icon">
+                        <span>📈</span>
+                    </div>
+                    <div class="hq-card-content">
+                        <h3>Mercado</h3>
+                        <p class="hq-card-desc">Aumenta la probabilidad de encontrar pilotos de alto nivel</p>
+                        <div class="hq-level-display">
+                            <span class="current-level">Nivel <span id="market-level">1</span></span>
+                            <div class="level-bar">
+                                <div class="level-fill" id="market-fill" style="width: 2%"></div>
+                            </div>
+                            <span class="max-level">/50</span>
+                        </div>
+                        <div class="hq-stats market-stats">
+                            <div class="hq-stat full">
+                                <span class="stat-name">Probabilidad Pilotos Élite</span>
+                                <span class="stat-value highlight" id="market-chance">2%</span>
+                            </div>
+                            <div class="market-bonus-display">
+                                <span>Nv.40+ aparecen: <strong id="market-high-chance">0.5%</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hq-card-footer">
+                        <div class="upgrade-cost">
+                            <span class="cost-icon">💰</span>
+                            <span class="cost-value" id="market-cost">1,000,000</span>
+                        </div>
+                        <button class="btn-upgrade-hq" data-component="market">
+                            <span>Mejorar</span>
+                            <span class="btn-icon">⬆️</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SECTION: PILOTS (Tienda de Pilotos)
+             ========================================== -->
+        <section id="section-pilots" class="content-section">
+            <div class="pilots-header">
+                <div>
+                    <h2><span>👨‍✈️</span> Tienda de Pilotos</h2>
+                    <p class="section-subtitle">Contrata pilotos para tu equipo - Niveles 1-50</p>
+                </div>
+                <div class="shop-refresh">
+                    <button class="btn-refresh" id="refresh-pilots">
+                        <span class="refresh-icon">🔄</span>
+                        <span>Actualizar</span>
+                        <span class="refresh-timer" id="refresh-timer">05:00</span>
+                    </button>
+                    <button class="btn-refresh instant" id="instant-refresh">
+                        <span>🪙 5</span>
+                        <span>Refrescar Ya</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Current Pilot -->
+            <div class="current-pilot-section">
+                <h3 class="subsection-title">Tu Piloto Actual</h3>
+                <div class="pilot-card-large current" id="current-pilot">
+                    <div class="pilot-placeholder">
+                        <span class="placeholder-icon">👨‍✈️</span>
+                        <p>Sin piloto contratado</p>
+                        <small>Contrata un piloto de la tienda</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pilot Shop -->
+            <div class="pilot-shop-section">
+                <h3 class="subsection-title">
+                    Pilotos Disponibles 
+                    <span class="market-level-info">(Mercado Nv. <span id="market-level-display">1</span>)</span>
+                </h3>
+                <div class="pilots-shop-grid" id="pilots-shop">
+                    <!-- Pilotos se generarán dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Sell Pilot Section -->
+            <div class="sell-pilot-section" id="sell-section" style="display: none;">
+                <h3 class="subsection-title">Vender Piloto</h3>
+                <div class="sell-pilot-card">
+                    <p>Puedes vender tu piloto actual por <strong id="sell-price">0</strong></p>
+                    <button class="btn-sell-pilot" id="btn-sell-pilot">
+                        <span>💰</span> Vender Piloto
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SECTION: SHOP (Tienda General + Skins)
+             ========================================== -->
+        <section id="section-shop" class="content-section">
+            <h2 class="shop-title"><span>🛒</span> Tienda</h2>
+            
+            <!-- Demo Mode Notice -->
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 2px solid rgba(255,255,255,0.2);">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="font-size: 40px;">⚠️</span>
+                    <div>
+                        <h3 style="margin: 0 0 5px 0; color: #fff; font-size: 18px;">🎮 MODO DEMOSTRACIÓN</h3>
+                        <p style="margin: 0; color: rgba(255,255,255,0.9); font-size: 14px;">
+                            Las compras de coins son simuladas. No se realizarán cargos reales. 
+                            El sistema de pagos se activará cuando la web esté operativa.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tabs de tienda -->
+            <div class="shop-tabs">
+                <button class="shop-tab active" data-tab="coins">🪙 Coins</button>
+                <button class="shop-tab" data-tab="money">💵 Dinero</button>
+                <button class="shop-tab" data-tab="skins">🎨 Skins de Pistas</button>
+            </div>
+
+            <!-- Tab: Coins -->
+            <div class="shop-tab-content active" id="tab-coins">
+                <div class="shop-category">
+                    <h3><span>🪙</span> Comprar Coins</h3>
+                    <p class="category-desc">Consigue coins con dinero real</p>
+                    <div class="shop-grid" id="coin-packages">
+                        <div class="shop-item" data-package="coins_5">
+                            <div class="item-badge">BÁSICO</div>
+                            <div class="item-icon">🪙</div>
+                            <div class="item-amount">5</div>
+                            <div class="item-label">Coins</div>
+                            <button class="item-price">1,99€</button>
+                        </div>
+                        <div class="shop-item" data-package="coins_12">
+                            <div class="item-badge popular">POPULAR</div>
+                            <div class="item-icon">🪙</div>
+                            <div class="item-amount">12</div>
+                            <div class="item-label">Coins</div>
+                            <button class="item-price">4,99€</button>
+                        </div>
+                        <div class="shop-item" data-package="coins_18">
+                            <div class="item-badge">VALOR</div>
+                            <div class="item-icon">🪙</div>
+                            <div class="item-amount">18</div>
+                            <div class="item-label">Coins</div>
+                            <button class="item-price">7,99€</button>
+                        </div>
+                        <div class="shop-item" data-package="coins_30">
+                            <div class="item-badge">GRAN VALOR</div>
+                            <div class="item-icon">💰</div>
+                            <div class="item-amount">30</div>
+                            <div class="item-label">Coins</div>
+                            <button class="item-price">12,99€</button>
+                        </div>
+                        <div class="shop-item" data-package="coins_50">
+                            <div class="item-badge best">MEJOR OFERTA</div>
+                            <div class="item-icon">💎</div>
+                            <div class="item-amount">50</div>
+                            <div class="item-label">Coins</div>
+                            <button class="item-price">19,99€</button>
+                        </div>
+                        <div class="shop-item" data-package="coins_80">
+                            <div class="item-badge premium">PREMIUM</div>
+                            <div class="item-icon">👑</div>
+                            <div class="item-amount">80</div>
+                            <div class="item-label">Coins</div>
+                            <button class="item-price">29,99€</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Money -->
+            <div class="shop-tab-content" id="tab-money">
+                <div class="shop-category">
+                    <h3><span>💵</span> Comprar Dinero del Juego</h3>
+                    <p class="category-desc">Usa tus coins para conseguir presupuesto</p>
+                    <div class="shop-grid money-grid" id="money-packages">
+                        <div class="shop-item money" data-package="money_5m">
+                            <div class="item-icon">💵</div>
+                            <div class="item-amount">5M</div>
+                            <div class="item-label">Presupuesto</div>
+                            <button class="item-price coins-price">
+                                <span>🪙</span> 5 Coins
+                            </button>
+                        </div>
+                        <div class="shop-item money" data-package="money_10m">
+                            <div class="item-badge popular">POPULAR</div>
+                            <div class="item-icon">💵</div>
+                            <div class="item-amount">10M</div>
+                            <div class="item-label">Presupuesto</div>
+                            <button class="item-price coins-price">
+                                <span>🪙</span> 8 Coins
+                            </button>
+                        </div>
+                        <div class="shop-item money" data-package="money_30m">
+                            <div class="item-badge best">MEJOR VALOR</div>
+                            <div class="item-icon">💎</div>
+                            <div class="item-amount">30M</div>
+                            <div class="item-label">Presupuesto</div>
+                            <button class="item-price coins-price">
+                                <span>🪙</span> 15 Coins
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Skins de Pistas -->
+            <div class="shop-tab-content" id="tab-skins">
+                <div class="shop-category skins-category">
+                    <div class="skins-header">
+                        <h3><span>🎨</span> Skins de Pistas</h3>
+                        <p class="category-desc">Personaliza las pistas con diseños exclusivos. ¡Presume ante tus amigos!</p>
+                    </div>
+                    
+                    <div class="skins-info-banner">
+                        <span class="info-icon">✨</span>
+                        <div class="info-text">
+                            <strong>Skins Exclusivos</strong>
+                            <p>Los skins son mejoras visuales que personalizan la apariencia de las pistas. ¡Muestra tu estilo!</p>
+                        </div>
+                    </div>
+
+                    <div class="skins-grid" id="skins-shop">
+                        <!-- Skin: Galáctico -->
+                        <div class="skin-card" data-skin="galactic">
+                            <div class="skin-preview galactic">
+                                <div class="skin-preview-content">
+                                    <span class="skin-preview-icon">🌌</span>
+                                    <div class="skin-stars"></div>
+                                </div>
+                            </div>
+                            <div class="skin-info">
+                                <h4 class="skin-name">Temática Galáctica</h4>
+                                <p class="skin-desc">Transforma cualquier pista en un circuito espacial con estrellas, nebulosas y efectos cósmicos</p>
+                                <div class="skin-applies">
+                                    <span class="applies-label">Aplica a:</span>
+                                    <select class="skin-track-select" id="galactic-track">
+                                        <option value="monaco">Monaco</option>
+                                        <option value="silverstone">Silverstone</option>
+                                        <option value="monza">Monza</option>
+                                        <option value="spa">Spa-Francorchamps</option>
+                                        <option value="suzuka">Suzuka</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="skin-footer">
+                                <div class="skin-price">
+                                    <span class="price-tag">4,99€</span>
+                                </div>
+                                <button class="btn-buy-skin" data-skin="galactic">
+                                    <span>🛒</span> Comprar
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Skin: Neón -->
+                        <div class="skin-card coming-soon" data-skin="neon">
+                            <div class="coming-soon-badge">PRÓXIMAMENTE</div>
+                            <div class="skin-preview neon">
+                                <div class="skin-preview-content">
+                                    <span class="skin-preview-icon">💡</span>
+                                </div>
+                            </div>
+                            <div class="skin-info">
+                                <h4 class="skin-name">Neón Nocturno</h4>
+                                <p class="skin-desc">Pista iluminada con luces de neón vibrantes y efectos de luz pulsante</p>
+                            </div>
+                            <div class="skin-footer">
+                                <div class="skin-price">
+                                    <span class="price-tag">4,99€</span>
+                                </div>
+                                <button class="btn-buy-skin" disabled>
+                                    <span>🔒</span> Próximamente
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Skin: Retro -->
+                        <div class="skin-card coming-soon" data-skin="retro">
+                            <div class="coming-soon-badge">PRÓXIMAMENTE</div>
+                            <div class="skin-preview retro">
+                                <div class="skin-preview-content">
+                                    <span class="skin-preview-icon">🕹️</span>
+                                </div>
+                            </div>
+                            <div class="skin-info">
+                                <h4 class="skin-name">Arcade Retro</h4>
+                                <p class="skin-desc">Estética pixelada al estilo de los videojuegos clásicos de los 80</p>
+                            </div>
+                            <div class="skin-footer">
+                                <div class="skin-price">
+                                    <span class="price-tag">4,99€</span>
+                                </div>
+                                <button class="btn-buy-skin" disabled>
+                                    <span>🔒</span> Próximamente
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Skin: Cyberpunk -->
+                        <div class="skin-card coming-soon" data-skin="cyberpunk">
+                            <div class="coming-soon-badge">PRÓXIMAMENTE</div>
+                            <div class="skin-preview cyberpunk">
+                                <div class="skin-preview-content">
+                                    <span class="skin-preview-icon">🤖</span>
+                                </div>
+                            </div>
+                            <div class="skin-info">
+                                <h4 class="skin-name">Cyberpunk 2099</h4>
+                                <p class="skin-desc">Ambiente futurista con hologramas, coches voladores y lluvia digital</p>
+                            </div>
+                            <div class="skin-footer">
+                                <div class="skin-price">
+                                    <span class="price-tag">4,99€</span>
+                                </div>
+                                <button class="btn-buy-skin" disabled>
+                                    <span>🔒</span> Próximamente
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mis Skins -->
+                    <div class="my-skins-section">
+                        <h4><span>🎨</span> Mis Skins Comprados</h4>
+                        <div class="my-skins-grid" id="my-skins">
+                            <div class="empty-skins">
+                                <span>🎨</span>
+                                <p>Aún no tienes skins</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SECTION: RACES (Carreras)
+             ========================================== -->
+        <section id="section-races" class="content-section">
+            <div class="races-header">
+                <div>
+                    <h2><span>🏁</span> Carreras de la Liga</h2>
+                    <p class="section-subtitle">Temporada <span id="race-season">1</span> - Carrera <span id="race-number">1</span> de <span id="total-races">5</span></p>
+                </div>
+                <div class="next-race-countdown">
+                    <span class="countdown-label">Próxima carrera en:</span>
+                    <div class="countdown-timer" id="race-countdown">
+                        <div class="countdown-unit">
+                            <span class="countdown-value" id="countdown-days">0</span>
+                            <span class="countdown-label">días</span>
+                        </div>
+                        <div class="countdown-unit">
+                            <span class="countdown-value" id="countdown-hours">0</span>
+                            <span class="countdown-label">horas</span>
+                        </div>
+                        <div class="countdown-unit">
+                            <span class="countdown-value" id="countdown-mins">0</span>
+                            <span class="countdown-label">min</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Race Mode Tabs -->
+            <div class="race-mode-tabs">
+                <button class="race-mode-tab active" data-mode="live">
+                    <span>🏎️</span> Carrera en Vivo
+                </button>
+                <button class="race-mode-tab" data-mode="practice">
+                    <span>🔧</span> Práctica Libre
+                </button>
+                <button class="race-mode-tab" data-mode="qualifying">
+                    <span>⏱️</span> Clasificación
+                </button>
+            </div>
+
+            <!-- Current Race Track -->
+            <div class="current-race-card">
+                <div class="race-track-preview" id="track-preview-container">
+                    <!-- SVG del circuito se cargará aquí -->
+                    <div class="track-loading">
+                        <div class="loader"></div>
+                        <span>Cargando circuito...</span>
+                    </div>
+                </div>
+                <div class="race-track-info">
+                    <h3 id="current-track-name">Autodromo Nazionale Monza</h3>
+                    <p class="track-location" id="current-track-location">🇮🇹 Italia</p>
+                    <div class="track-characteristics">
+                        <span class="track-type" id="track-type">⚡ Alta velocidad</span>
+                        <span class="track-difficulty" id="track-difficulty">
+                            <span>⭐</span><span>⭐</span><span>⭐</span><span class="dim">⭐</span><span class="dim">⭐</span>
+                        </span>
+                    </div>
+                    <div class="track-stats">
+                        <div class="track-stat">
+                            <span class="stat-icon">📏</span>
+                            <span class="stat-label">Longitud</span>
+                            <span class="stat-value" id="track-length">5.793 km</span>
+                        </div>
+                        <div class="track-stat">
+                            <span class="stat-icon">🔄</span>
+                            <span class="stat-label">Vueltas</span>
+                            <span class="stat-value" id="track-laps">53</span>
+                        </div>
+                        <div class="track-stat">
+                            <span class="stat-icon">↩️</span>
+                            <span class="stat-label">Curvas</span>
+                            <span class="stat-value" id="track-turns">11</span>
+                        </div>
+                        <div class="track-stat">
+                            <span class="stat-icon">🏎️</span>
+                            <span class="stat-label">V. Máx</span>
+                            <span class="stat-value" id="track-topspeed">350 km/h</span>
+                        </div>
+                    </div>
+                    <div class="track-drs-zones">
+                        <span class="drs-label">🟢 Zonas DRS:</span>
+                        <span id="drs-zones-count">2</span>
+                    </div>
+                </div>
+                <div class="race-status-panel">
+                    <div class="weather-info">
+                        <span class="weather-icon" id="race-weather">☀️</span>
+                        <span class="weather-text" id="race-weather-text">Soleado</span>
+                    </div>
+                    <span class="status-badge" id="race-status">Esperando</span>
+                    <div class="race-actions">
+                        <button class="btn-race btn-qualifying" id="btn-qualifying">
+                            <span>⏱️</span> Clasificar
+                        </button>
+                        <button class="btn-race btn-start-race" id="btn-start-race" disabled>
+                            <span>🏁</span> Iniciar Carrera
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Race Live View (se muestra durante la carrera) -->
+            <div class="race-live-container" id="race-live-container" style="display: none;">
+                <div class="race-live-header">
+                    <div class="race-lap-info">
+                        <span class="lap-label">VUELTA</span>
+                        <span class="lap-current" id="current-lap">0</span>
+                        <span class="lap-separator">/</span>
+                        <span class="lap-total" id="total-laps">53</span>
+                    </div>
+                    <div class="race-fastest-lap">
+                        <span class="fl-icon">🟣</span>
+                        <span class="fl-label">V. Rápida:</span>
+                        <span class="fl-time" id="fastest-lap-time">-</span>
+                        <span class="fl-driver" id="fastest-lap-driver">-</span>
+                    </div>
+                    <div class="race-controls">
+                        <button class="btn-race-control" id="btn-pause-race">⏸️</button>
+                        <button class="btn-race-control" id="btn-speed-1x" class="active">1x</button>
+                        <button class="btn-race-control" id="btn-speed-2x">2x</button>
+                        <button class="btn-race-control" id="btn-speed-5x">5x</button>
+                    </div>
+                </div>
+                
+                <div class="race-main-view">
+                    <!-- Track Visualization -->
+                    <div class="race-track-live" id="race-track-live">
+                        <!-- El SVG del circuito con coches animados -->
+                    </div>
+                    
+                    <!-- Live Standings -->
+                    <div class="race-live-standings">
+                        <h4>Clasificación en Vivo</h4>
+                        <div class="live-standings-list" id="live-standings">
+                            <!-- Se actualiza dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Race Events Feed -->
+                <div class="race-events-feed">
+                    <h4><span>📢</span> Eventos de Carrera</h4>
+                    <div class="events-list" id="race-events-list">
+                        <!-- Eventos de carrera en tiempo real -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Race Results (se muestra al finalizar) -->
+            <div class="race-results-container" id="race-results-container" style="display: none;">
+                <div class="results-header">
+                    <h3>🏆 Resultados de Carrera</h3>
+                    <div class="results-track">
+                        <span id="results-track-name">Monza</span>
+                        <span id="results-track-flag">🇮🇹</span>
+                    </div>
+                </div>
+                
+                <div class="podium-display">
+                    <div class="podium-position second">
+                        <div class="podium-driver" id="podium-p2">-</div>
+                        <div class="podium-block">2</div>
+                    </div>
+                    <div class="podium-position first">
+                        <div class="podium-driver" id="podium-p1">-</div>
+                        <div class="podium-block">1</div>
+                    </div>
+                    <div class="podium-position third">
+                        <div class="podium-driver" id="podium-p3">-</div>
+                        <div class="podium-block">3</div>
+                    </div>
+                </div>
+                
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th>Piloto</th>
+                            <th>Tiempo</th>
+                            <th>Diferencia</th>
+                            <th>M. Vuelta</th>
+                            <th>Puntos</th>
+                            <th>XP</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-table-body">
+                        <!-- Resultados -->
+                    </tbody>
+                </table>
+                
+                <div class="results-actions">
+                    <button class="btn-secondary" id="btn-close-results">Cerrar</button>
+                    <button class="btn-primary" id="btn-next-race">Siguiente Carrera →</button>
+                </div>
+            </div>
+
+            <!-- Race Calendar -->
+            <div class="race-calendar">
+                <h3><span>📅</span> Calendario de la Temporada</h3>
+                <div class="calendar-grid" id="race-calendar">
+                    <!-- Se rellenará dinámicamente -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SECTION: STANDINGS (Clasificación)
+             ========================================== -->
+        <section id="section-standings" class="content-section">
+            <div class="standings-header">
+                <h2><span>📊</span> Clasificación de la Liga</h2>
+                <div class="standings-tabs">
+                    <button class="standings-tab active" data-type="drivers">Pilotos</button>
+                    <button class="standings-tab" data-type="constructors">Equipos</button>
+                </div>
+            </div>
+
+            <div class="standings-table-container">
+                <table class="standings-table" id="standings-table">
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th>Piloto</th>
+                            <th>Equipo</th>
+                            <th>Victorias</th>
+                            <th>Podios</th>
+                            <th>Puntos</th>
+                        </tr>
+                    </thead>
+                    <tbody id="standings-body">
+                        <!-- Se rellenará dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- ==========================================
+         MODAL: Comprar Skin
+         ========================================== -->
+    <div class="modal" id="modal-buy-skin">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎨 Confirmar Compra</h2>
+                <button class="modal-close" id="close-buy-skin">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="skin-purchase-preview">
+                    <div class="purchase-skin-image" id="purchase-skin-preview">
+                        <span>🌌</span>
+                    </div>
+                    <div class="purchase-details">
+                        <h3 id="purchase-skin-name">Temática Galáctica</h3>
+                        <p id="purchase-skin-desc">Descripción del skin</p>
+                        <p class="purchase-track">Pista: <strong id="purchase-track-name">Monaco</strong></p>
+                    </div>
+                </div>
+                <div class="purchase-price">
+                    <span class="price-label">Precio:</span>
+                    <span class="price-value">4,99€</span>
+                </div>
+                <div class="purchase-actions">
+                    <button class="btn-cancel" id="cancel-buy-skin">Cancelar</button>
+                    <button class="btn-primary" id="confirm-buy-skin">
+                        <span>💳</span> Comprar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL: Contratar Piloto
+         ========================================== -->
+    <div class="modal" id="modal-hire-pilot">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>👨‍✈️ Contratar Piloto</h2>
+                <button class="modal-close" id="close-hire-pilot">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="pilot-hire-preview" id="hire-pilot-preview">
+                    <!-- Se rellenará dinámicamente -->
+                </div>
+                <div class="hire-warning" id="hire-warning" style="display: none;">
+                    <span>⚠️</span>
+                    <p>Ya tienes un piloto. Si contratas a este, el anterior será despedido sin compensación.</p>
+                </div>
+                <div class="purchase-actions">
+                    <button class="btn-cancel" id="cancel-hire-pilot">Cancelar</button>
+                    <button class="btn-primary" id="confirm-hire-pilot">
+                        <span>✓</span> Contratar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL: Upgrade HQ
+         ========================================== -->
+    <div class="modal" id="modal-upgrade-hq">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⬆️ Mejorar Componente</h2>
+                <button class="modal-close" id="close-upgrade-hq">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="upgrade-preview" id="upgrade-preview">
+                    <!-- Se rellenará dinámicamente -->
+                </div>
+                <div class="upgrade-blocked" id="upgrade-blocked" style="display: none;">
+                    <span>🔒</span>
+                    <p>Tu nivel de cuenta (<span id="blocked-account-level">1</span>) no permite mejorar más allá del nivel <span id="blocked-max-level">1</span></p>
+                </div>
+                <div class="purchase-actions">
+                    <button class="btn-cancel" id="cancel-upgrade-hq">Cancelar</button>
+                    <button class="btn-primary" id="confirm-upgrade-hq">
+                        <span>⬆️</span> Mejorar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         TOAST NOTIFICATIONS
+         ========================================== -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Scripts de carreras -->
+    <script src="js/tracks-data.js"></script>
+    <script src="js/race-engine.js"></script>
+    <script src="js/league.js"></script>
+    <script src="js/new-player-notifier.js"></script>
+    <script src="js/mobile-landscape.js"></script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MS Manager - Carrera Offline</title>
+    <link rel="stylesheet" href="css/race.css">
+</head>
+
+<body>
+    <div class="race-container">
+        <header class="top-bar">
+            <div class="top-left">
+                <a href="offline.html" class="back-link">← Volver</a>
+                <span class="top-label">Vuelta</span>
+                <span class="top-value" id="lap-display">0/0</span>
+            </div>
+            <div class="top-center">
+                <span class="top-label">Estado</span>
+                <span class="top-value status" id="race-status">Preparando</span>
+                <span class="top-label">Tiempo</span>
+                <span class="top-value timer" id="race-timer">0:00.000</span>
+                <span class="top-label">Velocidad</span>
+                <span class="top-value" id="speed-display">1x</span>
+            </div>
+            <div class="top-right" id="fastest-lap">Sin vuelta rápida</div>
+        </header>
+
+        <aside class="timing-panel">
+            <div class="panel-header">
+                <span>Clasificación</span>
+                <span>Int.</span>
+            </div>
+            <div id="timing-board"></div>
+        </aside>
+
+        <main class="canvas-area">
+            <canvas id="race-canvas"></canvas>
+        </main>
+
+        <aside class="info-panel">
+            <div class="section-title">Tu Equipo</div>
+            <div id="driver-info"></div>
+
+            <div class="section-title">Mensajes</div>
+            <div id="messages-panel"></div>
+
+            <div class="section-title">Mapa</div>
+            <canvas id="minimap-canvas" width="260" height="150"></canvas>
+        </aside>
+
+        <footer class="bottom-controls">
+            <div class="control-group" id="speed-controls">
+                <span class="control-label">Velocidad</span>
+                <button class="speed-btn" data-speed="0">0x</button>
+                <button class="speed-btn active" data-speed="1">1x</button>
+                <button class="speed-btn" data-speed="2">2x</button>
+                <button class="speed-btn" data-speed="5">5x</button>
+                <button class="speed-btn" data-speed="7">10x</button>
+            </div>
+
+            <div class="separator"></div>
+
+            <div class="control-group" id="camera-controls">
+                <span class="control-label">Cámara</span>
+                <button class="cam-btn active" id="cam-full">Completa</button>
+                <button class="cam-btn" id="cam-follow">Seguir</button>
+                <button class="cam-btn" id="cam-tv">TV</button>
+            </div>
+
+            <div class="separator"></div>
+
+            <div class="control-group" id="pit-controls">
+                <span class="control-label">Boxes</span>
+                <label class="pit-tyre-label" for="pit-tyre-select">Neumático</label>
+                <select id="pit-tyre-select" class="pit-tyre-select">
+                    <option value="soft">S - Blando</option>
+                    <option value="medium" selected>M - Medio</option>
+                    <option value="hard">H - Duro</option>
+                </select>
+                <button class="pit-btn" id="pit-btn-main">PIT</button>
+            </div>
+        </footer>
+    </div>
+
+    <div id="results-modal" class="results-modal hidden">
+        <div class="results-content">
+            <h2>🏁 Resultados</h2>
+            <table id="results-table"></table>
+            <div class="results-actions">
+                <button class="results-btn" onclick="window.location.href='offline.html'">Volver</button>
+                <button class="results-btn primary" onclick="window.location.href='dashboard.html'">Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/race.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,381 @@
+/* ==========================================
+   MS MANAGER - 3D CINEMATIC INTRO STYLES
+   Optimized Three.js Racing Intro
+   ========================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Rajdhani', sans-serif;
+    background: #0a0a0f;
+    color: #fff;
+    overflow: hidden;
+    min-height: 100vh;
+}
+
+/* ==========================================
+   VIDEO INTRO
+   ========================================== */
+
+.video-intro {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2000;
+    background: #000;
+    overflow: hidden;
+}
+
+.intro-video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: cover;
+}
+
+.video-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        ellipse at center,
+        transparent 30%,
+        rgba(0, 0, 0, 0.5) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+}
+
+.video-intro.fade-out {
+    animation: intro-fade-out 1s ease-out forwards;
+}
+
+/* ==========================================
+   INTRO SCREEN CONTAINER
+   ========================================== */
+
+.intro-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    background: #000;
+    overflow: hidden;
+}
+
+.intro-screen.fade-out {
+    animation: intro-fade-out 1.2s ease-out forwards;
+}
+
+/* Background loop mode: canvas stays visible behind auth screen */
+.intro-screen.bg-mode {
+    z-index: 1;
+    background: transparent;
+    animation: intro-bg-reveal 1s ease-out forwards;
+}
+
+/* ==========================================
+   THREE.JS CANVAS
+   ========================================== */
+
+#intro-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* ==========================================
+   OVERLAY EFFECTS
+   ========================================== */
+
+.intro-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+}
+
+/* Vignette Effect */
+.vignette {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+        ellipse at center,
+        transparent 0%,
+        transparent 40%,
+        rgba(0, 0, 0, 0.4) 80%,
+        rgba(0, 0, 0, 0.8) 100%
+    );
+}
+
+/* Flash Effect for Camera Cuts */
+.flash-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    opacity: 0;
+    z-index: 10;
+}
+
+.flash-overlay.flash {
+    animation: flash-cut 0.3s ease-out forwards;
+}
+
+@keyframes flash-cut {
+    0% { opacity: 0.6; }
+    100% { opacity: 0; }
+}
+
+/* ==========================================
+   TITLE OVERLAY
+   ========================================== */
+
+.title-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 15;
+    text-align: center;
+    opacity: 0;
+}
+
+.title-overlay.visible {
+    animation: title-appear 2s ease-out forwards;
+}
+
+@keyframes title-appear {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    30% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.05);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.intro-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(3rem, 12vw, 8rem);
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 
+        0 0 30px rgba(220, 38, 38, 0.8),
+        0 0 60px rgba(220, 38, 38, 0.5),
+        0 4px 8px rgba(0, 0, 0, 0.8);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.3em;
+    background: linear-gradient(180deg, #fff 0%, #ffd700 50%, #ff4500 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.intro-subtitle {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(1rem, 3vw, 2rem);
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.9);
+    text-transform: uppercase;
+    letter-spacing: 0.5em;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    animation: subtitle-pulse 2s ease-in-out infinite;
+}
+
+@keyframes subtitle-pulse {
+    0%, 100% { opacity: 0.9; }
+    50% { opacity: 0.6; }
+}
+
+/* ==========================================
+   LOADING PROGRESS BAR
+   ========================================== */
+
+.loading-container {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    z-index: 20;
+    text-align: center;
+}
+
+.loading-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.loading-progress {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #dc2626, #f97316, #fbbf24);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    box-shadow: 0 0 10px rgba(220, 38, 38, 0.5);
+}
+
+.loading-text {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+}
+
+.loading-container.hidden {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+/* ==========================================
+   SKIP BUTTON
+   ========================================== */
+
+.skip-intro {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    z-index: 25;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 10px 25px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.skip-intro:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: #fff;
+    transform: scale(1.05);
+}
+
+.skip-intro:active {
+    transform: scale(0.98);
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+
+@media (max-width: 768px) {
+    .intro-title {
+        font-size: clamp(2.5rem, 10vw, 4rem);
+        letter-spacing: 0.05em;
+    }
+    
+    .intro-subtitle {
+        font-size: clamp(0.8rem, 2.5vw, 1.2rem);
+        letter-spacing: 0.3em;
+    }
+    
+    .loading-container {
+        width: 250px;
+        bottom: 60px;
+    }
+    
+    .skip-intro {
+        bottom: 20px;
+        right: 20px;
+        padding: 8px 20px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .intro-title {
+        font-size: 2rem;
+    }
+    
+    .intro-subtitle {
+        font-size: 0.7rem;
+        letter-spacing: 0.2em;
+    }
+    
+    .loading-container {
+        width: 80%;
+        max-width: 200px;
+    }
+    
+    .skip-intro {
+        bottom: 15px;
+        right: 15px;
+        padding: 6px 15px;
+        font-size: 0.7rem;
+    }
+}
+
+/* ==========================================
+   PERFORMANCE OPTIMIZATIONS
+   ========================================== */
+
+/* Hardware acceleration for animations */
+.intro-screen,
+.intro-overlay,
+.title-overlay,
+.flash-overlay {
+    will-change: opacity, transform;
+    transform: translateZ(0);
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .intro-screen.fade-out {
+        animation-duration: 0.5s;
+    }
+    
+    .title-overlay.visible {
+        animation: title-appear-simple 0.5s ease-out forwards;
+    }
+    
+    @keyframes title-appear-simple {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    .intro-subtitle {
+        animation: none;
+    }
+}
