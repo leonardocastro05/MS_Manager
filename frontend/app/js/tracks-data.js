@@ -365,7 +365,134 @@ const TRACKS_DATA = {
             timeLoss: 22
         }
     },
-    
+
+    melbourne: {
+        id: 'melbourne',
+        name: 'Albert Park Circuit',
+        shortName: 'Melbourne',
+        country: 'Australia',
+        flag: '🇦🇺',
+        length: 4.90,
+        laps: 58,
+        type: 'street',
+        difficulty: 4,
+        image: 'img/tracks/melbourne.svg',
+        thumbnail: 'img/tracks/melbourne.png',
+        characteristics: {
+            topSpeed: 318,
+            avgSpeed: 198,
+            downforce: 'medium',
+            braking: 'heavy',
+            overtaking: 'medium',
+            tyreWear: 'medium',
+            fuelConsumption: 'medium'
+        },
+        drsZones: [
+            { start: 0, end: 3, name: 'Recta de meta' },
+            { start: 10, end: 12, name: 'Recta opuesta' }
+        ],
+        sectors: [
+            { id: 1, name: 'Sector 1', startWaypoint: 0, endWaypoint: 5, type: 'speed' },
+            { id: 2, name: 'Sector 2', startWaypoint: 6, endWaypoint: 11, type: 'mixed' },
+            { id: 3, name: 'Sector 3', startWaypoint: 12, endWaypoint: 16, type: 'technical' }
+        ],
+        corners: [
+            { id: 1, name: 'Jones', waypoint: 3, type: 'hairpin', angle: 130, speed: 92 },
+            { id: 2, name: 'Brabham', waypoint: 7, type: 'fast', angle: 55, speed: 220 },
+            { id: 3, name: 'Lauda', waypoint: 10, type: 'medium', angle: 85, speed: 165 },
+            { id: 4, name: 'Ascari', waypoint: 13, type: 'chicane', angle: 95, speed: 138 }
+        ],
+        waypoints: [
+            { id: 0, x: 310, y: 340, type: 'start', speed: 0, throttle: 1.0, brake: 0 },
+            { id: 1, x: 420, y: 336, type: 'drs-start', speed: 295, throttle: 1.0, brake: 0, drs: true },
+            { id: 2, x: 476, y: 330, type: 'straight', speed: 315, throttle: 1.0, brake: 0, drs: true },
+            { id: 3, x: 478, y: 286, type: 'brake', speed: 232, throttle: 0.0, brake: 0.80, corner: 'Jones' },
+            { id: 4, x: 445, y: 245, type: 'apex', speed: 125, throttle: 0.45, brake: 0.25 },
+            { id: 5, x: 360, y: 214, type: 'exit', speed: 172, throttle: 0.86, brake: 0 },
+            { id: 6, x: 268, y: 192, type: 'straight', speed: 218, throttle: 1.0, brake: 0 },
+            { id: 7, x: 154, y: 162, type: 'apex', speed: 220, throttle: 0.90, brake: 0.05, corner: 'Brabham' },
+            { id: 8, x: 92, y: 174, type: 'exit', speed: 170, throttle: 0.75, brake: 0.1 },
+            { id: 9, x: 84, y: 90, type: 'straight', speed: 205, throttle: 1.0, brake: 0 },
+            { id: 10, x: 156, y: 68, type: 'apex', speed: 165, throttle: 0.58, brake: 0.2, corner: 'Lauda' },
+            { id: 11, x: 250, y: 82, type: 'straight', speed: 210, throttle: 1.0, brake: 0, drs: true },
+            { id: 12, x: 376, y: 90, type: 'drs-end', speed: 300, throttle: 1.0, brake: 0 },
+            { id: 13, x: 468, y: 130, type: 'brake', speed: 205, throttle: 0.1, brake: 0.55, corner: 'Ascari' },
+            { id: 14, x: 462, y: 214, type: 'apex', speed: 138, throttle: 0.55, brake: 0.2 },
+            { id: 15, x: 350, y: 206, type: 'exit', speed: 190, throttle: 0.92, brake: 0 },
+            { id: 16, x: 310, y: 340, type: 'finish', speed: 290, throttle: 1.0, brake: 0 }
+        ],
+        racingLinePath: `M 310,340 L 420,336 L 476,330 Q 480,300 445,245 Q 360,214 268,192
+          Q 154,162 92,174 Q 84,90 156,68 Q 250,82 376,90 Q 468,130 462,214 Q 350,206 310,340`,
+        referenceTimes: { pole: 83.821, fastestLap: 84.993, average: 86.2 },
+        pitLane: {
+            entry: { x: 334, y: 344 },
+            exit: { x: 410, y: 338 },
+            timeLoss: 21
+        }
+    },
+
+    shanghai: {
+        id: 'shanghai',
+        name: 'Shanghai International Circuit',
+        shortName: 'Shanghai',
+        country: 'China',
+        flag: '🇨🇳',
+        length: 5.36,
+        laps: 53,
+        type: 'technical',
+        difficulty: 5,
+        image: 'img/tracks/shanghai.svg',
+        thumbnail: 'img/tracks/shanghai.png',
+        characteristics: {
+            topSpeed: 305,
+            avgSpeed: 182,
+            downforce: 'high',
+            braking: 'heavy',
+            overtaking: 'hard',
+            tyreWear: 'high',
+            fuelConsumption: 'medium'
+        },
+        drsZones: [
+            { start: 0, end: 2, name: 'Recta principal' }
+        ],
+        sectors: [
+            { id: 1, name: 'Sector 1', startWaypoint: 0, endWaypoint: 5, type: 'mixed' },
+            { id: 2, name: 'Sector 2', startWaypoint: 6, endWaypoint: 10, type: 'technical' },
+            { id: 3, name: 'Sector 3', startWaypoint: 11, endWaypoint: 15, type: 'traction' }
+        ],
+        corners: [
+            { id: 1, name: 'S1 Hairpin', waypoint: 4, type: 'hairpin', angle: 170, speed: 78 },
+            { id: 2, name: 'Snake Esses', waypoint: 8, type: 'chicane', angle: 100, speed: 140 },
+            { id: 3, name: 'Last Hook', waypoint: 13, type: 'hairpin', angle: 165, speed: 82 }
+        ],
+        waypoints: [
+            { id: 0, x: 252, y: 342, type: 'start', speed: 0, throttle: 1.0, brake: 0 },
+            { id: 1, x: 378, y: 338, type: 'drs-start', speed: 290, throttle: 1.0, brake: 0, drs: true },
+            { id: 2, x: 468, y: 328, type: 'drs-end', speed: 305, throttle: 1.0, brake: 0 },
+            { id: 3, x: 468, y: 274, type: 'brake', speed: 212, throttle: 0, brake: 0.82 },
+            { id: 4, x: 426, y: 238, type: 'apex', speed: 78, throttle: 0.24, brake: 0.35, corner: 'S1 Hairpin' },
+            { id: 5, x: 360, y: 220, type: 'exit', speed: 142, throttle: 0.75, brake: 0 },
+            { id: 6, x: 384, y: 166, type: 'apex', speed: 132, throttle: 0.50, brake: 0.20, corner: 'Snake Esses' },
+            { id: 7, x: 456, y: 154, type: 'exit', speed: 172, throttle: 0.82, brake: 0 },
+            { id: 8, x: 470, y: 98, type: 'apex', speed: 102, throttle: 0.40, brake: 0.28 },
+            { id: 9, x: 364, y: 66, type: 'straight', speed: 188, throttle: 0.95, brake: 0 },
+            { id: 10, x: 288, y: 102, type: 'straight', speed: 205, throttle: 1.0, brake: 0 },
+            { id: 11, x: 268, y: 176, type: 'apex', speed: 118, throttle: 0.42, brake: 0.3 },
+            { id: 12, x: 248, y: 242, type: 'exit', speed: 155, throttle: 0.86, brake: 0 },
+            { id: 13, x: 170, y: 304, type: 'apex', speed: 82, throttle: 0.30, brake: 0.34, corner: 'Last Hook' },
+            { id: 14, x: 190, y: 338, type: 'exit', speed: 145, throttle: 0.84, brake: 0 },
+            { id: 15, x: 252, y: 342, type: 'finish', speed: 260, throttle: 1.0, brake: 0 }
+        ],
+        racingLinePath: `M 252,342 L 378,338 L 468,328 Q 468,274 426,238 Q 360,220 384,166 Q 456,154 470,98
+          Q 364,66 288,102 Q 268,176 248,242 Q 170,304 190,338 L 252,342`,
+        referenceTimes: { pole: 91.234, fastestLap: 92.480, average: 94.1 },
+        pitLane: {
+            entry: { x: 268, y: 350 },
+            exit: { x: 338, y: 340 },
+            timeLoss: 24
+        }
+    },
+
     portimao: {
         id: 'portimao',
         name: 'Autódromo Internacional do Algarve',

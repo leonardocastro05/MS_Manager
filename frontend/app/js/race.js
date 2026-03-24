@@ -76,6 +76,59 @@
             baseLapSeconds: 94.3,
             fastestLapSeconds: 91.98,
         },
+        melbourne: {
+            name: 'Melbourne',
+            refWidth: 1,
+            refHeight: 1,
+            gridStartProgress: 0.06,
+            points: [
+                [0.10, 0.78], [0.16, 0.82], [0.26, 0.84], [0.38, 0.85], [0.52, 0.85], [0.66, 0.85],
+                [0.78, 0.84], [0.87, 0.83], [0.92, 0.80], [0.94, 0.74], [0.92, 0.68], [0.88, 0.61],
+                [0.82, 0.55], [0.75, 0.50], [0.66, 0.46], [0.57, 0.45], [0.50, 0.45], [0.45, 0.48],
+                [0.41, 0.54], [0.36, 0.60], [0.30, 0.66], [0.23, 0.71], [0.17, 0.71], [0.12, 0.66],
+                [0.10, 0.58], [0.11, 0.49], [0.14, 0.40], [0.20, 0.33], [0.28, 0.29], [0.37, 0.27],
+                [0.45, 0.29], [0.50, 0.34], [0.52, 0.41], [0.51, 0.48], [0.55, 0.54], [0.63, 0.57],
+                [0.72, 0.56], [0.80, 0.52], [0.86, 0.52], [0.90, 0.56], [0.90, 0.64], [0.86, 0.71],
+                [0.78, 0.77], [0.66, 0.80], [0.52, 0.80], [0.38, 0.80], [0.25, 0.80], [0.15, 0.79],
+                [0.10, 0.78]
+            ],
+            pitWindow: { start: 0.86, end: 0.96 },
+            baseLapSeconds: 85.8,
+            fastestLapSeconds: 83.9,
+        },
+        shanghai: {
+            name: 'Shanghai',
+            refWidth: 1,
+            refHeight: 1,
+            gridStartProgress: 0.06,
+            points: [
+                [0.40, 0.86], [0.54, 0.86], [0.68, 0.86], [0.80, 0.86], [0.88, 0.83], [0.92, 0.76],
+                [0.91, 0.66], [0.84, 0.58], [0.72, 0.52], [0.62, 0.45], [0.56, 0.36], [0.60, 0.28],
+                [0.70, 0.23], [0.76, 0.18], [0.72, 0.12], [0.62, 0.10], [0.50, 0.11], [0.38, 0.14],
+                [0.28, 0.19], [0.22, 0.27], [0.22, 0.38], [0.27, 0.49], [0.35, 0.58], [0.40, 0.67],
+                [0.40, 0.76], [0.40, 0.86]
+            ],
+            pitWindow: { start: 0.90, end: 0.985 },
+            baseLapSeconds: 93.7,
+            fastestLapSeconds: 91.6,
+        },
+        montmelo: {
+            name: 'Montmeló',
+            refWidth: 1,
+            refHeight: 1,
+            gridStartProgress: 0.05,
+            points: [
+                [0.52, 0.88], [0.66, 0.88], [0.80, 0.86], [0.90, 0.82], [0.94, 0.74], [0.90, 0.64],
+                [0.82, 0.58], [0.72, 0.54], [0.60, 0.52], [0.48, 0.50], [0.36, 0.47], [0.26, 0.42],
+                [0.18, 0.34], [0.16, 0.24], [0.22, 0.16], [0.32, 0.14], [0.40, 0.20], [0.44, 0.30],
+                [0.50, 0.40], [0.60, 0.44], [0.68, 0.40], [0.70, 0.32], [0.64, 0.26], [0.54, 0.24],
+                [0.44, 0.26], [0.36, 0.32], [0.30, 0.40], [0.28, 0.50], [0.32, 0.60], [0.40, 0.70],
+                [0.50, 0.80], [0.52, 0.88]
+            ],
+            pitWindow: { start: 0.91, end: 0.99 },
+            baseLapSeconds: 88.9,
+            fastestLapSeconds: 86.8,
+        },
     };
 
     class OfflineRace {
@@ -102,6 +155,9 @@
             this.elResultsModal = document.getElementById('results-modal');
             this.elResultsTable = document.getElementById('results-table');
             this.elPitTyreSelect = document.getElementById('pit-tyre-select');
+            this.elZoomToggle = document.getElementById('zoom-toggle');
+            this.elZoomReset = document.getElementById('zoom-reset');
+            this.elZoomLevel = document.getElementById('zoom-level');
 
             this.speedMultiplier = 1;
             this.baseRaceSpeedFactor = 12;
@@ -113,6 +169,14 @@
             this.cameraMode = 'full';
             this.cameraState = null;
             this.selectedPitTyre = this.config.startingTyre || 'medium';
+            this.manualZoom = 1;
+            this.zoomMin = 1;
+            this.zoomMax = 3.2;
+            this.zoomFocusProgress = null;
+            this.magnifierMode = false;
+            this.viewTransform = { zoom: 1, tx: 0, ty: 0 };
+            this.resizeRaf = null;
+            this.resizeObserver = null;
 
             this.trackSamples = [];
             this.trackLength = 0;
@@ -126,6 +190,7 @@
             this._bindControls();
             this._pushMessage(`🏁 ${this.track.name} cargado`, true);
             this._renderStaticUI();
+            this._updateZoomUI();
             requestAnimationFrame((ts) => this._loop(ts));
         }
 
@@ -150,12 +215,23 @@
 
         _resize() {
             const rect = this.canvas.getBoundingClientRect();
-            const dpr = window.devicePixelRatio || 1;
+            const dpr = Math.min(2, window.devicePixelRatio || 1);
             this.canvas.width = Math.max(1, Math.floor(rect.width * dpr));
             this.canvas.height = Math.max(1, Math.floor(rect.height * dpr));
             this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            this.ctx.imageSmoothingEnabled = true;
+            this.ctx.imageSmoothingQuality = 'high';
             this.width = rect.width;
             this.height = rect.height;
+        }
+
+        _scheduleResize() {
+            if (this.resizeRaf) return;
+            this.resizeRaf = requestAnimationFrame(() => {
+                this.resizeRaf = null;
+                this._resize();
+                this._sampleTrack();
+            });
         }
 
         _sampleTrack() {
@@ -306,10 +382,16 @@
         }
 
         _bindControls() {
-            window.addEventListener('resize', () => {
-                this._resize();
-                this._sampleTrack();
-            });
+            window.addEventListener('resize', () => this._scheduleResize());
+
+            if (typeof ResizeObserver !== 'undefined') {
+                this.resizeObserver = new ResizeObserver(() => this._scheduleResize());
+                const host = this.canvas?.parentElement || this.canvas;
+                if (host) this.resizeObserver.observe(host);
+            }
+
+            this.canvas.addEventListener('wheel', (event) => this._onCanvasWheel(event), { passive: false });
+            this.canvas.addEventListener('click', (event) => this._onCanvasClick(event));
 
             document.querySelectorAll('.speed-btn').forEach((btn) => {
                 btn.addEventListener('click', () => {
@@ -330,11 +412,28 @@
                 const button = document.getElementById(id);
                 if (!button) return;
                 button.addEventListener('click', () => {
-                    this.cameraMode = mode;
-                    document.querySelectorAll('.cam-btn').forEach((b) => b.classList.remove('active'));
-                    button.classList.add('active');
+                    this._setCameraMode(mode);
                 });
             });
+
+            if (this.elZoomToggle) {
+                this.elZoomToggle.addEventListener('click', () => {
+                    this.magnifierMode = !this.magnifierMode;
+                    this._updateZoomUI();
+                    this._pushMessage(this.magnifierMode
+                        ? '🔍 Lupa activa: clic en una zona de pista para acercar'
+                        : '🔍 Lupa desactivada', true);
+                });
+            }
+
+            if (this.elZoomReset) {
+                this.elZoomReset.addEventListener('click', () => {
+                    this.manualZoom = 1;
+                    this.zoomFocusProgress = null;
+                    this.magnifierMode = false;
+                    this._updateZoomUI();
+                });
+            }
 
             if (this.elPitTyreSelect) {
                 this.elPitTyreSelect.value = this.selectedPitTyre;
@@ -346,6 +445,103 @@
             const pitMain = document.getElementById('pit-btn-main');
             if (pitMain) {
                 pitMain.addEventListener('click', () => this._requestPit());
+            }
+        }
+
+        _setCameraMode(mode) {
+            this.cameraMode = mode;
+            document.querySelectorAll('.cam-btn').forEach((b) => b.classList.remove('active'));
+            const activeButton = document.getElementById(`cam-${mode}`);
+            if (activeButton) activeButton.classList.add('active');
+        }
+
+        _eventToCanvasPoint(event) {
+            const rect = this.canvas.getBoundingClientRect();
+            return {
+                x: event.clientX - rect.left,
+                y: event.clientY - rect.top,
+            };
+        }
+
+        _screenToWorld(x, y) {
+            const transform = this.viewTransform || { zoom: 1, tx: 0, ty: 0 };
+            const zoom = transform.zoom || 1;
+            return {
+                x: (x - (transform.tx || 0)) / zoom,
+                y: (y - (transform.ty || 0)) / zoom,
+            };
+        }
+
+        _closestTrackProgress(point) {
+            if (!this.trackSamples.length) return 0;
+
+            let closestIndex = 0;
+            let minDist = Infinity;
+            for (let i = 0; i < this.trackSamples.length; i++) {
+                const d = this._dist(point, this.trackSamples[i]);
+                if (d < minDist) {
+                    minDist = d;
+                    closestIndex = i;
+                }
+            }
+
+            return closestIndex / Math.max(1, this.trackSamples.length - 1);
+        }
+
+        _onCanvasClick(event) {
+            if (!this.magnifierMode) return;
+
+            const screen = this._eventToCanvasPoint(event);
+            const world = this._screenToWorld(screen.x, screen.y);
+            this.zoomFocusProgress = this._closestTrackProgress(world);
+            this.manualZoom = Math.min(this.zoomMax, Math.max(1.25, this.manualZoom + 0.35));
+
+            if (this.cameraMode !== 'full') {
+                this._setCameraMode('full');
+            }
+
+            this._updateZoomUI();
+        }
+
+        _onCanvasWheel(event) {
+            event.preventDefault();
+
+            const delta = event.deltaY < 0 ? 0.14 : -0.14;
+            const nextZoom = Math.max(this.zoomMin, Math.min(this.zoomMax, this.manualZoom + delta));
+            if (Math.abs(nextZoom - this.manualZoom) < 1e-4) return;
+
+            const screen = this._eventToCanvasPoint(event);
+            const world = this._screenToWorld(screen.x, screen.y);
+            this.zoomFocusProgress = this._closestTrackProgress(world);
+            this.manualZoom = nextZoom;
+
+            if (this.manualZoom <= 1.01) {
+                this.manualZoom = 1;
+                this.zoomFocusProgress = null;
+            } else if (this.cameraMode !== 'full') {
+                this._setCameraMode('full');
+            }
+
+            this._updateZoomUI();
+        }
+
+        _updateZoomUI() {
+            if (this.elZoomLevel) {
+                this.elZoomLevel.textContent = `${this.manualZoom.toFixed(1)}x`;
+            }
+
+            if (this.elZoomToggle) {
+                this.elZoomToggle.classList.toggle('active', this.magnifierMode);
+            }
+
+            if (this.canvas) {
+                if (this.magnifierMode) {
+                    this.canvas.style.cursor = 'zoom-in';
+                } else if (this.manualZoom > 1) {
+                    this.canvas.style.cursor = 'grab';
+                } else {
+                    this.canvas.style.cursor = 'default';
+                }
             }
         }
 
@@ -411,6 +607,7 @@
                 const tyreFactor = this._tirePerformanceFactor(car);
                 const tyreRiskFactor = this._tireRiskFactor(car);
                 pace *= tyreFactor;
+                pace *= this._compoundAggressionFactor(car);
                 pace *= car.aiAggression || 1;
                 pace *= this._aiPressureFactor(car, playerCar);
                 pace *= 1 + (Math.random() - 0.5) * (1 - car.consistency) * (0.2 + tyreRiskFactor * 0.35);
@@ -492,10 +689,18 @@
             const ctx = this.ctx;
             ctx.clearRect(0, 0, this.width, this.height);
 
-            const grass = ctx.createLinearGradient(0, 0, 0, this.height);
-            grass.addColorStop(0, '#184f1f');
-            grass.addColorStop(1, '#0e3a17');
-            ctx.fillStyle = grass;
+            if (this.config.trackId === 'bahrain') {
+                const desert = ctx.createLinearGradient(0, 0, 0, this.height);
+                desert.addColorStop(0, '#d8bc86');
+                desert.addColorStop(0.42, '#cda56e');
+                desert.addColorStop(1, '#b88a55');
+                ctx.fillStyle = desert;
+            } else {
+                const grass = ctx.createLinearGradient(0, 0, 0, this.height);
+                grass.addColorStop(0, '#184f1f');
+                grass.addColorStop(1, '#0e3a17');
+                ctx.fillStyle = grass;
+            }
             ctx.fillRect(0, 0, this.width, this.height);
 
             ctx.save();
@@ -508,6 +713,22 @@
         _applyCamera(ctx) {
             if (this.cameraMode === 'full') {
                 this.cameraState = null;
+                const zoom = this.manualZoom || 1;
+                if (zoom <= 1.001) {
+                    this.viewTransform = { zoom: 1, tx: 0, ty: 0 };
+                    return;
+                }
+
+                const focus = this.zoomFocusProgress == null
+                    ? { x: this.width / 2, y: this.height / 2 }
+                    : this._pointAt(this.zoomFocusProgress % 1);
+
+                const tx = this.width / 2 - focus.x * zoom;
+                const ty = this.height / 2 - focus.y * zoom;
+
+                ctx.translate(tx, ty);
+                ctx.scale(zoom, zoom);
+                this.viewTransform = { zoom, tx, ty };
                 return;
             }
 
@@ -517,7 +738,8 @@
             if (!targetCar) return;
 
             const targetPoint = this._pointAt(targetCar.progress % 1);
-            const zoom = this.cameraMode === 'follow' ? 1.45 : 1.25;
+            const baseZoom = this.cameraMode === 'follow' ? 1.45 : 1.25;
+            const zoom = baseZoom * (this.manualZoom || 1);
 
             if (!this.cameraState) {
                 this.cameraState = { x: targetPoint.x, y: targetPoint.y };
@@ -532,6 +754,7 @@
 
             ctx.translate(tx, ty);
             ctx.scale(zoom, zoom);
+            this.viewTransform = { zoom, tx, ty };
         }
 
         _drawTrack(ctx) {
@@ -544,6 +767,8 @@
 
             if (this.config.trackId === 'monza') {
                 this._drawMonzaDecoration(ctx);
+            } else if (this.config.trackId === 'bahrain') {
+                this._drawBahrainDecoration(ctx);
             } else if (this.config.trackId === 'leoverse') {
                 this._drawLeoverseDecoration(ctx);
             }
@@ -798,16 +1023,37 @@
         }
 
         _drawBahrainDecoration(ctx) {
-            ctx.fillStyle = 'rgba(201, 162, 96, 0.16)';
+            const skyDust = ctx.createLinearGradient(0, 0, 0, this.height * 0.55);
+            skyDust.addColorStop(0, 'rgba(253, 232, 196, 0.32)');
+            skyDust.addColorStop(1, 'rgba(231, 190, 132, 0.06)');
+            ctx.fillStyle = skyDust;
             ctx.fillRect(0, 0, this.width, this.height);
 
+            const sandSweep = [
+                [0.14, 0.88, 0.34, 0.12, -0.08],
+                [0.46, 0.92, 0.42, 0.13, 0.02],
+                [0.82, 0.88, 0.28, 0.10, 0.08],
+            ];
+
+            sandSweep.forEach(([x, y, w, h, angle]) => {
+                const p = this._toCanvasPoint(x, y);
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(angle);
+                ctx.fillStyle = 'rgba(181, 132, 78, 0.22)';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, (w * this.width) / 2, (h * this.height) / 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
             const dunes = [
-                [0.18, 0.16, 0.22, 0.10, -0.2],
-                [0.42, 0.22, 0.26, 0.11, 0.12],
-                [0.74, 0.18, 0.28, 0.10, -0.08],
-                [0.16, 0.74, 0.24, 0.10, 0.24],
-                [0.46, 0.84, 0.30, 0.12, -0.14],
-                [0.82, 0.72, 0.24, 0.10, 0.18],
+                [0.14, 0.17, 0.30, 0.12, -0.2],
+                [0.39, 0.24, 0.34, 0.13, 0.10],
+                [0.72, 0.19, 0.36, 0.12, -0.08],
+                [0.15, 0.74, 0.28, 0.12, 0.24],
+                [0.46, 0.82, 0.36, 0.13, -0.14],
+                [0.82, 0.70, 0.28, 0.12, 0.18],
             ];
 
             dunes.forEach(([x, y, w, h, angle]) => {
@@ -815,13 +1061,26 @@
                 ctx.save();
                 ctx.translate(p.x, p.y);
                 ctx.rotate(angle);
-                ctx.fillStyle = 'rgba(230, 197, 132, 0.28)';
+                ctx.fillStyle = 'rgba(240, 206, 141, 0.36)';
                 ctx.beginPath();
                 ctx.ellipse(
                     0,
                     0,
                     (w * this.width) / 2,
                     (h * this.height) / 2,
+                    0,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fill();
+
+                ctx.fillStyle = 'rgba(195, 146, 88, 0.22)';
+                ctx.beginPath();
+                ctx.ellipse(
+                    -w * this.width * 0.1,
+                    h * this.height * 0.05,
+                    (w * this.width) / 3,
+                    (h * this.height) / 3,
                     0,
                     0,
                     Math.PI * 2
@@ -842,9 +1101,25 @@
                 ctx.save();
                 ctx.translate(p.x, p.y);
                 ctx.rotate(angle);
-                ctx.fillStyle = 'rgba(216, 183, 111, 0.35)';
+                ctx.fillStyle = 'rgba(225, 190, 116, 0.45)';
                 ctx.fillRect(-w * this.width / 2, -h * this.height / 2, w * this.width, h * this.height);
+                ctx.strokeStyle = 'rgba(151, 108, 61, 0.28)';
+                ctx.lineWidth = this.width * 0.0015;
+                ctx.strokeRect(-w * this.width / 2, -h * this.height / 2, w * this.width, h * this.height);
                 ctx.restore();
+            });
+
+            const rockyPatches = [
+                [0.26, 0.20, 0.05], [0.34, 0.17, 0.04], [0.68, 0.23, 0.05], [0.78, 0.20, 0.04],
+                [0.20, 0.80, 0.05], [0.34, 0.84, 0.04], [0.58, 0.86, 0.04], [0.78, 0.78, 0.05],
+            ];
+
+            rockyPatches.forEach(([x, y, r]) => {
+                const p = this._toCanvasPoint(x, y);
+                ctx.fillStyle = 'rgba(139, 95, 54, 0.28)';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, r * this.width, 0, Math.PI * 2);
+                ctx.fill();
             });
 
             const tents = [
@@ -859,12 +1134,14 @@
                 const colors = ['#ff4d4f', '#40a9ff', '#ffd666', '#73d13d', '#9254de', '#ffa940'];
                 ctx.fillStyle = colors[index % colors.length];
                 ctx.fillRect(p.x - tw / 2, p.y - th / 2, tw, th);
+                ctx.fillStyle = 'rgba(255,255,255,0.30)';
+                ctx.fillRect(p.x - tw / 2, p.y - th / 2, tw, th * 0.3);
             });
 
             const pit = this._toCanvasPoint(0.66, 0.92);
-            ctx.fillStyle = 'rgba(121, 128, 138, 0.65)';
+            ctx.fillStyle = 'rgba(111, 118, 128, 0.74)';
             ctx.fillRect(pit.x - this.width * 0.13, pit.y - this.height * 0.02, this.width * 0.26, this.height * 0.032);
-            ctx.fillStyle = 'rgba(178, 186, 196, 0.52)';
+            ctx.fillStyle = 'rgba(190, 198, 208, 0.56)';
             ctx.fillRect(pit.x - this.width * 0.13, pit.y - this.height * 0.02, this.width * 0.26, this.height * 0.009);
 
             const floodlights = [
@@ -883,6 +1160,20 @@
                 ctx.fillStyle = 'rgba(255, 241, 198, 0.85)';
                 ctx.beginPath();
                 ctx.arc(p.x, p.y - this.height * 0.032, this.width * 0.0048, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            const desertDust = [
+                [0.12, 0.54], [0.20, 0.58], [0.34, 0.56], [0.46, 0.62], [0.60, 0.60], [0.74, 0.58], [0.86, 0.52],
+                [0.18, 0.30], [0.32, 0.28], [0.50, 0.26], [0.66, 0.30], [0.80, 0.34],
+            ];
+
+            desertDust.forEach(([x, y], idx) => {
+                const p = this._toCanvasPoint(x, y);
+                const radius = this.width * (idx % 2 === 0 ? 0.003 : 0.0022);
+                ctx.fillStyle = 'rgba(161, 119, 70, 0.24)';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
                 ctx.fill();
             });
         }
@@ -1273,6 +1564,11 @@
                 }
             }
 
+            if (car.tire === 'soft') {
+                const freshness = 0.55 + life / 220;
+                factor += 0.018 * freshness;
+            }
+
             return Math.max(0.18, factor);
         }
 
@@ -1282,6 +1578,20 @@
             const ratio = (50 - life) / 50;
             const compoundRisk = car.tire === 'soft' ? 1.45 : car.tire === 'medium' ? 1.25 : 1;
             return ratio * compoundRisk;
+        }
+
+        _compoundAggressionFactor(car) {
+            if (car.tire !== 'soft') return 1;
+
+            const life = Math.max(0, Math.min(100, car.tireLife || 0));
+            const freshness = Math.max(0, Math.min(1, (life - 40) / 60));
+
+            let factor = 1 + freshness * 0.026;
+            if (car.isPlayer) {
+                factor += freshness * 0.01;
+            }
+
+            return factor;
         }
 
         _criticalTyreTimePenalty(car) {

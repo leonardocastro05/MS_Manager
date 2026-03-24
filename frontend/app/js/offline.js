@@ -34,7 +34,7 @@ class OfflineController {
         this.availablePilots = [];
         
         // Pistas disponibles
-        this.availableTracks = ['bahrain', 'leoverse', 'monza'];
+        this.availableTracks = ['bahrain', 'leoverse', 'monza', 'melbourne', 'montmelo', 'shanghai'];
         
         // Timer de refresh de tienda
         this.shopRefreshTime = 300; // 5 minutos en segundos
@@ -890,7 +890,7 @@ class OfflineController {
         document.getElementById('rs-track-name').textContent = track.name;
         document.getElementById('rs-track-country').textContent = track.country;
         document.getElementById('rs-length').textContent = track.length;
-        document.getElementById('rs-laps').textContent = Math.min(track.laps, 20);
+        document.getElementById('rs-laps').textContent = Math.min(track.laps, 30);
         document.getElementById('rs-record').textContent = track.referenceTimes
             ? this._formatLapTime(track.referenceTimes.fastestLap)
             : (track.characteristics ? '—' : '—');
@@ -902,6 +902,13 @@ class OfflineController {
         // Reset tyre radio to soft
         const softRadio = document.querySelector('#race-setup-modal input[value="soft"]');
         if (softRadio) softRadio.checked = true;
+
+        // Reset lap selector (10/20/30) based on track default
+        const lapSelect = document.getElementById('rs-lap-select');
+        if (lapSelect) {
+            const suggestedLaps = track.laps >= 30 ? 30 : track.laps >= 20 ? 20 : 10;
+            lapSelect.value = String(suggestedLaps);
+        }
 
         document.getElementById('race-setup-modal').style.display = 'flex';
     }
@@ -917,11 +924,13 @@ class OfflineController {
 
         const track = TRACKS_DATA[trackId];
         const selectedTyre = document.querySelector('#race-setup-modal input[name="tyre"]:checked')?.value || 'soft';
+        const selectedLapRaw = Number(document.getElementById('rs-lap-select')?.value || 20);
+        const selectedLaps = [10, 20, 30].includes(selectedLapRaw) ? selectedLapRaw : 20;
 
         const config = {
             trackId: trackId,
             playerTeam: 3,
-            laps: Math.min(track.laps, 20),
+            laps: selectedLaps,
             weather: 'dry',
             startingTyre: selectedTyre,
             playerProfile: {

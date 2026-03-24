@@ -1231,6 +1231,30 @@
     text-align: center;
 }
 
+.lap-selector-wrap {
+    display: flex;
+}
+
+.lap-select {
+    width: 100%;
+    max-width: 240px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    background: rgba(77, 75, 75, 0.352);
+    color: rgba(255, 255, 255, 0.641);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.lap-select:focus {
+    outline: none;
+    border-color: var(--accent, #e94560);
+    box-shadow: 0 0 14px rgba(233, 69, 96, 0.2);
+}
+
 /* Start button */
 .race-setup-actions {
     display: flex;
@@ -1261,5 +1285,6 @@
 @media (max-width: 640px) {
     .race-setup-header { grid-template-columns: 1fr; }
     .tyre-selector { grid-template-columns: 1fr; }
+    .lap-select { max-width: 100%; }
     .race-setup-modal { padding: 20px 16px; }
 }

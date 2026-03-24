@@ -238,6 +238,15 @@ body {
     margin-right: 4px;
 }
 
+#zoom-level {
+    min-width: 44px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
 .separator {
     width: 1px;
     height: 26px;

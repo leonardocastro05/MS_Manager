@@ -11,8 +11,7 @@
  */
 
 (function () {
-    'use strict';
-
+    //'use strict';
     // Solo actuar en dispositivos táctiles / pantallas pequeñas
     const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent)
                      || (navigator.maxTouchPoints && navigator.maxTouchPoints > 1 && window.innerWidth < 1200);
@@ -44,7 +43,13 @@
             || el.webkitRequestFullscreen
             || el.msRequestFullscreen;
         if (rfs) {
-            rfs.call(el).catch(() => { /* Silenciar errores */ });
+            try {
+                const result = rfs.call(el);
+                if (result && typeof result.catch === 'function') {
+                    result.catch(() => { });
+                }
+            } catch {
+            }
         }
     }
 
@@ -66,19 +71,30 @@
         return window.innerHeight > window.innerWidth;
     }
 
-    /* ========================================
-       3. Botón principal – activa todo
-       ======================================== */
-    function activate() {
-        // 1) Fullscreen
-        goFullscreen();
+    function isFullscreenActive() {
+        return Boolean(
+            document.fullscreenElement
+            || document.webkitFullscreenElement
+            || document.msFullscreenElement
+        );
+    }
 
-        // 2) Intentar lock nativo, si falla → CSS rotate
+    function ensureFullscreenAndLandscape() {
+        if (!isFullscreenActive()) {
+            goFullscreen();
+        }
         lockLandscape().then(locked => {
             if (!locked && isPortrait()) {
                 cssRotate();
             }
         });
+    }
+
+    /* ========================================
+       3. Botón principal – activa todo
+       ======================================== */
+    function activate() {
+        ensureFullscreenAndLandscape();
 
         // Ocultar el blocker
         const blocker = document.getElementById('portrait-blocker');
@@ -89,7 +105,14 @@
     document.addEventListener('DOMContentLoaded', () => {
         const btn = document.getElementById('landscape-go-btn');
         if (btn) btn.addEventListener('click', activate);
+
+        document.addEventListener('pointerdown', ensureFullscreenAndLandscape, { passive: true });
+        document.addEventListener('touchstart', ensureFullscreenAndLandscape, { passive: true });
+
+        activate();
     });
+
+    
 
     /* ========================================
        4. Escuchar cambios de orientación
@@ -111,6 +134,13 @@
 
     window.addEventListener('orientationchange', onOrientationChange);
     window.addEventListener('resize', onOrientationChange);
+    window.addEventListener('focus', ensureFullscreenAndLandscape);
+    window.addEventListener('pageshow', ensureFullscreenAndLandscape);
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            ensureFullscreenAndLandscape();
+        }
+    });
 
     /* ========================================
        5. Auto-activar si ya estamos en landscape

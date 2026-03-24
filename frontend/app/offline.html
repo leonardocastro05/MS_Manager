@@ -482,6 +482,18 @@
                 </div>
             </div>
 
+            <!-- Lap selector -->
+            <div class="race-setup-section">
+                <h3 class="race-setup-label">Selecciona Vueltas</h3>
+                <div class="lap-selector-wrap">
+                    <select id="rs-lap-select" class="lap-select">
+                        <option value="10">10 vueltas</option>
+                        <option value="20" selected>20 vueltas</option>
+                        <option value="30">30 vueltas</option>
+                    </select>
+                </div>
+            </div>
+
             <!-- Start button -->
             <div class="race-setup-actions">
                 <button class="btn-start-race" id="rs-start-btn" onclick="offlineController.confirmRace()">
@@ -491,10 +503,12 @@
         </div>
     </div>
 
-    <script src="js/tracks-data.js"></script>
-    <script src="js/race-engine.js"></script>
-    <script src="js/offline.js"></script>
+    <script src="js/tracks-data.js?v=123432"></script>
+    <script src="js/race-engine.js?v=123432"></script>
+    <script src="js/offline.js?v=123432"></script>
     <script src="js/new-player-notifier.js"></script>
-    <script src="js/mobile-landscape.js"></script>
+    <script src="js/mobile-landscape.js?v=123432"></script>
+    <script src="js/auto-refresh.js"></script>
+    
 </body>
 </html>

@@ -57,7 +57,7 @@
                 <button class="speed-btn active" data-speed="1">1x</button>
                 <button class="speed-btn" data-speed="2">2x</button>
                 <button class="speed-btn" data-speed="5">5x</button>
-                <button class="speed-btn" data-speed="7">10x</button>
+                <button class="speed-btn" data-speed="50">$ FARM</button>
             </div>
 
             <div class="separator"></div>
@@ -67,6 +67,15 @@
                 <button class="cam-btn active" id="cam-full">Completa</button>
                 <button class="cam-btn" id="cam-follow">Seguir</button>
                 <button class="cam-btn" id="cam-tv">TV</button>
+            </div>
+
+            <div class="separator"></div>
+
+            <div class="control-group" id="zoom-controls">
+                <span class="control-label">Zoom</span>
+                <button class="zoom-btn" id="zoom-toggle" title="Lupa: clic en pista para acercar">🔍</button>
+                <button class="zoom-btn" id="zoom-reset" title="Reset zoom">Reset</button>
+                <span id="zoom-level">1.0x</span>
             </div>
 
             <div class="separator"></div>
@@ -96,6 +105,8 @@
     </div>
 
     <script src="js/race.js"></script>
+    <script src="js/mobile-landscape.js"></script>
+    <script src="js/auto-refresh.js"></script>
 </body>
 
 </html>
