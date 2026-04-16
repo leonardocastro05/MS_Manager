@@ -1,9 +1,12 @@
 (function () {
     const DEFAULT_CONFIG = {
+        mode: 'offline',
+        leagueId: null,
         trackId: 'monza',
         laps: 12,
         weather: 'dry',
         startingTyre: 'soft',
+        participants: [],
         playerProfile: null,
     };
 
@@ -38,7 +41,8 @@
             name: 'Bahrain',
             refWidth: 1,
             refHeight: 1,
-            gridStartProgress: 0.10,
+            invertProgress: true,
+            gridStartProgress: 0.90,
             points: [
                 [0.10, 0.88], [0.22, 0.88], [0.36, 0.88], [0.52, 0.88], [0.68, 0.88],
                 [0.82, 0.88], [0.92, 0.87], [0.96, 0.84], [0.90, 0.74], [0.84, 0.64],
@@ -100,13 +104,18 @@
             name: 'Shanghai',
             refWidth: 1,
             refHeight: 1,
-            gridStartProgress: 0.06,
+            gridStartProgress: 0.02,
             points: [
-                [0.40, 0.86], [0.54, 0.86], [0.68, 0.86], [0.80, 0.86], [0.88, 0.83], [0.92, 0.76],
-                [0.91, 0.66], [0.84, 0.58], [0.72, 0.52], [0.62, 0.45], [0.56, 0.36], [0.60, 0.28],
-                [0.70, 0.23], [0.76, 0.18], [0.72, 0.12], [0.62, 0.10], [0.50, 0.11], [0.38, 0.14],
-                [0.28, 0.19], [0.22, 0.27], [0.22, 0.38], [0.27, 0.49], [0.35, 0.58], [0.40, 0.67],
-                [0.40, 0.76], [0.40, 0.86]
+                [0.1335, 0.9857], [0.0203, 0.9864], [0.0113, 0.9742], [0.0084, 0.9606], [0.0114, 0.9561],
+                [0.0355, 0.93], [0.1582, 0.9101], [0.2617, 0.8994], [0.2762, 0.8718], [0.3761, 0.4485],
+                [0.4292, 0.2225], [0.4418, 0.1699], [0.4518, 0.127], [0.4913, 0.0315], [0.5648, 0.0262],
+                [0.5888, 0.1332], [0.5565, 0.1565], [0.5116, 0.11], [0.5042, 0.1728], [0.5474, 0.215],
+                [0.6075, 0.2054], [0.6469, 0.1984], [0.6913, 0.1903], [0.7521, 0.1775], [0.8499, 0.2076],
+                [0.9407, 0.266], [0.887, 0.3101], [0.776, 0.3111], [0.6677, 0.3163], [0.6194, 0.401],
+                [0.6423, 0.5429], [0.6463, 0.7188], [0.5391, 0.7313], [0.5302, 0.7867], [0.5451, 0.842],
+                [0.5913, 0.851], [0.7351, 0.8609], [0.7973, 0.8641], [0.8788, 0.8676], [0.89, 0.8292],
+                [0.8932, 0.7741], [0.9664, 0.7774], [0.9785, 0.9195], [0.9607, 0.9489], [0.9244, 0.9786],
+                [0.6484, 0.9856], [0.4352, 0.9859], [0.3095, 0.9842], [0.1335, 0.9857]
             ],
             pitWindow: { start: 0.90, end: 0.985 },
             baseLapSeconds: 93.7,
@@ -134,6 +143,7 @@
     class OfflineRace {
         constructor() {
             this.config = this._loadConfig();
+            this.isLeagueMode = this.config.mode === 'league';
             this.track = TRACKS[this.config.trackId] || TRACKS.monza;
             this.apiBaseUrl = this._getApiUrl();
             this.token = localStorage.getItem('authToken');
@@ -184,6 +194,7 @@
             this.cars = [];
             this.messages = [];
 
+            this._configureModeUI();
             this._resize();
             this._sampleTrack();
             this._initCars();
@@ -268,6 +279,73 @@
                 : 0.24;
             const gridStep = 0.0024;
 
+            const configuredParticipants = Array.isArray(this.config.participants)
+                ? [...this.config.participants]
+                : [];
+
+            if (this.isLeagueMode && configuredParticipants.length) {
+                configuredParticipants.sort((a, b) => {
+                    const positionA = Number(a?.gridPosition || 999);
+                    const positionB = Number(b?.gridPosition || 999);
+                    return positionA - positionB;
+                });
+
+                configuredParticipants.forEach((participant, index) => {
+                    const pilot = participant?.pilot || {};
+                    const carData = participant?.car || {};
+                    const pilotLevel = Number(pilot.level || pilot.overall || 20);
+                    const normalizedPilot = {
+                        ...pilot,
+                        speed: Number(pilot.speed || Math.min(99, Math.max(45, pilotLevel + 25))),
+                        control: Number(pilot.control || Math.min(99, Math.max(42, pilotLevel + 18))),
+                        experience: Number(pilot.experience || Math.min(99, Math.max(40, pilotLevel + 16)))
+                    };
+
+                    const isPlayer = Boolean(participant?.isPlayer)
+                        || (participant?.userId && participant.userId === player?.userId);
+
+                    const carName = participant?.name || normalizedPilot.name || `Manager ${index + 1}`;
+                    const basePace = this._basePaceFromData(true, normalizedPilot, carData) + (Math.random() - 0.5) * 0.00035;
+                    const tireManagement = this._tireManagementFromData(true, normalizedPilot, carData);
+                    const consistency = this._consistencyFromData(true, normalizedPilot);
+
+                    const gridPosition = Number(participant?.gridPosition || index + 1);
+                    const gridProgress = Math.max(0, gridStartProgress - (gridPosition - 1) * gridStep);
+
+                    this.cars.push({
+                        id: participant?.userId || `league-car-${index + 1}`,
+                        userId: participant?.userId || null,
+                        name: carName,
+                        abbr: this._abbr(carName),
+                        team: participant?.teamName || 'Sin equipo',
+                        teamColor: isPlayer ? '#ff3b30' : TEAM_COLORS[index % TEAM_COLORS.length],
+                        isPlayer,
+                        progress: gridProgress,
+                        lap: 0,
+                        totalProgress: gridProgress,
+                        finished: false,
+                        retired: false,
+                        basePace,
+                        tireManagement,
+                        consistency,
+                        aiAggression: isPlayer ? 1 : (0.99 + Math.random() * 0.24),
+                        tire: participant?.startingTyre || (index < 8 ? 'soft' : 'medium'),
+                        tireLife: 100,
+                        pitRequested: false,
+                        nextPitTyre: null,
+                        inPit: false,
+                        pitTime: 0,
+                        lockupCooldown: 0,
+                        position: gridPosition,
+                        lastLap: null,
+                        bestLap: null,
+                    });
+                });
+
+                this._sortPositions();
+                return;
+            }
+
             for (let i = 0; i < gridSize; i++) {
                 const isPlayer = i === 0;
                 const name = isPlayer
@@ -313,6 +391,36 @@
             }
 
             this._sortPositions();
+        }
+
+        _configureModeUI() {
+            const backLink = document.getElementById('race-back-link');
+            const resultsBackButton = document.getElementById('results-back-btn');
+            const dashboardButton = document.getElementById('results-dashboard-btn');
+
+            const leagueBackUrl = this.config.leagueId
+                ? `league.html?id=${encodeURIComponent(this.config.leagueId)}`
+                : 'online.html';
+            const backUrl = this.isLeagueMode ? leagueBackUrl : 'offline.html';
+
+            if (backLink) {
+                backLink.href = backUrl;
+                backLink.textContent = this.isLeagueMode ? '← Volver a la liga' : '← Volver';
+            }
+
+            if (resultsBackButton) {
+                resultsBackButton.addEventListener('click', () => {
+                    window.location.href = backUrl;
+                });
+            }
+
+            if (dashboardButton) {
+                dashboardButton.addEventListener('click', () => {
+                    window.location.href = 'dashboard.html';
+                });
+            }
+
+            document.title = this.isLeagueMode ? 'MS Manager - Carrera de Liga' : 'MS Manager - Carrera Offline';
         }
 
         _basePaceFromData(isPlayer, pilot, car) {
@@ -485,7 +593,11 @@
                 }
             }
 
-            return closestIndex / Math.max(1, this.trackSamples.length - 1);
+            const progress = closestIndex / Math.max(1, this.trackSamples.length - 1);
+            if (this.track.invertProgress) {
+                return ((1 - progress) + 1) % 1;
+            }
+            return progress;
         }
 
         _onCanvasClick(event) {
@@ -769,6 +881,8 @@
                 this._drawMonzaDecoration(ctx);
             } else if (this.config.trackId === 'bahrain') {
                 this._drawBahrainDecoration(ctx);
+            } else if (this.config.trackId === 'shanghai') {
+                this._drawShanghaiDecoration(ctx);
             } else if (this.config.trackId === 'leoverse') {
                 this._drawLeoverseDecoration(ctx);
             }
@@ -1178,6 +1292,150 @@
             });
         }
 
+        _drawShanghaiDecoration(ctx) {
+            const parkGlow = ctx.createLinearGradient(0, 0, 0, this.height);
+            parkGlow.addColorStop(0, 'rgba(210, 232, 208, 0.18)');
+            parkGlow.addColorStop(1, 'rgba(112, 152, 108, 0.10)');
+            ctx.fillStyle = parkGlow;
+            ctx.fillRect(0, 0, this.width, this.height);
+
+            const serviceRoads = [
+                [0.16, 0.87, 0.28, 0.05, -0.04],
+                [0.24, 0.62, 0.18, 0.04, -1.30],
+                [0.36, 0.40, 0.14, 0.04, -1.18],
+                [0.62, 0.76, 0.24, 0.05, 0.08],
+                [0.74, 0.56, 0.18, 0.04, -0.36],
+                [0.82, 0.30, 0.16, 0.04, 0.12],
+            ];
+
+            serviceRoads.forEach(([x, y, w, h, angle]) => {
+                const p = this._toCanvasPoint(x, y);
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(angle);
+                ctx.fillStyle = 'rgba(139, 150, 156, 0.60)';
+                ctx.fillRect(-w * this.width / 2, -h * this.height / 2, w * this.width, h * this.height);
+                ctx.fillStyle = 'rgba(197, 204, 209, 0.35)';
+                ctx.fillRect(-w * this.width / 2, -h * this.height / 2, w * this.width, h * this.height * 0.28);
+                ctx.restore();
+            });
+
+            const ponds = [
+                [0.12, 0.64, 0.08, 0.04, 0.2],
+                [0.20, 0.56, 0.10, 0.05, -0.18],
+                [0.80, 0.20, 0.12, 0.05, 0.12],
+                [0.88, 0.14, 0.08, 0.04, -0.1],
+            ];
+
+            ponds.forEach(([x, y, w, h, angle]) => {
+                const p = this._toCanvasPoint(x, y);
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(angle);
+                ctx.fillStyle = 'rgba(94, 151, 188, 0.62)';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, (w * this.width) / 2, (h * this.height) / 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = 'rgba(173, 219, 245, 0.25)';
+                ctx.beginPath();
+                ctx.ellipse(-w * this.width * 0.12, -h * this.height * 0.08, (w * this.width) / 3, (h * this.height) / 3, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            const paddockBuildings = [
+                [0.24, 0.54, 0.22, 0.07, -1.30],
+            ];
+
+            paddockBuildings.forEach(([x, y, w, h, angle], index) => {
+                const p = this._toCanvasPoint(x, y);
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(angle);
+                ctx.fillStyle = index % 2 === 0 ? 'rgba(113, 121, 129, 0.74)' : 'rgba(96, 106, 115, 0.72)';
+                ctx.fillRect(-w * this.width / 2, -h * this.height / 2, w * this.width, h * this.height);
+                ctx.fillStyle = 'rgba(201, 208, 214, 0.44)';
+                ctx.fillRect(-w * this.width / 2, -h * this.height / 2, w * this.width, h * this.height * 0.24);
+                ctx.restore();
+            });
+
+            const parkingLots = [
+                [0.10, 0.82, 0.22, 0.10, 0],
+                [0.86, 0.58, 0.12, 0.08, 0],
+            ];
+
+            parkingLots.forEach(([x, y, w, h, angle], lotIndex) => {
+                const p = this._toCanvasPoint(x, y);
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(angle);
+                ctx.fillStyle = 'rgba(133, 137, 143, 0.60)';
+                ctx.fillRect(-w * this.width / 2, -h * this.height / 2, w * this.width, h * this.height);
+
+                const cols = 9;
+                const rows = 4;
+                const slotW = (w * this.width * 0.84) / cols;
+                const slotH = (h * this.height * 0.76) / rows;
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        if ((r + c + lotIndex) % 3 === 0) continue;
+                        const px = -w * this.width * 0.42 + c * slotW;
+                        const py = -h * this.height * 0.38 + r * slotH;
+                        const colors = ['#f05b5b', '#4ea0ef', '#f5ca4d', '#6ccf79', '#8f7de3', '#dedede'];
+                        ctx.fillStyle = colors[(r + c) % colors.length];
+                        ctx.fillRect(px, py, slotW * 0.55, slotH * 0.44);
+                    }
+                }
+
+                ctx.restore();
+            });
+
+            const grandstands = [
+                [0.22, 0.74, 0.30, 0.02, -1.28],
+                [0.43, 0.18, 0.12, 0.02, 0.22],
+                [0.76, 0.84, 0.16, 0.02, 0.12],
+                [0.90, 0.50, 0.12, 0.02, -0.30],
+            ];
+
+            grandstands.forEach(([x, y, w, h, angle]) => {
+                const p = this._toCanvasPoint(x, y);
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(angle);
+                ctx.fillStyle = 'rgba(110, 80, 72, 0.62)';
+                ctx.fillRect(-w * this.width / 2, -h * this.height / 2, w * this.width, h * this.height);
+                ctx.fillStyle = 'rgba(206, 186, 176, 0.35)';
+                ctx.fillRect(-w * this.width / 2, -h * this.height / 2, w * this.width, h * this.height * 0.34);
+                ctx.restore();
+            });
+
+            const trees = [
+                [0.05, 0.74], [0.08, 0.70], [0.14, 0.62], [0.18, 0.58], [0.26, 0.22], [0.30, 0.18],
+                [0.62, 0.88], [0.68, 0.88], [0.72, 0.82], [0.84, 0.76], [0.88, 0.72], [0.92, 0.40],
+                [0.76, 0.14], [0.82, 0.10], [0.90, 0.16], [0.56, 0.16], [0.50, 0.22], [0.40, 0.84],
+            ];
+
+            trees.forEach(([x, y], idx) => {
+                const p = this._toCanvasPoint(x, y);
+                const radius = this.width * (idx % 2 === 0 ? 0.010 : 0.0075);
+                ctx.fillStyle = idx % 3 === 0 ? 'rgba(46, 112, 52, 0.78)' : 'rgba(33, 93, 44, 0.80)';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = 'rgba(132, 185, 120, 0.28)';
+                ctx.beginPath();
+                ctx.arc(p.x - radius * 0.25, p.y - radius * 0.28, radius * 0.45, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Softens the surroundings so decorations blend uniformly and don't pop into the track area.
+            ctx.strokeStyle = 'rgba(114, 148, 109, 0.18)';
+            ctx.lineWidth = 66;
+            ctx.beginPath();
+            this._pathTrack(ctx);
+            ctx.stroke();
+        }
+
         _drawLeoverseDecoration(ctx) {
             const baseGlow = ctx.createRadialGradient(
                 this.width * 0.54,
@@ -1460,6 +1718,11 @@
             if (this.resultsPersisted || !this.token) return;
             this.resultsPersisted = true;
 
+            if (this.isLeagueMode) {
+                await this._persistLeagueRaceResults(sorted);
+                return;
+            }
+
             const playerCars = sorted.filter((car) => car.isPlayer);
             if (!playerCars.length) return;
 
@@ -1527,6 +1790,73 @@
             } catch (error) {
                 console.error('Error saving race result:', error);
                 this._pushMessage('⚠️ Error guardando resultado en base de datos', true);
+            }
+        }
+
+        async _persistLeagueRaceResults(sorted) {
+            if (!this.config.leagueId) {
+                this._pushMessage('⚠️ No se encontro la liga para guardar resultados', true);
+                return;
+            }
+
+            const finishOrder = sorted
+                .sort((a, b) => a.position - b.position)
+                .map((car) => car.userId || car.id)
+                .filter(Boolean)
+                .map((userId) => ({ userId }));
+
+            if (!finishOrder.length) {
+                this._pushMessage('⚠️ No hay resultados validos para enviar', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `${this.apiBaseUrl}/online/leagues/${encodeURIComponent(this.config.leagueId)}/race/complete-multiplayer`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${this.token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            trackId: this.config.trackId,
+                            laps: this.totalLaps,
+                            results: finishOrder
+                        })
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'No se pudo guardar la carrera de liga');
+                }
+
+                const myUserId = this.config.playerProfile?.userId;
+                const myResult = Array.isArray(data.results)
+                    ? data.results.find((result) => (result.user || result.userId || '').toString() === (myUserId || '').toString())
+                    : null;
+
+                if (myResult) {
+                    this._pushMessage(
+                        `💾 Resultado de liga guardado: P${myResult.position} (+${myResult.points} pts, +${myResult.xpEarned} XP)`,
+                        true
+                    );
+                } else {
+                    this._pushMessage('💾 Resultado de liga guardado correctamente', true);
+                }
+
+                localStorage.setItem('leagueRaceLastResult', JSON.stringify({
+                    leagueId: this.config.leagueId,
+                    raceNumber: data.raceNumber,
+                    results: data.results || [],
+                    standings: data.standings || []
+                }));
+            } catch (error) {
+                this.resultsPersisted = false;
+                console.error('Error saving league race result:', error);
+                this._pushMessage('⚠️ Error guardando resultado de carrera de liga', true);
             }
         }
 
@@ -1643,7 +1973,10 @@
         }
 
         _pointAt(progress) {
-            const p = ((progress % 1) + 1) % 1;
+            let p = ((progress % 1) + 1) % 1;
+            if (this.track.invertProgress) {
+                p = ((1 - p) + 1) % 1;
+            }
             const target = this.trackLength * p;
             let walked = 0;
 

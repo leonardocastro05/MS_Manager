@@ -30,11 +30,16 @@ const LeagueSchema = new mongoose.Schema({
     
     // ===== Schedule =====
     schedule: {
+        frequency: {
+            type: String,
+            enum: ['weekly', 'weekdays'],
+            default: 'weekdays'
+        },
         dayOfWeek: {
             type: Number, // 0 = Sunday, 1 = Monday, etc.
             min: 0,
             max: 6,
-            default: 6 // Saturday by default
+            default: 1 // Monday by default when frequency is weekly
         },
         time: {
             type: String, // Format: "HH:MM" (24h)
@@ -119,6 +124,47 @@ const LeagueSchema = new mongoose.Schema({
                 enum: ['common', 'uncommon', 'rare', 'epic', 'legendary']
             },
             price: Number
+        },
+        raceStrategy: {
+            tyreCompound: {
+                type: String,
+                enum: ['soft', 'medium', 'hard'],
+                default: 'medium'
+            },
+            pitLap: {
+                type: Number,
+                default: null
+            },
+            plannedLaps: {
+                type: Number,
+                default: 20
+            },
+            updatedAt: {
+                type: Date,
+                default: Date.now
+            }
+        },
+        qualifying: {
+            lapTimeMs: {
+                type: Number,
+                default: null
+            },
+            lapTime: {
+                type: String,
+                default: null
+            },
+            position: {
+                type: Number,
+                default: null
+            },
+            raceNumber: {
+                type: Number,
+                default: 1
+            },
+            updatedAt: {
+                type: Date,
+                default: null
+            }
         }
     }],
     
@@ -400,8 +446,35 @@ LeagueSchema.methods.addMember = async function(userId, role = 'member') {
         user: userId,
         role: role,
         joinedAt: new Date(),
-        stats: { wins: 0, podiums: 0, points: 0, racesCompleted: 0 }
+        stats: { wins: 0, podiums: 0, points: 0, racesCompleted: 0 },
+        raceStrategy: {
+            tyreCompound: 'medium',
+            pitLap: null,
+            plannedLaps: 20,
+            updatedAt: new Date()
+        },
+        qualifying: {
+            lapTimeMs: null,
+            lapTime: null,
+            position: null,
+            raceNumber: (this.currentSeason?.currentRace || 0) + 1,
+            updatedAt: null
+        }
     });
+
+    const alreadyInStandings = this.currentSeason.standings.some(
+        standing => standing.user.toString() === userId.toString()
+    );
+    if (!alreadyInStandings) {
+        this.currentSeason.standings.push({
+            user: userId,
+            points: 0,
+            wins: 0,
+            podiums: 0,
+            position: this.currentSeason.standings.length + 1
+        });
+        this.updateStandings();
+    }
     
     await this.save();
     return this;

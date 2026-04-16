@@ -23,6 +23,9 @@ class OnlineController {
         this.globalRanking = null;
         this.myRank = null;
         this.currentRankingTab = 'international';
+        this.purchaseCooldownMs = 2000;
+        this.lastPurchaseAt = 0;
+        this.isPurchaseInProgress = false;
         
         // Rank tier configuration (should match backend)
         this.RANK_CONFIG = {
@@ -273,6 +276,9 @@ class OnlineController {
     }
     
     async buyMoneyPackage(packageId) {
+        const purchaseReady = await this.prepareShopPurchase();
+        if (!purchaseReady) return false;
+
         try {
             const response = await fetch(`${this.API_URL}/online/shop/buy-money`, {
                 method: 'POST',
@@ -297,6 +303,8 @@ class OnlineController {
             console.error('Error buying package:', error);
             this.showToast('Error de conexión', 'error');
             return false;
+        } finally {
+            this.finishShopPurchase();
         }
     }
     
@@ -325,6 +333,9 @@ class OnlineController {
             );
             
             if (!confirmed) return;
+
+            const purchaseReady = await this.prepareShopPurchase();
+            if (!purchaseReady) return false;
             
             const response = await fetch(`${this.API_URL}/online/shop/buy-coins-simulated`, {
                 method: 'POST',
@@ -353,6 +364,8 @@ class OnlineController {
             console.error('Error buying coin package:', error);
             this.showToast('Error de conexión', 'error');
             return false;
+        } finally {
+            this.finishShopPurchase();
         }
     }
     
@@ -571,8 +584,8 @@ class OnlineController {
                         <span class="league-stat-label">Mínimo</span>
                     </div>
                     <div class="league-stat">
-                        <span class="league-stat-value">${league.schedule?.time || '20:00'}</span>
-                        <span class="league-stat-label">Hora</span>
+                        <span class="league-stat-value">L-V ${league.schedule?.time || '20:00'}</span>
+                        <span class="league-stat-label">Horario</span>
                     </div>
                     <button class="btn-join-league" data-id="${league.id}">Unirse</button>
                 </div>
@@ -893,8 +906,7 @@ class OnlineController {
         const name = document.getElementById('league-name').value.trim();
         const description = document.getElementById('league-description').value.trim();
         const country = document.getElementById('league-country').value;
-        const dayOfWeek = parseInt(document.getElementById('league-day').value);
-        const time = document.getElementById('league-time').value;
+        const time = document.getElementById('league-time').value || '20:00';
         const isPrivate = document.getElementById('league-private').checked;
         const maxMembers = parseInt(document.getElementById('league-max-members').value);
         const minLevel = parseInt(document.getElementById('league-min-level').value);
@@ -909,7 +921,8 @@ class OnlineController {
             logo,
             country,
             schedule: {
-                dayOfWeek,
+                frequency: 'weekdays',
+                dayOfWeek: 1,
                 time,
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
             },
@@ -1003,6 +1016,41 @@ class OnlineController {
         if (modal) {
             modal.classList.remove('active');
         }
+    }
+
+    async prepareShopPurchase() {
+        if (this.isPurchaseInProgress) {
+            this.showToast('Ya hay una compra en proceso...', 'info');
+            return false;
+        }
+
+        const remainingMs = this.purchaseCooldownMs - (Date.now() - this.lastPurchaseAt);
+        if (remainingMs > 0) {
+            const remainingSec = (remainingMs / 1000).toFixed(1);
+            this.showToast(`Espera ${remainingSec}s antes de otra compra`, 'info');
+            return false;
+        }
+
+        this.isPurchaseInProgress = true;
+        this.toggleShopButtons(true);
+        this.showToast('Procesando compra...', 'info');
+
+        await new Promise(resolve => setTimeout(resolve, this.purchaseCooldownMs));
+        return true;
+    }
+
+    finishShopPurchase() {
+        if (!this.isPurchaseInProgress) return;
+
+        this.lastPurchaseAt = Date.now();
+        this.isPurchaseInProgress = false;
+        this.toggleShopButtons(false);
+    }
+
+    toggleShopButtons(disabled) {
+        document.querySelectorAll('.shop-item .item-price').forEach(button => {
+            button.disabled = disabled;
+        });
     }
     
     // ==========================================

@@ -25,10 +25,11 @@ services:
       # Frontend URL (para callbacks OAuth)
       FRONTEND_URL: ${FRONTEND_URL}
       BACKEND_URL: ${BACKEND_URL}
-    ports:
-      - "5000:5000"
+    expose:
+      - "5000"
     networks:
-      - msmanager-network
+      - app-internal
+      - msmanager
     volumes:
       - ./database:/app
       - /app/node_modules
@@ -40,8 +41,14 @@ services:
     image: nginx:alpine
     container_name: msmanager-frontend
     restart: unless-stopped
-    ports:
-      - "43007:80"
+    environment:
+      VIRTUAL_HOST: ${DOMAIN}
+      VIRTUAL_PORT: 80
+      LETSENCRYPT_HOST: ${DOMAIN}
+      LETSENCRYPT_EMAIL: ${SSL_EMAIL}
+      HTTPS_METHOD: redirect
+    expose:
+      - "80"
     volumes:
       # Mount all static content from frontend folder
       - ./frontend:/usr/share/nginx/html:ro
@@ -49,8 +56,11 @@ services:
     depends_on:
       - backend
     networks:
-      - msmanager-network
+      - msmanager
 
 networks:
-  msmanager-network:
+  app-internal:
     driver: bridge
+  msmanager:
+    external: true
+    name: msmanager

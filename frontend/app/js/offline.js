@@ -39,6 +39,9 @@ class OfflineController {
         // Timer de refresh de tienda
         this.shopRefreshTime = 300; // 5 minutos en segundos
         this.shopTimer = null;
+        this.purchaseCooldownMs = 2000;
+        this.lastPurchaseAt = 0;
+        this.isPurchaseInProgress = false;
         
         this.init();
     }
@@ -95,7 +98,9 @@ class OfflineController {
         // Refresh de tienda
         const refreshBtn = document.getElementById('refresh-pilots');
         if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => this.refreshPilotShop());
+            refreshBtn.addEventListener('click', async () => {
+                await this.refreshPilotShop();
+            });
         }
     }
     
@@ -504,7 +509,9 @@ class OfflineController {
             // Botón contratar
             const hireBtn = card.querySelector('.btn-hire');
             hireBtn.disabled = this.player.money < pilot.price;
-            hireBtn.addEventListener('click', () => this.hirePilot(pilot));
+            hireBtn.addEventListener('click', async () => {
+                await this.hirePilot(pilot);
+            });
             
             container.appendChild(card);
         });
@@ -513,9 +520,13 @@ class OfflineController {
     /**
      * Contrata un piloto
      */
-    hirePilot(pilot) {
+    async hirePilot(pilot) {
+        const purchaseReady = await this.prepareShopPurchase();
+        if (!purchaseReady) return;
+
         if (this.player.money < pilot.price) {
             this.showNotification('No tienes suficiente dinero 💰', 'error');
+            this.finishShopPurchase();
             return;
         }
         
@@ -531,6 +542,7 @@ class OfflineController {
         this.savePlayerData();
         
         this.showNotification(`¡${pilot.name} se ha unido a tu equipo!`, 'success');
+        this.finishShopPurchase();
     }
     
     /**
@@ -595,13 +607,17 @@ class OfflineController {
     /**
      * Refresca la tienda de pilotos
      */
-    refreshPilotShop() {
+    async refreshPilotShop() {
+        const purchaseReady = await this.prepareShopPurchase();
+        if (!purchaseReady) return;
+
         // Verificar que haya pasado tiempo suficiente
         const lastRefresh = localStorage.getItem('lastPilotRefresh');
         const now = Date.now();
         
         if (lastRefresh && (now - parseInt(lastRefresh)) < 300000) { // 5 minutos
             this.showNotification('Debes esperar antes de refrescar de nuevo', 'info');
+            this.finishShopPurchase();
             return;
         }
         
@@ -613,6 +629,43 @@ class OfflineController {
         this.shopRefreshTime = 300;
         
         this.showNotification('¡Tienda actualizada!', 'success');
+        this.finishShopPurchase();
+    }
+
+    async prepareShopPurchase() {
+        if (this.isPurchaseInProgress) {
+            this.showNotification('Ya hay una compra en proceso...', 'info');
+            return false;
+        }
+
+        const remainingMs = this.purchaseCooldownMs - (Date.now() - this.lastPurchaseAt);
+        if (remainingMs > 0) {
+            const remainingSec = (remainingMs / 1000).toFixed(1);
+            this.showNotification(`Espera ${remainingSec}s antes de otra compra`, 'info');
+            return false;
+        }
+
+        this.isPurchaseInProgress = true;
+        this.toggleShopButtons(true);
+        this.showNotification('Procesando compra...', 'processing');
+
+        await new Promise(resolve => setTimeout(resolve, this.purchaseCooldownMs));
+        return true;
+    }
+
+    finishShopPurchase() {
+        if (!this.isPurchaseInProgress) return;
+
+        this.lastPurchaseAt = Date.now();
+        this.isPurchaseInProgress = false;
+        this.toggleShopButtons(false);
+    }
+
+    toggleShopButtons(disabled) {
+        const selectors = ['#refresh-pilots', '#pilots-shop .btn-hire'];
+        document.querySelectorAll(selectors.join(',')).forEach(button => {
+            button.disabled = disabled;
+        });
     }
     
     /**
@@ -645,10 +698,15 @@ class OfflineController {
         const emoji = {
             success: '✅',
             error: '❌',
-            info: 'ℹ️'
+            info: 'ℹ️',
+            processing: '⏳'
         };
         
         console.log(`${emoji[type]} ${message}`);
+
+        if (type === 'processing') {
+            return;
+        }
         
         // TODO: Implementar toast notifications
         alert(`${emoji[type]} ${message}`);

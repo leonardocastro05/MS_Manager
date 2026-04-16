@@ -85,126 +85,138 @@
              SECTION: HOME (Resumen de Liga)
              ========================================== -->
         <section id="section-home" class="content-section active">
-            <!-- Liga Info Card -->
-            <div class="league-info-card">
-                <div class="league-banner">
-                    <div class="league-avatar">
-                        <span id="league-logo-display">🏆</span>
-                    </div>
-                    <div class="league-details">
-                        <h1 id="league-name-display">Nombre de la Liga</h1>
-                        <p class="league-desc-short" id="league-desc-display">Descripción de la liga</p>
-                        <div class="league-meta">
-                            <span><span class="meta-icon">👥</span> <span id="league-members">0/22</span> miembros</span>
-                            <span><span class="meta-icon">🌍</span> <span id="league-country">España</span></span>
-                            <span><span class="meta-icon">📅</span> <span id="league-schedule">Sábados 20:00</span></span>
+            <div class="home-overview-layout">
+                <div class="home-overview-main">
+                    <!-- Liga Info Card -->
+                    <div class="league-info-card">
+                        <div class="league-banner">
+                            <div class="league-avatar">
+                                <span id="league-logo-display">🏆</span>
+                            </div>
+                            <div class="league-details">
+                                <h1 id="league-name-display">Nombre de la Liga</h1>
+                                <p class="league-desc-short" id="league-desc-display">Descripción de la liga</p>
+                                <div class="league-meta">
+                                    <span><span class="meta-icon">👥</span> <span id="league-members">0/22</span> miembros</span>
+                                    <span><span class="meta-icon">🌍</span> <span id="league-country">España</span></span>
+                                    <span><span class="meta-icon">📅</span> <span id="league-schedule">Lunes a Viernes 20:00</span></span>
+                                </div>
+                            </div>
+                            <div class="league-season-info">
+                                <div class="season-card">
+                                    <span class="season-label">Temporada</span>
+                                    <span class="season-value" id="current-season">1</span>
+                                </div>
+                                <div class="race-card">
+                                    <span class="race-label">Próxima Carrera</span>
+                                    <span class="race-value" id="next-race">1 de 20</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- League Actions: Leave/Delete -->
+                        <div class="league-actions">
+                            <button class="btn-leave-league" id="btn-leave-league" title="Salir de la liga">
+                                <span class="btn-icon">🚪</span>
+                                <span class="btn-text">Salir de la Liga</span>
+                            </button>
+                            <button class="btn-delete-league hidden" id="btn-delete-league" title="Eliminar liga (solo creador)">
+                                <span class="btn-icon">🗑️</span>
+                                <span class="btn-text">Eliminar Liga</span>
+                            </button>
                         </div>
                     </div>
-                    <div class="league-season-info">
-                        <div class="season-card">
-                            <span class="season-label">Temporada</span>
-                            <span class="season-value" id="current-season">1</span>
+
+                    <!-- Quick Stats -->
+                    <div class="quick-stats-row">
+                        <div class="quick-stat-card">
+                            <span class="qs-icon">🏆</span>
+                            <div class="qs-info">
+                                <span class="qs-value" id="my-position">-</span>
+                                <span class="qs-label">Mi Posición</span>
+                            </div>
                         </div>
-                        <div class="race-card">
-                            <span class="race-label">Próxima Carrera</span>
-                            <span class="race-value" id="next-race">1 de 20</span>
+                        <div class="quick-stat-card">
+                            <span class="qs-icon">⭐</span>
+                            <div class="qs-info">
+                                <span class="qs-value" id="my-points">0</span>
+                                <span class="qs-label">Mis Puntos</span>
+                            </div>
+                        </div>
+                        <div class="quick-stat-card">
+                            <span class="qs-icon">🏎️</span>
+                            <div class="qs-info">
+                                <span class="qs-value" id="car-rating">0</span>
+                                <span class="qs-label">Rating Coche</span>
+                            </div>
+                        </div>
+                        <div class="quick-stat-card">
+                            <span class="qs-icon">👨‍✈️</span>
+                            <div class="qs-info">
+                                <span class="qs-value" id="pilot-level">-</span>
+                                <span class="qs-label">Nivel Piloto</span>
+                            </div>
                         </div>
                     </div>
+
                 </div>
-                
-                <!-- League Actions: Leave/Delete -->
-                <div class="league-actions">
-                    <button class="btn-leave-league" id="btn-leave-league" title="Salir de la liga">
-                        <span class="btn-icon">🚪</span>
-                        <span class="btn-text">Salir de la Liga</span>
-                    </button>
-                    <button class="btn-delete-league hidden" id="btn-delete-league" title="Eliminar liga (solo creador)">
-                        <span class="btn-icon">🗑️</span>
-                        <span class="btn-text">Eliminar Liga</span>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Quick Stats -->
-            <div class="quick-stats-row">
-                <div class="quick-stat-card">
-                    <span class="qs-icon">🏆</span>
-                    <div class="qs-info">
-                        <span class="qs-value" id="my-position">-</span>
-                        <span class="qs-label">Mi Posición</span>
+
+                <div class="home-overview-side">
+                    <!-- Quick Actions -->
+                    <div class="section-card home-actions-card">
+                        <div class="section-card-header">
+                            <h3><span>⚡</span> Accesos Rápidos</h3>
+                        </div>
+                        <div class="home-quick-actions home-actions-grid">
+                            <button class="quick-action-btn" id="btn-go-hq">
+                                <span class="qa-icon">🏢</span>
+                                <span class="qa-text">Mejorar HQ</span>
+                            </button>
+                            <button class="quick-action-btn" id="btn-go-pilots">
+                                <span class="qa-icon">👨‍✈️</span>
+                                <span class="qa-text">Tienda Pilotos</span>
+                            </button>
+                            <button class="quick-action-btn" id="btn-go-shop">
+                                <span class="qa-icon">🛒</span>
+                                <span class="qa-text">Tienda</span>
+                            </button>
+                            <button class="quick-action-btn" id="btn-go-races">
+                                <span class="qa-icon">🏁</span>
+                                <span class="qa-text">Carreras</span>
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div class="quick-stat-card">
-                    <span class="qs-icon">⭐</span>
-                    <div class="qs-info">
-                        <span class="qs-value" id="my-points">0</span>
-                        <span class="qs-label">Mis Puntos</span>
+
+                    <!-- Mini Leaderboard -->
+                    <div class="section-card home-leaderboard-card">
+                        <div class="section-card-header">
+                            <h3><span>📊</span> Top 5 Clasificación</h3>
+                            <button class="btn-secondary btn-sm" id="btn-view-standings">Ver Todo →</button>
+                        </div>
+                        <div class="mini-leaderboard" id="mini-leaderboard">
+                            <!-- Se rellenará dinámicamente -->
+                        </div>
                     </div>
-                </div>
-                <div class="quick-stat-card">
-                    <span class="qs-icon">🏎️</span>
-                    <div class="qs-info">
-                        <span class="qs-value" id="car-rating">0</span>
-                        <span class="qs-label">Rating Coche</span>
-                    </div>
-                </div>
-                <div class="quick-stat-card">
-                    <span class="qs-icon">👨‍✈️</span>
-                    <div class="qs-info">
-                        <span class="qs-value" id="pilot-level">-</span>
-                        <span class="qs-label">Nivel Piloto</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Quick Actions -->
-            <div class="home-quick-actions">
-                <button class="quick-action-btn" id="btn-go-hq">
-                    <span class="qa-icon">🏢</span>
-                    <span class="qa-text">Mejorar HQ</span>
-                </button>
-                <button class="quick-action-btn" id="btn-go-pilots">
-                    <span class="qa-icon">👨‍✈️</span>
-                    <span class="qa-text">Tienda Pilotos</span>
-                </button>
-                <button class="quick-action-btn" id="btn-go-shop">
-                    <span class="qa-icon">🛒</span>
-                    <span class="qa-text">Tienda</span>
-                </button>
-                <button class="quick-action-btn" id="btn-go-races">
-                    <span class="qa-icon">🏁</span>
-                    <span class="qa-text">Carreras</span>
-                </button>
-            </div>
-            
-            <!-- Mini Leaderboard -->
-            <div class="section-card">
-                <div class="section-card-header">
-                    <h3><span>📊</span> Top 5 Clasificación</h3>
-                    <button class="btn-secondary btn-sm" id="btn-view-standings">Ver Todo →</button>
-                </div>
-                <div class="mini-leaderboard" id="mini-leaderboard">
-                    <!-- Se rellenará dinámicamente -->
-                </div>
-            </div>
-            
-            <!-- Daily Races Status -->
-            <div class="section-card daily-races-card">
-                <div class="section-card-header">
-                    <h3><span>🏎️</span> Carreras Hoy</h3>
-                </div>
-                <div class="daily-races-status" id="daily-races-status">
-                    <div class="races-counter">
-                        <span class="races-done" id="races-done-today">0</span>
-                        <span class="races-separator">/</span>
-                        <span class="races-max" id="races-max-daily">5</span>
-                    </div>
-                    <div class="races-remaining">
-                        <span id="races-remaining-text">5 carreras restantes hoy</span>
-                    </div>
-                    <div class="rest-day-notice" id="rest-day-notice" style="display: none;">
-                        <span class="rest-icon">😴</span>
-                        <span>Hoy es día de descanso (fin de semana)</span>
+
+                    <!-- Daily Races Status -->
+                    <div class="section-card daily-races-card">
+                        <div class="section-card-header">
+                            <h3><span>🏎️</span> Carreras Hoy</h3>
+                        </div>
+                        <div class="daily-races-status" id="daily-races-status">
+                            <div class="races-counter">
+                                <span class="races-done" id="races-done-today">0</span>
+                                <span class="races-separator">/</span>
+                                <span class="races-max" id="races-max-daily">1</span>
+                            </div>
+                            <div class="races-remaining">
+                                <span id="races-remaining-text">1 carrera restante hoy</span>
+                            </div>
+                            <div class="rest-day-notice" id="rest-day-notice" style="display: none;">
+                                <span class="rest-icon">😴</span>
+                                <span>Hoy es día de descanso (fin de semana)</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -784,78 +796,163 @@
                 </div>
             </div>
 
-            <!-- Race Mode Tabs -->
-            <div class="race-mode-tabs">
-                <button class="race-mode-tab active" data-mode="live">
-                    <span>🏎️</span> Carrera en Vivo
-                </button>
-                <button class="race-mode-tab" data-mode="practice">
-                    <span>🔧</span> Práctica Libre
-                </button>
-                <button class="race-mode-tab" data-mode="qualifying">
-                    <span>⏱️</span> Clasificación
-                </button>
-            </div>
+            <div class="race-overview-layout">
+                <div class="race-overview-column track-column">
+                    <!-- Current Race Track -->
+                    <div class="current-race-card">
+                        <div class="race-track-preview" id="track-preview-container">
+                            <!-- SVG del circuito se cargará aquí -->
+                            <div class="track-loading">
+                                <div class="loader"></div>
+                                <span>Cargando circuito...</span>
+                            </div>
+                        </div>
+                        <div class="race-track-info">
+                            <h3 id="current-track-name">Autodromo Nazionale Monza</h3>
+                            <p class="track-location" id="current-track-location">🇮🇹 Italia</p>
+                            <div class="track-characteristics">
+                                <span class="track-type" id="track-type">⚡ Alta velocidad</span>
+                                <span class="track-difficulty" id="track-difficulty">
+                                    <span>⭐</span><span>⭐</span><span>⭐</span><span class="dim">⭐</span><span class="dim">⭐</span>
+                                </span>
+                            </div>
+                            <div class="track-stats">
+                                <div class="track-stat">
+                                    <span class="stat-icon">📏</span>
+                                    <span class="stat-label">Longitud</span>
+                                    <span class="stat-value" id="track-length">5.793 km</span>
+                                </div>
+                                <div class="track-stat">
+                                    <span class="stat-icon">🔄</span>
+                                    <span class="stat-label">Vueltas</span>
+                                    <span class="stat-value" id="track-laps">53</span>
+                                </div>
+                                <div class="track-stat">
+                                    <span class="stat-icon">↩️</span>
+                                    <span class="stat-label">Curvas</span>
+                                    <span class="stat-value" id="track-turns">11</span>
+                                </div>
+                                <div class="track-stat">
+                                    <span class="stat-icon">🏎️</span>
+                                    <span class="stat-label">V. Máx</span>
+                                    <span class="stat-value" id="track-topspeed">350 km/h</span>
+                                </div>
+                            </div>
+                            <div class="track-drs-zones">
+                                <span class="drs-label">🟢 Zonas DRS:</span>
+                                <span id="drs-zones-count">2</span>
+                            </div>
+                        </div>
+                        <div class="race-status-panel">
+                            <div class="weather-info">
+                                <span class="weather-icon" id="race-weather">☀️</span>
+                                <span class="weather-text" id="race-weather-text">Soleado</span>
+                            </div>
+                            <span class="status-badge" id="race-status">Esperando</span>
+                            <div class="race-actions">
+                                <button class="btn-race btn-qualifying" id="btn-qualifying">
+                                    <span>⏱️</span> Clasificar
+                                </button>
+                                <button class="btn-race btn-start-race" id="btn-start-race" disabled>
+                                    <span>🏁</span> Iniciar Carrera
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <!-- Current Race Track -->
-            <div class="current-race-card">
-                <div class="race-track-preview" id="track-preview-container">
-                    <!-- SVG del circuito se cargará aquí -->
-                    <div class="track-loading">
-                        <div class="loader"></div>
-                        <span>Cargando circuito...</span>
+                <div class="race-overview-column strategy-column">
+                    <div class="league-race-grid">
+                        <article class="league-race-panel manager-panel">
+                            <div class="panel-title-row">
+                                <h3><span>🧑‍✈️</span> Manager y Monoplaza</h3>
+                                <span class="race-chip">Preparacion</span>
+                            </div>
+                            <div class="manager-summary">
+                                <div class="manager-main">
+                                    <span class="manager-pilot" id="race-pilot-name">Sin piloto contratado</span>
+                                    <span class="manager-level" id="race-pilot-level">Nv.1</span>
+                                </div>
+                                <div class="manager-overall">Overall: <strong id="race-pilot-overall">-</strong></div>
+                            </div>
+                            <div class="car-grid">
+                                <div class="car-stat-item">
+                                    <span>Motor</span>
+                                    <strong id="race-car-engine">1</strong>
+                                </div>
+                                <div class="car-stat-item">
+                                    <span>Aero</span>
+                                    <strong id="race-car-aero">1</strong>
+                                </div>
+                                <div class="car-stat-item">
+                                    <span>DRS</span>
+                                    <strong id="race-car-drs">1</strong>
+                                </div>
+                                <div class="car-stat-item">
+                                    <span>Chasis</span>
+                                    <strong id="race-car-chassis">1</strong>
+                                </div>
+                            </div>
+                            <div class="car-rating-box">
+                                Valor coche: <strong id="race-car-rating">100</strong>
+                            </div>
+                        </article>
+
+                        <article class="league-race-panel strategy-panel">
+                            <div class="panel-title-row">
+                                <h3><span>🧠</span> Estrategia de Carrera</h3>
+                                <span class="race-chip">Editable</span>
+                            </div>
+                            <div class="strategy-form-grid">
+                                <label class="strategy-field">
+                                    <span>Neumatico inicial</span>
+                                    <select id="strategy-tyre">
+                                        <option value="soft">Soft</option>
+                                        <option value="medium" selected>Medium</option>
+                                        <option value="hard">Hard</option>
+                                    </select>
+                                </label>
+                                <label class="strategy-field">
+                                    <span>Parada en boxes</span>
+                                    <input id="strategy-pitlap" type="number" min="2" max="40" value="10" />
+                                </label>
+                                <label class="strategy-field">
+                                    <span>Vueltas previstas</span>
+                                    <input id="strategy-laps" type="number" min="8" max="40" value="20" />
+                                </label>
+                            </div>
+                            <div class="strategy-actions">
+                                <button class="btn-secondary strategy-btn" id="btn-refresh-race-center">Actualizar datos</button>
+                                <button class="btn-primary strategy-btn" id="btn-save-strategy">Guardar estrategia</button>
+                            </div>
+                        </article>
                     </div>
-                </div>
-                <div class="race-track-info">
-                    <h3 id="current-track-name">Autodromo Nazionale Monza</h3>
-                    <p class="track-location" id="current-track-location">🇮🇹 Italia</p>
-                    <div class="track-characteristics">
-                        <span class="track-type" id="track-type">⚡ Alta velocidad</span>
-                        <span class="track-difficulty" id="track-difficulty">
-                            <span>⭐</span><span>⭐</span><span>⭐</span><span class="dim">⭐</span><span class="dim">⭐</span>
-                        </span>
-                    </div>
-                    <div class="track-stats">
-                        <div class="track-stat">
-                            <span class="stat-icon">📏</span>
-                            <span class="stat-label">Longitud</span>
-                            <span class="stat-value" id="track-length">5.793 km</span>
+
+                    <article class="league-race-panel qualifying-panel">
+                        <div class="panel-title-row">
+                            <h3><span>📊</span> Parrilla de Clasificacion</h3>
+                            <span class="race-chip">En vivo</span>
                         </div>
-                        <div class="track-stat">
-                            <span class="stat-icon">🔄</span>
-                            <span class="stat-label">Vueltas</span>
-                            <span class="stat-value" id="track-laps">53</span>
+                        <div class="qualifying-table-wrap">
+                            <table class="qualifying-table">
+                                <thead>
+                                    <tr>
+                                        <th>Pos</th>
+                                        <th>Manager</th>
+                                        <th>Equipo</th>
+                                        <th>Piloto</th>
+                                        <th>Neumatico</th>
+                                        <th>Vuelta</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="qualifying-grid-body">
+                                    <tr>
+                                        <td colspan="6" class="empty-qualy">Todavia no hay tiempos registrados</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="track-stat">
-                            <span class="stat-icon">↩️</span>
-                            <span class="stat-label">Curvas</span>
-                            <span class="stat-value" id="track-turns">11</span>
-                        </div>
-                        <div class="track-stat">
-                            <span class="stat-icon">🏎️</span>
-                            <span class="stat-label">V. Máx</span>
-                            <span class="stat-value" id="track-topspeed">350 km/h</span>
-                        </div>
-                    </div>
-                    <div class="track-drs-zones">
-                        <span class="drs-label">🟢 Zonas DRS:</span>
-                        <span id="drs-zones-count">2</span>
-                    </div>
-                </div>
-                <div class="race-status-panel">
-                    <div class="weather-info">
-                        <span class="weather-icon" id="race-weather">☀️</span>
-                        <span class="weather-text" id="race-weather-text">Soleado</span>
-                    </div>
-                    <span class="status-badge" id="race-status">Esperando</span>
-                    <div class="race-actions">
-                        <button class="btn-race btn-qualifying" id="btn-qualifying">
-                            <span>⏱️</span> Clasificar
-                        </button>
-                        <button class="btn-race btn-start-race" id="btn-start-race" disabled>
-                            <span>🏁</span> Iniciar Carrera
-                        </button>
-                    </div>
+                    </article>
                 </div>
             </div>
 

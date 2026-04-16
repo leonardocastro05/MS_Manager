@@ -19,7 +19,14 @@ class LeagueController {
         this.profile = null;
         this.league = null;
         this.leagueId = null;
+        this.leagueStandings = [];
+        this.raceCenter = null;
+        this.currentStandingsView = 'drivers';
         this.currentSection = 'home';
+        this.purchaseCooldownMs = 2000;
+        this.lastPurchaseAt = 0;
+        this.isPurchaseInProgress = false;
+        this.raceCountdownTimer = null;
         
         // HQ Components con sus stats
         this.hqComponents = {
@@ -43,9 +50,10 @@ class LeagueController {
         this.dailyRacesStatus = {
             canRace: true,
             racesToday: 0,
-            racesRemaining: 5,
+            racesRemaining: 1,
             isRestDay: false,
-            maxRacesPerDay: 5
+            maxRacesPerDay: 1,
+            schedule: null
         };
         
         // Chat System
@@ -54,9 +62,8 @@ class LeagueController {
         
         // XP System
         this.xpConfig = {
-            position1: 200,      // P1: 200xp
-            position2to5: 150,   // P2-P5: 150xp  
-            position6plus: 50    // P6+: 50xp
+            maxRaceXp: 100,
+            minRaceXp: 20
         };
         
         this.init();
@@ -89,17 +96,32 @@ class LeagueController {
         await this.loadPilotShop();
         await this.loadDailyRacesStatus();
         await this.loadChatMessages();
+        await this.loadLeagueStandings();
+        await this.loadRaceCenter();
         
         // Inicializar eventos y navegación
         this.bindEvents();
         this.initNavigation();
         this.startPilotRefreshTimer();
         this.startChatPolling();
+        this.startRaceCountdownTimer();
         
         // Inicializar sistema de carreras
         this.initRaceSystem();
         
         console.log('League initialized successfully');
+    }
+
+    startRaceCountdownTimer() {
+        this.updateRaceCountdown();
+
+        if (this.raceCountdownTimer) {
+            clearInterval(this.raceCountdownTimer);
+        }
+
+        this.raceCountdownTimer = setInterval(() => {
+            this.updateRaceCountdown();
+        }, 30000);
     }
     
     // ==========================================
@@ -137,7 +159,9 @@ class LeagueController {
             
             if (data.success && data.league) {
                 this.league = data.league;
+                this.leagueStandings = Array.isArray(data.standings) ? data.standings : this.leagueStandings;
                 this.updateLeagueUI();
+                this.renderFullStandingsTable();
             } else {
                 // Liga no encontrada o no tienes acceso
                 this.showToast('No se pudo cargar la liga', 'error');
@@ -152,6 +176,133 @@ class LeagueController {
             this.updateLeagueUI();
         }
     }
+
+    async loadLeagueStandings() {
+        try {
+            const response = await fetch(`${this.API_URL}/online/leagues/${this.leagueId}/standings`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                }
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                this.leagueStandings = Array.isArray(data.standings) ? data.standings : [];
+                this.renderMiniLeaderboard();
+                this.renderFullStandingsTable();
+            }
+        } catch (error) {
+            console.error('Error loading standings:', error);
+        }
+    }
+
+    async loadRaceCenter() {
+        try {
+            const response = await fetch(`${this.API_URL}/online/leagues/${this.leagueId}/race-center`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                }
+            });
+
+            const data = await response.json();
+            if (!data.success) {
+                return;
+            }
+
+            this.raceCenter = data;
+            this.renderRaceCenter();
+            this.updateRaceCountdown(data.schedule || null);
+        } catch (error) {
+            console.error('Error loading race center:', error);
+        }
+    }
+
+    async postOnlineRaceAction(endpointCandidates, payload = null) {
+        const token = localStorage.getItem('authToken');
+        const requestBody = payload === null ? undefined : JSON.stringify(payload);
+        let lastFailure = null;
+
+        for (const endpoint of endpointCandidates) {
+            try {
+                const response = await fetch(`${this.API_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: requestBody
+                });
+
+                let data = null;
+                const responseText = await response.text();
+                try {
+                    data = responseText ? JSON.parse(responseText) : {};
+                } catch (parseError) {
+                    data = {
+                        success: false,
+                        message: responseText || `HTTP ${response.status}`
+                    };
+                }
+
+                const normalizedMessage = typeof data?.message === 'string'
+                    ? data.message.toLowerCase()
+                    : '';
+
+                const routeNotFound = response.status === 404
+                    && (
+                        normalizedMessage.includes('route post')
+                        || normalizedMessage.includes('cannot post')
+                    );
+
+                if (routeNotFound) {
+                    lastFailure = data;
+                    continue;
+                }
+
+                return { response, data, endpoint };
+            } catch (error) {
+                lastFailure = { success: false, message: error.message };
+            }
+        }
+
+        return {
+            response: null,
+            data: lastFailure || { success: false, message: 'No se encontro un endpoint compatible' },
+            endpoint: null
+        };
+    }
+
+    async saveRaceStrategy() {
+        const tyreCompound = document.getElementById('strategy-tyre')?.value || 'medium';
+        const pitLap = Number(document.getElementById('strategy-pitlap')?.value || 0);
+        const plannedLaps = Number(document.getElementById('strategy-laps')?.value || 20);
+
+        try {
+            const payload = {
+                tyreCompound,
+                pitLap: Number.isFinite(pitLap) && pitLap > 0 ? pitLap : null,
+                plannedLaps: Number.isFinite(plannedLaps) ? plannedLaps : 20
+            };
+
+            const { data } = await this.postOnlineRaceAction([
+                `/online/leagues/${this.leagueId}/race/strategy`,
+                `/online/leagues/${this.leagueId}/strategy`
+            ], payload);
+
+            if (!data.success) {
+                this.showToast(data.message || 'No se pudo guardar la estrategia', 'error');
+                return false;
+            }
+
+            this.showToast('Estrategia guardada para la próxima salida', 'success');
+            await this.loadRaceCenter();
+            return true;
+        } catch (error) {
+            console.error('Error saving strategy:', error);
+            this.showToast('Error guardando estrategia', 'error');
+            return false;
+        }
+    }
     
     async loadHQData() {
         try {
@@ -164,8 +315,18 @@ class LeagueController {
             const data = await response.json();
             
             if (data.success) {
-                this.hqComponents = data.hq;
+                Object.keys(this.hqComponents).forEach(component => {
+                    const incomingLevel = Number(data.hq?.[component]?.level);
+                    this.hqComponents[component].level = Number.isFinite(incomingLevel)
+                        ? Math.max(1, incomingLevel)
+                        : 1;
+                });
                 this.currentPilot = data.pilot;
+
+                const accountLevel = Number(data.accountLevel);
+                if (this.profile?.gameData?.online && Number.isFinite(accountLevel)) {
+                    this.profile.gameData.online.level = accountLevel;
+                }
             }
         } catch (error) {
             console.error('Error loading HQ data:', error);
@@ -184,10 +345,12 @@ class LeagueController {
     async upgradeHQ(component) {
         const comp = this.hqComponents[component];
         const accountLevel = this.profile?.gameData?.online?.level || 1;
+        const currentLevel = Number.isFinite(Number(comp?.level)) ? Math.max(1, Number(comp.level)) : 1;
+        comp.level = currentLevel;
         
         // Verificar límite de nivel
-        if (comp.level >= accountLevel) {
-            this.showToast(`Necesitas nivel ${comp.level + 1} de cuenta para mejorar más`, 'error');
+        if (currentLevel >= accountLevel) {
+            this.showToast(`Necesitas nivel ${currentLevel + 1} de cuenta para mejorar más`, 'error');
             return false;
         }
         
@@ -214,7 +377,7 @@ class LeagueController {
             
             if (data.success) {
                 // Actualizar localmente
-                comp.level++;
+                comp.level = currentLevel + 1;
                 this.profile.gameData.budget -= cost;
                 this.updateHQUI();
                 this.updateHeaderStats();
@@ -227,7 +390,7 @@ class LeagueController {
         } catch (error) {
             console.error('Error upgrading HQ:', error);
             // Para desarrollo, simular éxito
-            comp.level++;
+            comp.level = currentLevel + 1;
             this.updateHQUI();
             this.showToast(`¡${this.getComponentName(component)} mejorado a nivel ${comp.level}!`, 'success');
             return true;
@@ -235,13 +398,20 @@ class LeagueController {
     }
     
     async hirePilot(pilotIndex) {
+        const purchaseReady = await this.prepareShopPurchase();
+        if (!purchaseReady) return false;
+
         const pilot = this.availablePilots[pilotIndex];
-        if (!pilot) return false;
+        if (!pilot) {
+            this.finishShopPurchase();
+            return false;
+        }
         
         const budget = this.profile?.gameData?.budget || 0;
         
         if (budget < pilot.price) {
             this.showToast('No tienes suficiente dinero', 'error');
+            this.finishShopPurchase();
             return false;
         }
         
@@ -274,6 +444,8 @@ class LeagueController {
             this.closeModal('modal-hire-pilot');
             this.showToast(`¡Has contratado a ${pilot.name}!`, 'success');
             return true;
+        } finally {
+            this.finishShopPurchase();
         }
     }
     
@@ -465,10 +637,17 @@ class LeagueController {
         
         const schedule = this.league.schedule;
         if (schedule) {
-            const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábados'];
-            document.getElementById('league-schedule').textContent = 
-                `${days[schedule.dayOfWeek]}s ${schedule.time}`;
+            const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
+            const timeLabel = schedule.time || '20:00';
+
+            const scheduleLabel = schedule.frequency === 'weekdays'
+                ? `Lunes a Viernes ${timeLabel}`
+                : `${dayNames[schedule.dayOfWeek] || 'Lunes'} ${timeLabel}`;
+
+            document.getElementById('league-schedule').textContent = scheduleLabel;
         }
+
+        this.updateRaceCountdown(schedule || null);
         
         // Season info
         const season = this.league.currentSeason;
@@ -528,44 +707,46 @@ class LeagueController {
         // Actualizar cada componente
         Object.keys(this.hqComponents).forEach(key => {
             const comp = this.hqComponents[key];
-            totalRating += comp.level;
+            const safeLevel = Number.isFinite(Number(comp.level)) ? Math.max(1, Number(comp.level)) : 1;
+            comp.level = safeLevel;
+            totalRating += safeLevel;
             
             // Nivel y barra
             const levelEl = document.getElementById(`${key}-level`);
             const fillEl = document.getElementById(`${key}-fill`);
             const costEl = document.getElementById(`${key}-cost`);
             
-            if (levelEl) levelEl.textContent = comp.level;
-            if (fillEl) fillEl.style.width = `${(comp.level / 50) * 100}%`;
+            if (levelEl) levelEl.textContent = safeLevel;
+            if (fillEl) fillEl.style.width = `${(safeLevel / 50) * 100}%`;
             if (costEl) costEl.textContent = this.formatMoney(this.calculateUpgradeCost(key));
             
             // Stats específicos
             if (key === 'engine') {
-                document.getElementById('engine-power').textContent = `+${comp.level * 10}`;
-                document.getElementById('engine-accel').textContent = `+${comp.level * 5}`;
+                document.getElementById('engine-power').textContent = `+${safeLevel * 10}`;
+                document.getElementById('engine-accel').textContent = `+${safeLevel * 5}`;
             } else if (key === 'aero') {
-                document.getElementById('aero-downforce').textContent = `+${comp.level * 8}`;
-                document.getElementById('aero-curves').textContent = `+${comp.level * 6}`;
+                document.getElementById('aero-downforce').textContent = `+${safeLevel * 8}`;
+                document.getElementById('aero-curves').textContent = `+${safeLevel * 6}`;
             } else if (key === 'drs') {
-                document.getElementById('drs-speed').textContent = `+${comp.level * 12}`;
-                document.getElementById('drs-efficiency').textContent = `+${comp.level * 4}`;
+                document.getElementById('drs-speed').textContent = `+${safeLevel * 12}`;
+                document.getElementById('drs-efficiency').textContent = `+${safeLevel * 4}`;
             } else if (key === 'chassis') {
-                document.getElementById('chassis-durability').textContent = `+${comp.level * 10}`;
-                document.getElementById('chassis-resistance').textContent = `+${comp.level * 5}`;
+                document.getElementById('chassis-durability').textContent = `+${safeLevel * 10}`;
+                document.getElementById('chassis-resistance').textContent = `+${safeLevel * 5}`;
             } else if (key === 'market') {
                 const baseChance = 2;
-                const bonusChance = comp.level * 0.5;
+                const bonusChance = safeLevel * 0.5;
                 document.getElementById('market-chance').textContent = `${(baseChance + bonusChance).toFixed(1)}%`;
-                document.getElementById('market-high-chance').textContent = `${(0.5 + comp.level * 0.3).toFixed(1)}%`;
+                document.getElementById('market-high-chance').textContent = `${(0.5 + safeLevel * 0.3).toFixed(1)}%`;
             }
             
             // Deshabilitar botón si alcanzó el límite
             const btn = document.querySelector(`.btn-upgrade-hq[data-component="${key}"]`);
             if (btn) {
-                if (comp.level >= accountLevel) {
+                if (safeLevel >= accountLevel) {
                     btn.disabled = true;
                     btn.innerHTML = '<span>🔒</span><span>Bloqueado</span>';
-                } else if (comp.level >= 50) {
+                } else if (safeLevel >= 50) {
                     btn.disabled = true;
                     btn.innerHTML = '<span>✓</span><span>Máximo</span>';
                 } else {
@@ -701,25 +882,120 @@ class LeagueController {
         `;
     }
     
+    getFallbackStandingsFromLeagueMembers() {
+        const members = Array.isArray(this.league?.members) ? this.league.members : [];
+
+        return members
+            .map(member => {
+                const user = member.user || {};
+                return {
+                    userId: (user._id || user.id || member.user || '').toString(),
+                    displayName: user.displayName || user.username || 'Manager',
+                    teamName: user.teamName || 'Sin equipo',
+                    points: Number(member.stats?.points || 0),
+                    wins: Number(member.stats?.wins || 0),
+                    podiums: Number(member.stats?.podiums || 0),
+                    racesCompleted: Number(member.stats?.racesCompleted || 0)
+                };
+            })
+            .sort((a, b) => {
+                if (b.points !== a.points) return b.points - a.points;
+                if (b.wins !== a.wins) return b.wins - a.wins;
+                if (b.podiums !== a.podiums) return b.podiums - a.podiums;
+                return a.displayName.localeCompare(b.displayName, 'es');
+            })
+            .map((entry, index) => ({ ...entry, position: index + 1 }));
+    }
+
+    getEffectiveStandings() {
+        if (Array.isArray(this.leagueStandings) && this.leagueStandings.length > 0) {
+            return this.leagueStandings;
+        }
+        return this.getFallbackStandingsFromLeagueMembers();
+    }
+
+    updateMyStandingStats() {
+        const standings = this.getEffectiveStandings();
+        const myId = (this.profile?._id || this.profile?.id || '').toString();
+        const myStanding = standings.find(row => (row.userId || '').toString() === myId);
+
+        const myPositionEl = document.getElementById('my-position');
+        const myPointsEl = document.getElementById('my-points');
+        if (myPositionEl) myPositionEl.textContent = myStanding ? `#${myStanding.position}` : '-';
+        if (myPointsEl) myPointsEl.textContent = myStanding ? `${myStanding.points}` : '0';
+    }
+
     renderMiniLeaderboard() {
         const container = document.getElementById('mini-leaderboard');
-        
-        // Mock data para desarrollo
-        const standings = this.league?.standings || [
-            { position: 1, name: 'Jugador 1', team: 'Racing Team', points: 125 },
-            { position: 2, name: 'Jugador 2', team: 'Speed Force', points: 110 },
-            { position: 3, name: 'Jugador 3', team: 'Turbo Racing', points: 95 },
-            { position: 4, name: 'Jugador 4', team: 'Fast Lane', points: 80 },
-            { position: 5, name: 'Jugador 5', team: 'Victory Team', points: 65 }
-        ];
-        
-        container.innerHTML = standings.slice(0, 5).map((player, i) => `
+        if (!container) return;
+
+        const standings = this.getEffectiveStandings();
+        if (standings.length === 0) {
+            container.innerHTML = '<div class="mini-lb-row"><span class="lb-name">Aún no hay managers en clasificación</span></div>';
+            return;
+        }
+
+        container.innerHTML = standings.slice(0, 5).map((manager, i) => `
             <div class="mini-lb-row ${i < 3 ? 'top-' + (i + 1) : ''}">
-                <span class="lb-position">${player.position}</span>
-                <span class="lb-name">${player.name}</span>
-                <span class="lb-team">${player.team}</span>
-                <span class="lb-points">${player.points} pts</span>
+                <span class="lb-position">${manager.position}</span>
+                <span class="lb-name">${manager.displayName}</span>
+                <span class="lb-team">${manager.teamName || 'Sin equipo'}</span>
+                <span class="lb-points">${manager.points || 0} pts</span>
             </div>
+        `).join('');
+
+        this.updateMyStandingStats();
+    }
+
+    renderFullStandingsTable() {
+        const tbody = document.getElementById('standings-body');
+        if (!tbody) return;
+
+        const standings = this.getEffectiveStandings();
+        if (standings.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6">No hay datos de clasificación todavía.</td></tr>';
+            return;
+        }
+
+        if (this.currentStandingsView === 'constructors') {
+            const teams = new Map();
+            standings.forEach(row => {
+                const teamName = row.teamName || 'Sin equipo';
+                const current = teams.get(teamName) || { teamName, points: 0, wins: 0, podiums: 0 };
+                current.points += Number(row.points || 0);
+                current.wins += Number(row.wins || 0);
+                current.podiums += Number(row.podiums || 0);
+                teams.set(teamName, current);
+            });
+
+            const constructors = Array.from(teams.values()).sort((a, b) => {
+                if (b.points !== a.points) return b.points - a.points;
+                if (b.wins !== a.wins) return b.wins - a.wins;
+                return b.podiums - a.podiums;
+            });
+
+            tbody.innerHTML = constructors.map((team, index) => `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>—</td>
+                    <td>${team.teamName}</td>
+                    <td>${team.wins}</td>
+                    <td>${team.podiums}</td>
+                    <td>${team.points}</td>
+                </tr>
+            `).join('');
+            return;
+        }
+
+        tbody.innerHTML = standings.map(row => `
+            <tr>
+                <td>${row.position}</td>
+                <td>${row.displayName}</td>
+                <td>${row.teamName || 'Sin equipo'}</td>
+                <td>${row.wins || 0}</td>
+                <td>${row.podiums || 0}</td>
+                <td>${row.points || 0}</td>
+            </tr>
         `).join('');
     }
     
@@ -790,11 +1066,15 @@ class LeagueController {
         }
     }
     
-    instantRefreshPilots() {
+    async instantRefreshPilots() {
+        const purchaseReady = await this.prepareShopPurchase();
+        if (!purchaseReady) return;
+
         const coins = this.profile?.gameData?.online?.coins || 0;
         
         if (coins < 5) {
             this.showToast('No tienes suficientes coins', 'error');
+            this.finishShopPurchase();
             return;
         }
         
@@ -807,6 +1087,7 @@ class LeagueController {
         this.generatePilotShop();
         this.renderPilotShop();
         this.showToast('¡Tienda de pilotos actualizada!', 'success');
+        this.finishShopPurchase();
     }
     
     // ==========================================
@@ -839,6 +1120,8 @@ class LeagueController {
     showUpgradeHQModal(component) {
         const comp = this.hqComponents[component];
         const accountLevel = this.profile?.gameData?.online?.level || 1;
+        const safeLevel = Number.isFinite(Number(comp?.level)) ? Math.max(1, Number(comp.level)) : 1;
+        comp.level = safeLevel;
         const cost = this.calculateUpgradeCost(component);
         const budget = this.profile?.gameData?.budget || 0;
         
@@ -847,7 +1130,7 @@ class LeagueController {
         const confirmBtn = document.getElementById('confirm-upgrade-hq');
         
         // Verificar si está bloqueado por nivel
-        if (comp.level >= accountLevel) {
+        if (safeLevel >= accountLevel) {
             blocked.style.display = 'flex';
             document.getElementById('blocked-account-level').textContent = accountLevel;
             document.getElementById('blocked-max-level').textContent = accountLevel;
@@ -862,7 +1145,7 @@ class LeagueController {
                 <span class="component-icon-large">${this.getComponentIcon(component)}</span>
                 <div class="component-details">
                     <h3>${this.getComponentName(component)}</h3>
-                    <p>Nivel actual: <strong>${comp.level}</strong> → <strong>${comp.level + 1}</strong></p>
+                    <p>Nivel actual: <strong>${safeLevel}</strong> → <strong>${safeLevel + 1}</strong></p>
                 </div>
             </div>
             <div class="upgrade-cost-display">
@@ -952,8 +1235,8 @@ class LeagueController {
         });
         
         // Instant refresh
-        document.getElementById('instant-refresh')?.addEventListener('click', () => {
-            this.instantRefreshPilots();
+        document.getElementById('instant-refresh')?.addEventListener('click', async () => {
+            await this.instantRefreshPilots();
         });
         
         // Shop tabs
@@ -1014,8 +1297,18 @@ class LeagueController {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('.standings-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                // TODO: Cargar standings según tipo
+                this.currentStandingsView = tab.dataset.type || 'drivers';
+                this.renderFullStandingsTable();
             });
+        });
+
+        // Race strategy actions
+        document.getElementById('btn-save-strategy')?.addEventListener('click', async () => {
+            await this.saveRaceStrategy();
+        });
+
+        document.getElementById('btn-refresh-race-center')?.addEventListener('click', async () => {
+            await this.loadRaceCenter();
         });
         
         // Chat events
@@ -1142,6 +1435,9 @@ class LeagueController {
     // ==========================================
     
     async buyCoinPackage(packageId) {
+        const purchaseReady = await this.prepareShopPurchase();
+        if (!purchaseReady) return false;
+
         try {
             const packages = {
                 'coins_5': { coins: 5, price: '1,99€' },
@@ -1193,10 +1489,15 @@ class LeagueController {
             console.error('Error buying coin package:', error);
             this.showToast('Error de conexión', 'error');
             return false;
+        } finally {
+            this.finishShopPurchase();
         }
     }
     
     async buyMoneyPackage(packageId) {
+        const purchaseReady = await this.prepareShopPurchase();
+        if (!purchaseReady) return false;
+
         try {
             const response = await fetch(`${this.API_URL}/online/shop/buy-money`, {
                 method: 'POST',
@@ -1225,6 +1526,8 @@ class LeagueController {
             console.error('Error buying money package:', error);
             this.showToast('Error de conexión', 'error');
             return false;
+        } finally {
+            this.finishShopPurchase();
         }
     }
     
@@ -1246,11 +1549,12 @@ class LeagueController {
                 this.dailyRacesStatus = {
                     canRace: data.canRace,
                     racesToday: data.racesToday || 0,
-                    racesRemaining: data.racesRemaining || 5,
+                    racesRemaining: data.racesRemaining || 0,
                     isRestDay: data.isRestDay,
-                    maxRacesPerDay: data.maxRacesPerDay || 5,
+                    maxRacesPerDay: data.maxRacesPerDay || 1,
                     reason: data.reason,
-                    message: data.message
+                    message: data.message,
+                    schedule: data.schedule || null
                 };
             }
         } catch (error) {
@@ -1265,6 +1569,8 @@ class LeagueController {
     
     updateDailyRacesUI() {
         const status = this.dailyRacesStatus;
+        const qualifyingButton = document.getElementById('btn-qualifying');
+        const startRaceButton = document.getElementById('btn-start-race');
         
         // Update counters
         document.getElementById('races-done-today').textContent = status.racesToday;
@@ -1278,25 +1584,114 @@ class LeagueController {
         
         if (status.isRestDay) {
             restDayNotice.style.display = 'flex';
-            // Disable race buttons
-            document.getElementById('btn-qualifying')?.setAttribute('disabled', 'disabled');
-            document.getElementById('btn-start-race')?.setAttribute('disabled', 'disabled');
         } else {
             restDayNotice.style.display = 'none';
+        }
+
+        if (qualifyingButton) {
+            if (status.canRace && !status.isRestDay) {
+                qualifyingButton.removeAttribute('disabled');
+            } else {
+                qualifyingButton.setAttribute('disabled', 'disabled');
+            }
+        }
+
+        if (startRaceButton && (status.isRestDay || !status.canRace)) {
+            startRaceButton.setAttribute('disabled', 'disabled');
         }
         
         // Disable race if no races remaining
         if (!status.canRace && !status.isRestDay) {
-            document.getElementById('btn-qualifying')?.setAttribute('disabled', 'disabled');
             this.showToast(status.message || 'No puedes correr más hoy', 'info');
         }
+
+        this.updateRaceCountdown(status.schedule || null);
+    }
+
+    getScheduleCountdownTarget(schedule) {
+        if (!schedule || schedule.seasonCompleted) {
+            return null;
+        }
+
+        if (schedule.nextRaceAt) {
+            const parsed = new Date(schedule.nextRaceAt);
+            if (!Number.isNaN(parsed.getTime())) {
+                return parsed;
+            }
+        }
+
+        if (schedule.canRaceNow) {
+            return new Date();
+        }
+
+        return null;
+    }
+
+    updateRaceCountdown(scheduleOverride = null) {
+        const daysEl = document.getElementById('countdown-days');
+        const hoursEl = document.getElementById('countdown-hours');
+        const minsEl = document.getElementById('countdown-mins');
+        const raceStatus = document.getElementById('race-status');
+
+        if (!daysEl || !hoursEl || !minsEl) {
+            return;
+        }
+
+        const schedule = scheduleOverride
+            || this.raceCenter?.schedule
+            || this.dailyRacesStatus?.schedule
+            || null;
+
+        if (!schedule) {
+            daysEl.textContent = '-';
+            hoursEl.textContent = '-';
+            minsEl.textContent = '-';
+            return;
+        }
+
+        if (schedule.seasonCompleted) {
+            daysEl.textContent = '0';
+            hoursEl.textContent = '0';
+            minsEl.textContent = '0';
+            return;
+        }
+
+        if (schedule.canRaceNow) {
+            daysEl.textContent = '0';
+            hoursEl.textContent = '0';
+            minsEl.textContent = '0';
+
+            if (raceStatus && raceStatus.textContent === 'Esperando') {
+                raceStatus.textContent = 'Carrera disponible ahora';
+            }
+            return;
+        }
+
+        const targetDate = this.getScheduleCountdownTarget(schedule);
+        if (!targetDate) {
+            daysEl.textContent = '-';
+            hoursEl.textContent = '-';
+            minsEl.textContent = '-';
+            return;
+        }
+
+        const diffMs = Math.max(0, targetDate.getTime() - Date.now());
+        const totalMinutes = Math.floor(diffMs / 60000);
+        const days = Math.floor(totalMinutes / (24 * 60));
+        const hours = Math.floor((totalMinutes % (24 * 60)) / 60);
+        const mins = totalMinutes % 60;
+
+        daysEl.textContent = String(days);
+        hoursEl.textContent = String(hours);
+        minsEl.textContent = String(mins);
     }
     
     // Calculate XP based on position
     calculateXpForPosition(position) {
-        if (position === 1) return this.xpConfig.position1; // 200xp
-        if (position >= 2 && position <= 5) return this.xpConfig.position2to5; // 150xp
-        return this.xpConfig.position6plus; // 50xp
+        const totalParticipants = Math.max(2, this.raceCenter?.participants?.length || 20);
+        const safePosition = Math.max(1, Math.min(totalParticipants, Number(position) || totalParticipants));
+        const step = (this.xpConfig.maxRaceXp - this.xpConfig.minRaceXp) / Math.max(1, totalParticipants - 1);
+        return Math.max(this.xpConfig.minRaceXp, Math.round(this.xpConfig.maxRaceXp - (safePosition - 1) * step));
     }
     
     // Complete race and award XP
@@ -1527,9 +1922,20 @@ class LeagueController {
     // ==========================================
     
     calculateUpgradeCost(component) {
-        const comp = this.hqComponents[component];
-        // Coste aumenta exponencialmente con el nivel
-        return Math.floor(comp.baseCost * Math.pow(1.2, comp.level - 1));
+        const baseCosts = {
+            engine: 500000,
+            aero: 600000,
+            drs: 700000,
+            chassis: 800000,
+            market: 1000000
+        };
+
+        const currentLevel = Number(this.hqComponents?.[component]?.level);
+        const safeLevel = Number.isFinite(currentLevel) ? Math.max(1, currentLevel) : 1;
+        const baseCost = baseCosts[component] || 500000;
+
+        // Next-level price with exponential growth
+        return Math.floor(baseCost * Math.pow(1.35, safeLevel));
     }
     
     getComponentName(component) {
@@ -1562,6 +1968,49 @@ class LeagueController {
         }
         return amount.toLocaleString();
     }
+
+    async prepareShopPurchase() {
+        if (this.isPurchaseInProgress) {
+            this.showToast('Ya hay una compra en proceso...', 'info');
+            return false;
+        }
+
+        const remainingMs = this.purchaseCooldownMs - (Date.now() - this.lastPurchaseAt);
+        if (remainingMs > 0) {
+            const remainingSec = (remainingMs / 1000).toFixed(1);
+            this.showToast(`Espera ${remainingSec}s antes de otra compra`, 'info');
+            return false;
+        }
+
+        this.isPurchaseInProgress = true;
+        this.toggleShopButtons(true);
+        this.showToast('Procesando compra...', 'info');
+
+        await new Promise(resolve => setTimeout(resolve, this.purchaseCooldownMs));
+        return true;
+    }
+
+    finishShopPurchase() {
+        if (!this.isPurchaseInProgress) return;
+
+        this.lastPurchaseAt = Date.now();
+        this.isPurchaseInProgress = false;
+        this.toggleShopButtons(false);
+    }
+
+    toggleShopButtons(disabled) {
+        const selectors = [
+            '#coin-packages .item-price',
+            '#money-packages .item-price',
+            '#instant-refresh',
+            '#confirm-hire-pilot',
+            '.btn-hire'
+        ];
+
+        document.querySelectorAll(selectors.join(',')).forEach(button => {
+            button.disabled = disabled;
+        });
+    }
     
     getCountryName(code) {
         const countries = {
@@ -1570,6 +2019,103 @@ class LeagueController {
             'DE': 'Alemania', 'IT': 'Italia', 'BR': 'Brasil'
         };
         return countries[code] || code;
+    }
+
+    renderRaceCenter() {
+        if (!this.raceCenter) return;
+
+        const setText = (id, value) => {
+            const element = document.getElementById(id);
+            if (element) element.textContent = String(value);
+        };
+
+        const track = this.raceCenter.track || {};
+        const participants = Array.isArray(this.raceCenter.participants) ? this.raceCenter.participants : [];
+        const myId = (this.profile?._id || this.profile?.id || '').toString();
+        const me = participants.find(participant => participant.userId === myId) || this.raceCenter.myParticipant || null;
+
+        const seasonEl = document.getElementById('race-season');
+        const numberEl = document.getElementById('race-number');
+        const totalEl = document.getElementById('total-races');
+        if (seasonEl) seasonEl.textContent = this.league?.currentSeason?.number || 1;
+        if (numberEl) numberEl.textContent = this.raceCenter.raceNumber || 1;
+        if (totalEl) totalEl.textContent = this.league?.currentSeason?.totalRaces || 10;
+
+        const pilotName = me?.pilot?.name || 'Sin piloto contratado';
+        const pilotLevel = me?.pilot?.level || 1;
+        const pilotOverall = me?.pilot?.overall || '-';
+        setText('race-pilot-name', pilotName);
+        setText('race-pilot-level', `Nv.${pilotLevel}`);
+        setText('race-pilot-overall', pilotOverall);
+
+        const hq = me?.hq || this.hqComponents;
+        setText('race-car-engine', hq?.engine || 1);
+        setText('race-car-aero', hq?.aero || 1);
+        setText('race-car-drs', hq?.drs || 1);
+        setText('race-car-chassis', hq?.chassis || 1);
+        setText('race-car-rating', Math.round(me?.carRating || this.calculateHQBonus() * 100));
+
+        const myStrategy = me?.strategy || {};
+        const strategyTyre = document.getElementById('strategy-tyre');
+        const strategyPit = document.getElementById('strategy-pitlap');
+        const strategyLaps = document.getElementById('strategy-laps');
+        if (strategyTyre) strategyTyre.value = myStrategy.tyreCompound || 'medium';
+        if (strategyPit) strategyPit.value = myStrategy.pitLap || Math.max(3, Math.floor((track.laps || 20) / 2));
+        if (strategyLaps) strategyLaps.value = myStrategy.plannedLaps || track.laps || 20;
+
+        setText('current-track-name', track.name || 'Circuito pendiente');
+        setText('current-track-location', `${track.flag || '🏁'} ${track.country || ''}`);
+        setText('track-length', `${track.length || '-'} km`);
+        setText('track-laps', track.laps || '-');
+        setText('track-turns', track.turns || '-');
+        setText('track-topspeed', track.topSpeed ? `${track.topSpeed} km/h` : '-');
+        setText('drs-zones-count', track.drsZones || '-');
+
+        if (track.image) {
+            this.loadTrackSVG(track.image, 'track-preview-container');
+        }
+
+        const statusBadge = document.getElementById('race-status');
+        const schedule = this.raceCenter.schedule || {};
+        const canQualifyNow = schedule.canRaceNow !== false;
+        const hasPilot = Boolean(me?.pilot);
+        const canStartRace = Boolean(me?.qualifying?.lapTime) && canQualifyNow;
+
+        if (statusBadge) {
+            if (!canQualifyNow) {
+                statusBadge.textContent = schedule.message || 'Carrera no disponible todavia';
+            } else if (canStartRace) {
+                statusBadge.textContent = `Clasificado P${me.gridPosition || '-'}`;
+            } else {
+                statusBadge.textContent = hasPilot ? 'Esperando clasificación' : 'Necesitas piloto para clasificar';
+            }
+        }
+
+        const qualifyingButton = document.getElementById('btn-qualifying');
+        if (qualifyingButton) {
+            qualifyingButton.disabled = !canQualifyNow || !hasPilot;
+        }
+
+        const startRaceButton = document.getElementById('btn-start-race');
+        if (startRaceButton) startRaceButton.disabled = !canStartRace;
+
+        const qualifyingBody = document.getElementById('qualifying-grid-body');
+        if (qualifyingBody) {
+            if (!participants.length) {
+                qualifyingBody.innerHTML = '<tr><td colspan="6" class="empty-qualy">Todavia no hay managers en parrilla</td></tr>';
+            } else {
+                qualifyingBody.innerHTML = participants.map(participant => `
+                    <tr>
+                        <td>P${participant.gridPosition || '-'}</td>
+                        <td>${participant.displayName}</td>
+                        <td>${participant.teamName || 'Sin equipo'}</td>
+                        <td>${participant.pilot?.name || 'Piloto por asignar'}</td>
+                        <td>${(participant.strategy?.tyreCompound || 'medium').toUpperCase()}</td>
+                        <td>${participant.qualifying?.lapTime || 'Sin vuelta'}</td>
+                    </tr>
+                `).join('');
+            }
+        }
     }
     
     showToast(message, type = 'info') {
@@ -1597,45 +2143,26 @@ class LeagueController {
      * Inicializa el sistema de carreras
      */
     initRaceSystem() {
-        // Calendario de carreras de la temporada
-        this.raceCalendar = [
-            { round: 1, trackId: 'monza', status: 'current' },
-            { round: 2, trackId: 'bahrain', status: 'locked' },
-            { round: 3, trackId: 'portimao', status: 'locked' },
-            { round: 4, trackId: 'montmelo', status: 'locked' },
-            { round: 5, trackId: 'nurburgring', status: 'locked' }
-        ];
-        
-        this.currentRaceIndex = 0;
         this.raceEngine = null;
         this.raceVisualizer = null;
         this.raceSpeed = 1;
         this.isPaused = false;
         this.hasQualified = false;
         this.qualifyingPosition = null;
-        
-        this.renderRaceCalendar();
-        this.loadCurrentTrack();
+
         this.bindRaceEvents();
+        this.renderRaceCenter();
     }
     
     /**
      * Vincula los eventos del sistema de carreras
      */
     bindRaceEvents() {
-        // Mode tabs
         document.querySelectorAll('.race-mode-tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('.race-mode-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                const mode = tab.dataset.mode;
-                this.handleRaceModeChange(mode);
             });
-        });
-        
-        // Go to live race button - navigates to race-live.html
-        document.getElementById('btn-go-live-race')?.addEventListener('click', () => {
-            this.goToLiveRace();
         });
         
         // Qualifying button
@@ -1875,46 +2402,46 @@ class LeagueController {
      * Inicia la clasificación
      */
     async startQualifying() {
-        if (!this.currentPilot) {
-            this.showToast('Necesitas contratar un piloto para clasificar', 'error');
-            return;
-        }
-        
-        const currentRace = this.raceCalendar[this.currentRaceIndex];
-        const track = TRACKS_DATA[currentRace.trackId];
-        
-        this.showToast('🏎️ Iniciando clasificación...', 'info');
-        document.getElementById('race-status').textContent = 'Clasificando...';
-        
-        // Simular clasificación (tiempo basado en habilidades)
-        const baseTime = track.referenceTimes.average;
-        const pilotSkill = this.currentPilot.level / 50;
-        const hqBonus = this.calculateHQBonus();
-        
-        // Tiempo del jugador
-        const playerTime = baseTime * (1 - pilotSkill * 0.06 - hqBonus);
-        const variation = 0.995 + Math.random() * 0.01;
-        const finalTime = playerTime * variation;
-        
-        // Generar tiempos de rivales (22 pilotos totales)
-        const rivals = this.generateRivalTimes(track, 21);
-        rivals.push({ name: this.currentPilot.name, time: finalTime, isPlayer: true });
-        
-        // Ordenar por tiempo
-        rivals.sort((a, b) => a.time - b.time);
-        
-        // Encontrar posición del jugador
-        this.qualifyingPosition = rivals.findIndex(r => r.isPlayer) + 1;
-        this.qualifyingResults = rivals;
-        
-        // Mostrar resultado
-        setTimeout(() => {
+        try {
+            if (this.raceCenter?.schedule && this.raceCenter.schedule.canRaceNow === false) {
+                this.showToast(this.raceCenter.schedule.message || 'La carrera todavia no esta habilitada', 'info');
+                return;
+            }
+
+            this.showToast('Iniciando clasificación de liga...', 'info');
+            document.getElementById('race-status').textContent = 'Clasificando...';
+
+            const { data } = await this.postOnlineRaceAction([
+                `/online/leagues/${this.leagueId}/race/qualify`,
+                `/online/leagues/${this.leagueId}/race/qualifying`,
+                `/online/leagues/${this.leagueId}/qualify`
+            ], {});
+
+            if (!data.success) {
+                this.showToast(data.message || 'No se pudo completar la clasificación', 'error');
+                document.getElementById('race-status').textContent = 'Esperando clasificación';
+                return;
+            }
+
+            this.raceCenter = {
+                ...this.raceCenter,
+                raceNumber: data.raceNumber,
+                track: data.track,
+                participants: data.participants,
+                schedule: data.schedule || this.raceCenter?.schedule || null
+            };
             this.hasQualified = true;
-            document.getElementById('race-status').textContent = `P${this.qualifyingPosition}`;
+            this.qualifyingPosition = data.position;
+
+            document.getElementById('race-status').textContent = `Clasificado P${data.position}`;
             document.getElementById('btn-start-race').disabled = false;
-            
-            this.showToast(`🏁 Clasificación: P${this.qualifyingPosition} - ${this.formatLapTime(finalTime)}`, 'success');
-        }, 2000);
+            this.renderRaceCenter();
+
+            this.showToast(`Clasificación completada: P${data.position} (${data.lapTime})`, 'success');
+        } catch (error) {
+            console.error('Error qualifying:', error);
+            this.showToast('Error de conexión durante clasificación', 'error');
+        }
     }
     
     /**
@@ -1966,49 +2493,83 @@ class LeagueController {
      * Inicia la carrera
      */
     async startRace() {
-        if (!this.hasQualified) {
-            this.showToast('Debes clasificar antes de correr', 'error');
+        if (this.raceCenter?.schedule && this.raceCenter.schedule.canRaceNow === false) {
+            this.showToast(this.raceCenter.schedule.message || 'La carrera no esta habilitada en este momento', 'info');
             return;
         }
-        
-        const currentRace = this.raceCalendar[this.currentRaceIndex];
-        const track = TRACKS_DATA[currentRace.trackId];
-        
-        // Preparar participantes
-        const participants = this.qualifyingResults.map((r, index) => ({
-            pilot: {
-                id: r.isPlayer ? 'player' : r.id,
-                name: r.name,
-                level: r.isPlayer ? this.currentPilot.level : r.level
-            },
-            hq: r.isPlayer ? {
-                engine: this.hqComponents.engine?.level || 1,
-                aero: this.hqComponents.aero?.level || 1,
-                drs: this.hqComponents.drs?.level || 1,
-                chassis: this.hqComponents.chassis?.level || 1
-            } : {
-                engine: Math.ceil(r.level / 5),
-                aero: Math.ceil(r.level / 5),
-                drs: Math.ceil(r.level / 5),
-                chassis: Math.ceil(r.level / 5)
-            },
-            tyreCompound: index < 10 ? 'soft' : 'medium',
-            startPosition: index + 1
-        }));
-        
-        // Crear motor de carrera
-        this.raceEngine = new RaceEngine(currentRace.trackId, participants);
-        
-        // Mostrar vista de carrera en vivo
-        document.getElementById('race-live-container').style.display = 'block';
-        document.getElementById('total-laps').textContent = track.laps;
-        
-        // Cargar SVG en vista de carrera
-        await this.loadTrackSVG(track.image, 'race-track-live');
-        
-        // Iniciar simulación
-        this.raceEngine.raceState = 'racing';
-        this.simulateRaceLive();
+
+        if (!this.raceCenter || !Array.isArray(this.raceCenter.participants) || this.raceCenter.participants.length < 2) {
+            this.showToast('No hay suficientes managers clasificados para correr', 'error');
+            return;
+        }
+
+        const myId = (this.profile?._id || this.profile?.id || '').toString();
+        const me = this.raceCenter.participants.find(participant => participant.userId === myId);
+        if (!me?.qualifying?.lapTime) {
+            this.showToast('Debes clasificar antes de iniciar carrera', 'error');
+            return;
+        }
+
+        const plannedLaps = Number(document.getElementById('strategy-laps')?.value || this.raceCenter.track?.laps || 20);
+        const safeLaps = Number.isFinite(plannedLaps) ? Math.max(8, Math.min(40, plannedLaps)) : 20;
+
+        const participants = this.raceCenter.participants.map(participant => {
+            const hq = participant.hq || {};
+            const pilot = participant.pilot || {};
+            const pilotLevel = Number(pilot.level || pilot.overall || 20);
+
+            return {
+                userId: participant.userId,
+                isPlayer: participant.userId === myId,
+                name: pilot.name || participant.displayName,
+                teamName: participant.teamName || 'Sin equipo',
+                pilot: {
+                    id: pilot.id || `pilot-${participant.userId}`,
+                    name: pilot.name || participant.displayName,
+                    level: Number.isFinite(pilotLevel) ? pilotLevel : 20,
+                    speed: pilot.stats?.speed || Math.min(99, Math.max(50, pilotLevel + 25)),
+                    control: pilot.stats?.control || Math.min(99, Math.max(45, pilotLevel + 20)),
+                    experience: pilot.stats?.experience || Math.min(99, Math.max(40, pilotLevel + 15))
+                },
+                car: {
+                    engine: { level: hq.engine || 1 },
+                    aero: { level: hq.aero || 1 },
+                    drs: { level: hq.drs || 1 },
+                    chassis: { level: hq.chassis || 1 }
+                },
+                startingTyre: participant.strategy?.tyreCompound || 'medium',
+                gridPosition: participant.gridPosition || 99
+            };
+        });
+
+        participants.sort((a, b) => a.gridPosition - b.gridPosition);
+
+        const raceConfig = {
+            mode: 'league',
+            leagueId: this.leagueId,
+            trackId: this.raceCenter.track?.id || 'monza',
+            laps: safeLaps,
+            weather: 'dry',
+            startingTyre: me.strategy?.tyreCompound || 'medium',
+            participants,
+            playerProfile: {
+                userId: myId,
+                username: this.profile?.username,
+                displayName: this.profile?.displayName || this.profile?.username,
+                teamName: this.profile?.teamName || me.teamName || 'Tu Equipo',
+                country: this.profile?.country || 'ES',
+                currentPilot: me.pilot || this.currentPilot,
+                car: {
+                    engine: { level: me.hq?.engine || 1 },
+                    aero: { level: me.hq?.aero || 1 },
+                    drs: { level: me.hq?.drs || 1 },
+                    chassis: { level: me.hq?.chassis || 1 }
+                }
+            }
+        };
+
+        localStorage.setItem('raceConfig', JSON.stringify(raceConfig));
+        window.location.href = 'race.html';
     }
     
     /**

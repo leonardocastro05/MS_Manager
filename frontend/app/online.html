@@ -536,17 +536,10 @@
                     <div class="form-group">
                         <label>Horario de Carreras</label>
                         <div class="schedule-inputs">
-                            <select id="league-day">
-                                <option value="0">Domingo</option>
-                                <option value="1">Lunes</option>
-                                <option value="2">Martes</option>
-                                <option value="3">Miércoles</option>
-                                <option value="4">Jueves</option>
-                                <option value="5">Viernes</option>
-                                <option value="6" selected>Sábado</option>
-                            </select>
+                            <div class="schedule-fixed-days">Lunes a Viernes</div>
                             <input type="time" id="league-time" value="20:00">
                         </div>
+                        <small class="schedule-hint">Las carreras se habilitan automáticamente cada día laborable a esta hora.</small>
                     </div>
                     
                     <!-- Configuración -->

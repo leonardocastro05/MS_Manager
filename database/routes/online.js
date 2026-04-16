@@ -3,20 +3,18 @@ const router = express.Router();
 const { protect: auth } = require('../middleware/auth');
 const User = require('../models/User');
 const League = require('../models/League');
+const {
+    calculateOnlineLevel,
+    ensureOnlineData,
+    mergeOnlineData,
+    addXpToOnlineData,
+    getXpForRacePosition
+} = require('../utils/onlineProgression');
 
 // ===========================================
 // XP SYSTEM CONFIGURATION
 // ===========================================
 const XP_CONFIG = {
-    // XP needed per level (progresivo, más fácil al principio)
-    // Nivel 1->2: 100xp, Nivel 2->3: 130xp, ..., pero más lento arriba
-    getXpForLevel: (level) => {
-        if (level <= 5) return 100 + (level - 1) * 30; // 100, 130, 160, 190, 220
-        if (level <= 15) return 250 + (level - 5) * 50; // 250, 300, 350...
-        if (level <= 30) return 750 + (level - 15) * 100; // 750, 850, 950...
-        return 2250 + (level - 30) * 200; // 2250, 2450...
-    },
-    
     // XP rewards basados en posición de carrera
     rewards: {
         // P1: 200xp
@@ -35,9 +33,7 @@ const XP_CONFIG = {
         if (position === 1) return XP_CONFIG.rewards.position1;
         if (position >= 2 && position <= 5) return XP_CONFIG.rewards.position2to5;
         return XP_CONFIG.rewards.position6plus;
-    },
-    
-    maxLevel: 50
+    }
 };
 
 // ===========================================
@@ -65,6 +61,95 @@ const SHOP_CONFIG = {
     leagueCreationCost: 5000000 // 5M
 };
 
+const SHOP_PURCHASE_COOLDOWN_MS = 2000;
+const shopPurchaseCooldownByUser = new Map();
+
+const TRACK_ROTATION = ['monza', 'bahrain', 'portimao', 'montmelo', 'shanghai', 'melbourne', 'leoverse'];
+
+const TRACK_CATALOG = {
+    monza: {
+        id: 'monza',
+        name: 'Autodromo Nazionale Monza',
+        country: 'Italia',
+        flag: '🇮🇹',
+        length: 5.793,
+        laps: 20,
+        image: 'img/tracks/monza.svg',
+        referenceLapMs: 80200
+    },
+    bahrain: {
+        id: 'bahrain',
+        name: 'Bahrain International Circuit',
+        country: 'Bahréin',
+        flag: '🇧🇭',
+        length: 5.412,
+        laps: 20,
+        image: 'img/tracks/bahrain.svg',
+        referenceLapMs: 91800
+    },
+    portimao: {
+        id: 'portimao',
+        name: 'Autódromo Internacional do Algarve',
+        country: 'Portugal',
+        flag: '🇵🇹',
+        length: 4.653,
+        laps: 20,
+        image: 'img/tracks/portimao.svg',
+        referenceLapMs: 89000
+    },
+    montmelo: {
+        id: 'montmelo',
+        name: 'Circuit de Barcelona-Catalunya',
+        country: 'España',
+        flag: '🇪🇸',
+        length: 4.675,
+        laps: 20,
+        image: 'img/tracks/montmelo.svg',
+        referenceLapMs: 88900
+    },
+    shanghai: {
+        id: 'shanghai',
+        name: 'Shanghai International Circuit',
+        country: 'China',
+        flag: '🇨🇳',
+        length: 5.360,
+        laps: 20,
+        image: 'img/tracks/shanghai.svg',
+        referenceLapMs: 94100
+    },
+    melbourne: {
+        id: 'melbourne',
+        name: 'Albert Park Circuit',
+        country: 'Australia',
+        flag: '🇦🇺',
+        length: 4.900,
+        laps: 20,
+        image: 'img/tracks/melbourne.svg',
+        referenceLapMs: 86200
+    },
+    leoverse: {
+        id: 'leoverse',
+        name: 'Leoverse Circuit',
+        country: 'Leoverse',
+        flag: '🪐',
+        length: 5.198,
+        laps: 20,
+        image: 'img/tracks/bahrain.svg',
+        referenceLapMs: 92000
+    }
+};
+
+const F1_POINTS_TABLE = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
+const RACE_MONEY_TABLE = [1000000, 750000, 600000, 450000, 350000, 300000, 240000, 180000, 120000, 90000];
+const TYRE_QUALIFYING_BONUS_MS = {
+    soft: -220,
+    medium: 0,
+    hard: 180
+};
+const WEEKDAY_SCHEDULE_DAYS = new Set([1, 2, 3, 4, 5]);
+const WEEKDAY_LABELS_ES = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
+
 // ===========================================
 // HELPER FUNCTIONS
 // ===========================================
@@ -88,23 +173,590 @@ const canAccessOnline = (user) => {
     */
 };
 
-// Calculate level from XP
-const calculateLevel = (xp) => {
-    let level = 1;
-    let xpNeeded = XP_CONFIG.getXpForLevel(level);
-    
-    while (xp >= xpNeeded && level < XP_CONFIG.maxLevel) {
-        xp -= xpNeeded;
-        level++;
-        xpNeeded = XP_CONFIG.getXpForLevel(level);
+const formatLapTime = (lapMs) => {
+    if (!Number.isFinite(lapMs)) {
+        return null;
     }
-    
+
+    const totalMs = Math.max(0, Math.round(lapMs));
+    const minutes = Math.floor(totalMs / 60000);
+    const seconds = ((totalMs % 60000) / 1000).toFixed(3).padStart(6, '0');
+    return `${minutes}:${seconds}`;
+};
+
+const normalizeScheduleTime = (timeValue) => {
+    const raw = typeof timeValue === 'string' ? timeValue.trim() : '';
+    const match = raw.match(/^(\d{1,2}):(\d{2})$/);
+
+    if (!match) {
+        return '20:00';
+    }
+
+    const hours = Number(match[1]);
+    const minutes = Number(match[2]);
+    if (!Number.isFinite(hours) || !Number.isFinite(minutes)) {
+        return '20:00';
+    }
+
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+        return '20:00';
+    }
+
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+};
+
+const parseScheduleTime = (timeValue) => {
+    const safeTime = normalizeScheduleTime(timeValue);
+    const [hoursText, minutesText] = safeTime.split(':');
+    const hours = Number(hoursText);
+    const minutes = Number(minutesText);
+
     return {
-        level,
-        currentXp: xp,
-        xpForNextLevel: xpNeeded,
-        progress: Math.min((xp / xpNeeded) * 100, 100)
+        value: safeTime,
+        hours,
+        minutes,
+        totalMinutes: (hours * 60) + minutes
     };
+};
+
+const normalizeTimeZone = (timeZoneValue) => {
+    const fallback = 'Europe/Madrid';
+    const candidate = typeof timeZoneValue === 'string' ? timeZoneValue.trim() : '';
+
+    if (!candidate) {
+        return fallback;
+    }
+
+    try {
+        new Intl.DateTimeFormat('en-US', { timeZone: candidate }).format(new Date());
+        return candidate;
+    } catch (error) {
+        return fallback;
+    }
+};
+
+const getTimeZoneDateParts = (date, timeZone) => {
+    const safeTimeZone = normalizeTimeZone(timeZone);
+    const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: safeTimeZone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23',
+        weekday: 'short'
+    });
+
+    const values = {};
+    formatter.formatToParts(date).forEach((part) => {
+        if (part.type !== 'literal') {
+            values[part.type] = part.value;
+        }
+    });
+
+    const weekdayMap = {
+        Sun: 0,
+        Mon: 1,
+        Tue: 2,
+        Wed: 3,
+        Thu: 4,
+        Fri: 5,
+        Sat: 6
+    };
+
+    const year = Number(values.year);
+    const month = Number(values.month);
+    const day = Number(values.day);
+    const hour = Number(values.hour);
+    const minute = Number(values.minute);
+    const weekday = weekdayMap[values.weekday] ?? new Date(date).getUTCDay();
+
+    return {
+        year,
+        month,
+        day,
+        hour,
+        minute,
+        weekday,
+        totalMinutes: (hour * 60) + minute,
+        dateKey: (year * 10000) + (month * 100) + day
+    };
+};
+
+const addDaysToDateParts = (parts, daysToAdd) => {
+    const date = new Date(Date.UTC(parts.year, parts.month - 1, parts.day + daysToAdd));
+    return {
+        year: date.getUTCFullYear(),
+        month: date.getUTCMonth() + 1,
+        day: date.getUTCDate(),
+        weekday: date.getUTCDay(),
+        dateKey: (date.getUTCFullYear() * 10000) + ((date.getUTCMonth() + 1) * 100) + date.getUTCDate()
+    };
+};
+
+const formatDateLabel = (parts) => {
+    const day = String(parts.day).padStart(2, '0');
+    const month = String(parts.month).padStart(2, '0');
+    return `${day}/${month}/${parts.year}`;
+};
+
+const getTimeZoneOffsetMs = (date, timeZone) => {
+    const localParts = getTimeZoneDateParts(date, timeZone);
+    const utcFromLocalParts = Date.UTC(
+        localParts.year,
+        localParts.month - 1,
+        localParts.day,
+        localParts.hour,
+        localParts.minute,
+        0
+    );
+    return utcFromLocalParts - date.getTime();
+};
+
+const buildUtcDateForTimeZone = ({ year, month, day, hours, minutes, timeZone }) => {
+    const baseUtcMs = Date.UTC(year, month - 1, day, hours, minutes, 0);
+    let adjustedUtcMs = baseUtcMs;
+
+    // Two passes handle DST transitions in most practical cases.
+    for (let i = 0; i < 2; i += 1) {
+        const offsetMs = getTimeZoneOffsetMs(new Date(adjustedUtcMs), timeZone);
+        adjustedUtcMs = baseUtcMs - offsetMs;
+    }
+
+    return new Date(adjustedUtcMs);
+};
+
+const getScheduleDaysForLeague = (league) => {
+    const frequency = league?.schedule?.frequency || 'weekdays';
+    if (frequency === 'weekly') {
+        const dayOfWeek = Number(league?.schedule?.dayOfWeek);
+        if (Number.isFinite(dayOfWeek) && dayOfWeek >= 0 && dayOfWeek <= 6) {
+            return new Set([dayOfWeek]);
+        }
+        return new Set([1]);
+    }
+
+    return new Set(WEEKDAY_SCHEDULE_DAYS);
+};
+
+const countReleasedRaceSlots = ({ league, nowParts, scheduleTime, scheduleDays, timeZone }) => {
+    const totalRaces = Math.max(1, Number(league?.currentSeason?.totalRaces) || 10);
+    const seasonStart = league?.currentSeason?.startDate || league?.createdAt || new Date();
+    const startParts = getTimeZoneDateParts(new Date(seasonStart), timeZone);
+
+    let cursorUtcMs = Date.UTC(startParts.year, startParts.month - 1, startParts.day);
+    const endUtcMs = Date.UTC(nowParts.year, nowParts.month - 1, nowParts.day);
+    if (cursorUtcMs > endUtcMs) {
+        return 0;
+    }
+
+    let released = 0;
+    while (cursorUtcMs <= endUtcMs && released < totalRaces) {
+        const weekday = new Date(cursorUtcMs).getUTCDay();
+        if (scheduleDays.has(weekday)) {
+            if (cursorUtcMs < endUtcMs || nowParts.totalMinutes >= scheduleTime.totalMinutes) {
+                released += 1;
+            }
+        }
+
+        cursorUtcMs += DAY_IN_MS;
+    }
+
+    return released;
+};
+
+const getNextScheduleSlot = ({ nowParts, scheduleTime, scheduleDays }) => {
+    for (let daysAhead = 0; daysAhead <= 21; daysAhead += 1) {
+        const candidate = addDaysToDateParts(nowParts, daysAhead);
+        if (!scheduleDays.has(candidate.weekday)) {
+            continue;
+        }
+
+        if (daysAhead === 0 && nowParts.totalMinutes >= scheduleTime.totalMinutes) {
+            continue;
+        }
+
+        return candidate;
+    }
+
+    return null;
+};
+
+const getLeagueRaceScheduleStatus = (league, now = new Date()) => {
+    const totalRaces = Math.max(1, Number(league?.currentSeason?.totalRaces) || 10);
+    const completedRaces = Math.min(totalRaces, Math.max(0, Number(league?.currentSeason?.currentRace) || 0));
+    const timeZone = normalizeTimeZone(league?.schedule?.timezone);
+    const scheduleTime = parseScheduleTime(league?.schedule?.time);
+    const scheduleDays = getScheduleDaysForLeague(league);
+    const nowParts = getTimeZoneDateParts(now, timeZone);
+    const releasedRaces = Math.min(
+        totalRaces,
+        countReleasedRaceSlots({
+            league,
+            nowParts,
+            scheduleTime,
+            scheduleDays,
+            timeZone
+        })
+    );
+
+    const pendingRaces = Math.max(0, releasedRaces - completedRaces);
+    const seasonCompleted = completedRaces >= totalRaces;
+    const scheduleDayToday = scheduleDays.has(nowParts.weekday);
+    const isRestDay = !scheduleDayToday;
+    const isBeforeRaceTimeToday = scheduleDayToday && nowParts.totalMinutes < scheduleTime.totalMinutes;
+
+    let message;
+    let nextRaceLabel = null;
+    let nextRaceAt = null;
+
+    if (seasonCompleted) {
+        message = 'Temporada completada. No hay mas carreras pendientes.';
+    } else if (pendingRaces > 0) {
+        message = `Carrera ${completedRaces + 1} disponible.`;
+        nextRaceAt = now.toISOString();
+    } else if (isBeforeRaceTimeToday) {
+        message = `La carrera diaria se habilita hoy a las ${scheduleTime.value} (${timeZone}).`;
+        nextRaceLabel = `Hoy ${scheduleTime.value}`;
+        nextRaceAt = buildUtcDateForTimeZone({
+            year: nowParts.year,
+            month: nowParts.month,
+            day: nowParts.day,
+            hours: scheduleTime.hours,
+            minutes: scheduleTime.minutes,
+            timeZone
+        }).toISOString();
+    } else {
+        const nextSlot = getNextScheduleSlot({ nowParts, scheduleTime, scheduleDays });
+        if (nextSlot) {
+            const weekdayName = WEEKDAY_LABELS_ES[nextSlot.weekday] || 'dia';
+            nextRaceLabel = `${weekdayName} ${formatDateLabel(nextSlot)} ${scheduleTime.value}`;
+            message = `Proxima carrera: ${nextRaceLabel} (${timeZone}).`;
+            nextRaceAt = buildUtcDateForTimeZone({
+                year: nextSlot.year,
+                month: nextSlot.month,
+                day: nextSlot.day,
+                hours: scheduleTime.hours,
+                minutes: scheduleTime.minutes,
+                timeZone
+            }).toISOString();
+        } else {
+            message = 'No hay mas carreras programadas para esta temporada.';
+        }
+    }
+
+    const frequency = league?.schedule?.frequency || 'weekdays';
+
+    return {
+        frequency,
+        time: scheduleTime.value,
+        timezone: timeZone,
+        scheduleDays: Array.from(scheduleDays.values()).sort((a, b) => a - b),
+        scheduleDayToday,
+        isRestDay,
+        isBeforeRaceTimeToday,
+        releasedRaces,
+        completedRaces,
+        pendingRaces,
+        seasonCompleted,
+        canRaceNow: !seasonCompleted && pendingRaces > 0,
+        currentRaceNumber: Math.min(totalRaces, completedRaces + 1),
+        nextRaceAt,
+        nextRaceLabel,
+        message
+    };
+};
+
+const sanitizeLeagueScheduleInput = (scheduleInput = {}, forceWeekdays = false) => {
+    const safeTime = normalizeScheduleTime(scheduleInput?.time);
+    const safeTimezone = normalizeTimeZone(scheduleInput?.timezone);
+    const parsedDay = Math.floor(Number(scheduleInput?.dayOfWeek));
+    const safeDayOfWeek = Number.isFinite(parsedDay)
+        ? Math.max(0, Math.min(6, parsedDay))
+        : 1;
+
+    const requestedFrequency = scheduleInput?.frequency === 'weekly' ? 'weekly' : 'weekdays';
+    const safeFrequency = forceWeekdays ? 'weekdays' : requestedFrequency;
+
+    return {
+        frequency: safeFrequency,
+        dayOfWeek: safeDayOfWeek,
+        time: safeTime,
+        timezone: safeTimezone
+    };
+};
+
+const getMemberRacesToday = (member, timeZone, now = new Date()) => {
+    if (!member) {
+        return 0;
+    }
+
+    const memberDaily = member.dailyRacesCount || { date: null, count: 0 };
+    if (!memberDaily.date) {
+        return 0;
+    }
+
+    const raceDate = new Date(memberDaily.date);
+    if (Number.isNaN(raceDate.getTime())) {
+        return 0;
+    }
+
+    const nowParts = getTimeZoneDateParts(now, timeZone);
+    const raceDateParts = getTimeZoneDateParts(raceDate, timeZone);
+    if (raceDateParts.dateKey !== nowParts.dateKey) {
+        return 0;
+    }
+
+    return Math.max(0, Number(memberDaily.count) || 0);
+};
+
+const getCurrentRaceNumber = (league) => {
+    const totalRaces = Math.max(1, Number(league?.currentSeason?.totalRaces) || 10);
+    const completedRaces = Math.max(0, Number(league?.currentSeason?.currentRace) || 0);
+    return Math.min(totalRaces, completedRaces + 1);
+};
+
+const getTrackForLeague = (league) => {
+    const raceNumber = getCurrentRaceNumber(league);
+    const trackId = TRACK_ROTATION[(raceNumber - 1) % TRACK_ROTATION.length] || 'monza';
+    return TRACK_CATALOG[trackId] || TRACK_CATALOG.monza;
+};
+
+const getMemberUserId = (member) => {
+    const raw = member?.user?._id || member?.user?.id || member?.user;
+    return raw ? raw.toString() : null;
+};
+
+const sanitizeLevel = (value, fallback = 1) => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return fallback;
+    return Math.max(1, Math.floor(parsed));
+};
+
+const normalizeMemberHq = (member) => {
+    const hq = member?.hq || {};
+    return {
+        engine: sanitizeLevel(hq.engine?.level),
+        aero: sanitizeLevel(hq.aero?.level),
+        drs: sanitizeLevel(hq.drs?.level),
+        chassis: sanitizeLevel(hq.chassis?.level),
+        market: sanitizeLevel(hq.market?.level)
+    };
+};
+
+const getMemberCarRating = (member) => {
+    const hq = normalizeMemberHq(member);
+    return Math.round((hq.engine + hq.aero + hq.drs + hq.chassis) / 4);
+};
+
+const ensureStandingEntry = (league, userId) => {
+    const existingIndex = league.currentSeason.standings.findIndex(
+        standing => standing.user.toString() === userId.toString()
+    );
+
+    if (existingIndex !== -1) {
+        return existingIndex;
+    }
+
+    league.currentSeason.standings.push({
+        user: userId,
+        points: 0,
+        wins: 0,
+        podiums: 0,
+        position: league.currentSeason.standings.length + 1
+    });
+    league.updateStandings();
+
+    return league.currentSeason.standings.findIndex(
+        standing => standing.user.toString() === userId.toString()
+    );
+};
+
+const buildLeagueStandings = (league) => {
+    const standingsByUser = new Map();
+
+    league.currentSeason.standings.forEach((standing) => {
+        standingsByUser.set(standing.user.toString(), {
+            userId: standing.user.toString(),
+            points: standing.points || 0,
+            wins: standing.wins || 0,
+            podiums: standing.podiums || 0,
+            position: standing.position || 999
+        });
+    });
+
+    league.members.forEach((member) => {
+        const userId = getMemberUserId(member);
+        if (!userId) return;
+
+        const standing = standingsByUser.get(userId) || {
+            userId,
+            points: 0,
+            wins: 0,
+            podiums: 0,
+            position: 999
+        };
+
+        standing.points = Number.isFinite(member?.stats?.points) ? member.stats.points : standing.points;
+        standing.wins = Number.isFinite(member?.stats?.wins) ? member.stats.wins : standing.wins;
+        standing.podiums = Number.isFinite(member?.stats?.podiums) ? member.stats.podiums : standing.podiums;
+        standing.racesCompleted = Number.isFinite(member?.stats?.racesCompleted) ? member.stats.racesCompleted : 0;
+        standing.displayName = member?.user?.displayName || member?.user?.username || 'Manager';
+        standing.username = member?.user?.username || standing.displayName;
+        standing.teamName = member?.user?.teamName || 'Sin equipo';
+        standing.avatar = member?.user?.avatar || null;
+        standing.country = member?.user?.country || 'ES';
+
+        standingsByUser.set(userId, standing);
+    });
+
+    const standings = Array.from(standingsByUser.values()).sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        if (b.wins !== a.wins) return b.wins - a.wins;
+        if (b.podiums !== a.podiums) return b.podiums - a.podiums;
+        return a.displayName.localeCompare(b.displayName, 'es');
+    });
+
+    standings.forEach((standing, index) => {
+        standing.position = index + 1;
+    });
+
+    return standings;
+};
+
+const buildRaceCenterParticipants = (league) => {
+    const currentRaceNumber = getCurrentRaceNumber(league);
+
+    const participants = league.members.map((member) => {
+        const userId = getMemberUserId(member);
+        const hq = normalizeMemberHq(member);
+        const strategy = {
+            tyreCompound: member?.raceStrategy?.tyreCompound || 'medium',
+            pitLap: Number.isFinite(member?.raceStrategy?.pitLap) ? member.raceStrategy.pitLap : null,
+            plannedLaps: Number.isFinite(member?.raceStrategy?.plannedLaps) ? member.raceStrategy.plannedLaps : 20,
+            updatedAt: member?.raceStrategy?.updatedAt || null
+        };
+
+        const hasCurrentQualifying = member?.qualifying?.raceNumber === currentRaceNumber
+            && Number.isFinite(member?.qualifying?.lapTimeMs);
+
+        return {
+            userId,
+            displayName: member?.user?.displayName || member?.user?.username || 'Manager',
+            username: member?.user?.username || 'manager',
+            teamName: member?.user?.teamName || 'Sin equipo',
+            avatar: member?.user?.avatar || null,
+            country: member?.user?.country || 'ES',
+            pilot: member?.currentPilot || null,
+            hq,
+            carRating: getMemberCarRating(member),
+            strategy,
+            qualifying: {
+                raceNumber: member?.qualifying?.raceNumber || currentRaceNumber,
+                lapTimeMs: hasCurrentQualifying ? member.qualifying.lapTimeMs : null,
+                lapTime: hasCurrentQualifying ? member.qualifying.lapTime : null,
+                position: hasCurrentQualifying ? member.qualifying.position : null,
+                updatedAt: hasCurrentQualifying ? member.qualifying.updatedAt : null
+            },
+            stats: {
+                points: member?.stats?.points || 0,
+                wins: member?.stats?.wins || 0,
+                podiums: member?.stats?.podiums || 0,
+                racesCompleted: member?.stats?.racesCompleted || 0
+            }
+        };
+    });
+
+    participants.sort((a, b) => {
+        const aHasTime = Number.isFinite(a.qualifying.lapTimeMs);
+        const bHasTime = Number.isFinite(b.qualifying.lapTimeMs);
+
+        if (aHasTime && bHasTime) {
+            return a.qualifying.lapTimeMs - b.qualifying.lapTimeMs;
+        }
+        if (aHasTime) return -1;
+        if (bHasTime) return 1;
+
+        if (b.stats.points !== a.stats.points) return b.stats.points - a.stats.points;
+        if (b.stats.wins !== a.stats.wins) return b.stats.wins - a.stats.wins;
+        return a.displayName.localeCompare(b.displayName, 'es');
+    });
+
+    participants.forEach((participant, index) => {
+        participant.gridPosition = index + 1;
+    });
+
+    return participants;
+};
+
+const calculateQualifyingLapMs = (track, member) => {
+    const baseMs = Number(track?.referenceLapMs) || 90000;
+    const hq = normalizeMemberHq(member);
+
+    const pilotOverall = Number(member?.currentPilot?.overall)
+        || Number(member?.currentPilot?.level) * 2
+        || 50;
+    const tyreCompound = member?.raceStrategy?.tyreCompound || 'medium';
+
+    const hqScore = hq.engine + hq.aero + hq.drs + hq.chassis;
+    const hqBonus = -Math.round((hqScore - 4) * 38);
+    const pilotBonus = -Math.round((pilotOverall - 50) * 24);
+    const tyreBonus = TYRE_QUALIFYING_BONUS_MS[tyreCompound] || 0;
+    const randomSpread = Math.round((Math.random() - 0.5) * 700);
+
+    return Math.max(Math.round(baseMs * 0.86), baseMs + hqBonus + pilotBonus + tyreBonus + randomSpread);
+};
+
+const normalizeFinishOrder = (submittedResults, participants) => {
+    const fallbackOrder = participants.map(participant => participant.userId);
+    if (!Array.isArray(submittedResults)) {
+        return fallbackOrder;
+    }
+
+    const knownIds = new Set(fallbackOrder);
+    const finishOrder = [];
+
+    submittedResults.forEach((result) => {
+        const userId = typeof result === 'string'
+            ? result
+            : (result?.userId || result?.id || result?.managerId || null);
+        if (!userId) return;
+
+        const normalized = userId.toString();
+        if (!knownIds.has(normalized)) return;
+        if (finishOrder.includes(normalized)) return;
+        finishOrder.push(normalized);
+    });
+
+    fallbackOrder.forEach((userId) => {
+        if (!finishOrder.includes(userId)) {
+            finishOrder.push(userId);
+        }
+    });
+
+    return finishOrder;
+};
+
+const enforceShopPurchaseCooldown = (req, res, next) => {
+    const userId = req.user?.id;
+    if (!userId) {
+        return next();
+    }
+
+    const now = Date.now();
+    const nextAllowedAt = shopPurchaseCooldownByUser.get(userId) || 0;
+
+    if (now < nextAllowedAt) {
+        return res.status(429).json({
+            success: false,
+            message: 'Espera 2 segundos entre compras',
+            retryAfterMs: nextAllowedAt - now
+        });
+    }
+
+    shopPurchaseCooldownByUser.set(userId, now + SHOP_PURCHASE_COOLDOWN_MS);
+    next();
 };
 
 // ===========================================
@@ -133,7 +785,7 @@ router.get('/status', auth, async (req, res) => {
             hasAccess,
             hqLevels,
             requiredLevel: 5,
-            online: user.gameData.online || {}
+            online: ensureOnlineData(user.gameData.online || {})
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -156,8 +808,17 @@ router.get('/profile', auth, async (req, res) => {
             });
         }
         
-        const online = user.gameData.online || {};
-        const levelData = calculateLevel(online.xp || 0);
+        const previousOnline = user.gameData.online || {};
+        const synced = mergeOnlineData(previousOnline, {});
+        user.gameData.online = synced;
+
+        const levelData = calculateOnlineLevel(synced.xp || 0);
+        levelData.level = synced.level;
+
+        if (JSON.stringify(previousOnline) !== JSON.stringify(synced)) {
+            user.markModified('gameData');
+            await user.save();
+        }
         
         res.json({
             success: true,
@@ -167,14 +828,14 @@ router.get('/profile', auth, async (req, res) => {
                 teamName: user.teamName,
                 avatar: user.avatar,
                 country: user.country,
-                coins: online.coins || 0,
-                level: levelData.level,
-                xp: online.xp || 0,
+                coins: synced.coins || 0,
+                level: synced.level || levelData.level,
+                xp: synced.xp || 0,
                 xpProgress: levelData,
                 stats: {
-                    totalRaces: online.totalRaces || 0,
-                    wins: online.onlineWins || 0,
-                    podiums: online.onlinePodiums || 0
+                    totalRaces: synced.totalRaces || 0,
+                    wins: synced.onlineWins || 0,
+                    podiums: synced.onlinePodiums || 0
                 },
                 leagues: user.gameData.onlineLeagues || []
             }
@@ -200,7 +861,7 @@ router.get('/shop', auth, async (req, res) => {
 });
 
 // POST /api/online/shop/buy-money - Buy in-game money with coins
-router.post('/shop/buy-money', auth, async (req, res) => {
+router.post('/shop/buy-money', auth, enforceShopPurchaseCooldown, async (req, res) => {
     try {
         const { packageId } = req.body;
         const user = await User.findById(req.user.id);
@@ -213,6 +874,8 @@ router.post('/shop/buy-money', auth, async (req, res) => {
         if (!package_) {
             return res.status(400).json({ success: false, message: 'Invalid package' });
         }
+
+        user.gameData.online = mergeOnlineData(user.gameData.online || {}, {});
         
         const userCoins = user.gameData.online?.coins || 0;
         if (userCoins < package_.cost) {
@@ -252,25 +915,23 @@ router.post('/xp/add', auth, async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
         
-        const oldLevel = calculateLevel(user.gameData.online?.xp || 0).level;
-        
-        user.gameData.online = user.gameData.online || {};
-        user.gameData.online.xp = (user.gameData.online.xp || 0) + amount;
-        
-        const newLevelData = calculateLevel(user.gameData.online.xp);
-        user.gameData.online.level = newLevelData.level;
+        const currentOnline = mergeOnlineData(user.gameData.online || {}, {});
+        const oldLevel = currentOnline.level;
+
+        const xpUpdate = addXpToOnlineData(currentOnline, amount || 0);
+        user.gameData.online = xpUpdate.online;
         
         await user.save();
         
-        const leveledUp = newLevelData.level > oldLevel;
+        const leveledUp = xpUpdate.online.level > oldLevel;
         
         res.json({
             success: true,
             xpAdded: amount,
             reason,
             leveledUp,
-            newLevel: newLevelData.level,
-            xpProgress: newLevelData
+            newLevel: xpUpdate.online.level,
+            xpProgress: xpUpdate.levelData
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -319,12 +980,406 @@ router.get('/leagues/:id', auth, async (req, res) => {
         
         // Check if user is member for full info
         const isMember = league.members.some(m => m.user._id.toString() === req.user.id);
+        const standings = isMember ? buildLeagueStandings(league) : [];
+        const currentTrack = isMember ? getTrackForLeague(league) : null;
+
+        if (isMember) {
+            standings.forEach((entry) => {
+                const standingIndex = ensureStandingEntry(league, entry.userId);
+                if (standingIndex !== -1) {
+                    league.currentSeason.standings[standingIndex].points = entry.points;
+                    league.currentSeason.standings[standingIndex].wins = entry.wins;
+                    league.currentSeason.standings[standingIndex].podiums = entry.podiums;
+                    league.currentSeason.standings[standingIndex].position = entry.position;
+                }
+            });
+            await league.save();
+        }
         
         res.json({
             success: true,
             league: isMember ? league : league.getPublicInfo(),
             isMember,
-            inviteCode: isMember && league.settings.isPrivate ? league.settings.inviteCode : null
+            inviteCode: isMember && league.settings.isPrivate ? league.settings.inviteCode : null,
+            standings,
+            currentTrack
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// GET /api/online/leagues/:id/standings - Real standings with all managers
+router.get('/leagues/:id/standings', auth, async (req, res) => {
+    try {
+        const league = await League.findById(req.params.id)
+            .populate('members.user', 'username displayName teamName avatar country');
+
+        if (!league) {
+            return res.status(404).json({ success: false, message: 'League not found' });
+        }
+
+        const isMember = league.members.some(m => getMemberUserId(m) === req.user.id);
+        if (!isMember) {
+            return res.status(403).json({ success: false, message: 'Not a member of this league' });
+        }
+
+        const standings = buildLeagueStandings(league);
+        standings.forEach((entry) => {
+            const standingIndex = ensureStandingEntry(league, entry.userId);
+            if (standingIndex !== -1) {
+                league.currentSeason.standings[standingIndex].points = entry.points;
+                league.currentSeason.standings[standingIndex].wins = entry.wins;
+                league.currentSeason.standings[standingIndex].podiums = entry.podiums;
+                league.currentSeason.standings[standingIndex].position = entry.position;
+            }
+        });
+
+        await league.save();
+
+        res.json({
+            success: true,
+            raceNumber: getCurrentRaceNumber(league),
+            standings
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// GET /api/online/leagues/:id/race-center - Race briefing + qualifying grid
+router.get('/leagues/:id/race-center', auth, async (req, res) => {
+    try {
+        const league = await League.findById(req.params.id)
+            .populate('members.user', 'username displayName teamName avatar country');
+
+        if (!league) {
+            return res.status(404).json({ success: false, message: 'League not found' });
+        }
+
+        const isMember = league.members.some(m => getMemberUserId(m) === req.user.id);
+        if (!isMember) {
+            return res.status(403).json({ success: false, message: 'Not a member of this league' });
+        }
+
+        const schedule = getLeagueRaceScheduleStatus(league);
+        const track = getTrackForLeague(league);
+        const participants = buildRaceCenterParticipants(league);
+        const standings = buildLeagueStandings(league);
+        const myParticipant = participants.find(participant => participant.userId === req.user.id) || null;
+
+        res.json({
+            success: true,
+            raceNumber: schedule.currentRaceNumber,
+            track,
+            participants,
+            standings,
+            myParticipant,
+            schedule
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+const saveRaceStrategyHandler = async (req, res) => {
+    try {
+        const { tyreCompound, pitLap, plannedLaps } = req.body;
+        const league = await League.findById(req.params.id);
+
+        if (!league) {
+            return res.status(404).json({ success: false, message: 'League not found' });
+        }
+
+        const memberIndex = league.members.findIndex(m => m.user.toString() === req.user.id);
+        if (memberIndex === -1) {
+            return res.status(403).json({ success: false, message: 'Not a member of this league' });
+        }
+
+        const safeTyre = ['soft', 'medium', 'hard'].includes(tyreCompound) ? tyreCompound : 'medium';
+        const parsedPitLap = Number.isFinite(Number(pitLap)) ? Math.max(1, Math.floor(Number(pitLap))) : null;
+        const parsedPlannedLaps = Number.isFinite(Number(plannedLaps))
+            ? Math.max(8, Math.min(40, Math.floor(Number(plannedLaps))))
+            : 20;
+
+        league.members[memberIndex].raceStrategy = {
+            tyreCompound: safeTyre,
+            pitLap: parsedPitLap,
+            plannedLaps: parsedPlannedLaps,
+            updatedAt: new Date()
+        };
+
+        await league.save();
+
+        res.json({
+            success: true,
+            strategy: league.members[memberIndex].raceStrategy
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const qualifyRaceHandler = async (req, res) => {
+    try {
+        const league = await League.findById(req.params.id)
+            .populate('members.user', 'username displayName teamName avatar country');
+
+        if (!league) {
+            return res.status(404).json({ success: false, message: 'League not found' });
+        }
+
+        const memberIndex = league.members.findIndex(m => getMemberUserId(m) === req.user.id);
+        if (memberIndex === -1) {
+            return res.status(403).json({ success: false, message: 'Not a member of this league' });
+        }
+
+        const schedule = getLeagueRaceScheduleStatus(league);
+        if (!schedule.canRaceNow) {
+            return res.status(403).json({
+                success: false,
+                message: schedule.message,
+                schedule
+            });
+        }
+
+        const member = league.members[memberIndex];
+        const maxRacesPerDay = 1;
+        const racesToday = getMemberRacesToday(member, schedule.timezone);
+        if (racesToday >= maxRacesPerDay) {
+            return res.status(403).json({
+                success: false,
+                message: `Has alcanzado el limite de ${maxRacesPerDay} carrera diaria`,
+                reason: 'daily_limit',
+                racesToday,
+                maxRacesPerDay,
+                schedule
+            });
+        }
+
+        if (!member.currentPilot) {
+            return res.status(400).json({
+                success: false,
+                message: 'Necesitas un piloto contratado para clasificar'
+            });
+        }
+
+        const raceNumber = schedule.currentRaceNumber;
+        const track = getTrackForLeague(league);
+        const lapTimeMs = calculateQualifyingLapMs(track, member);
+
+        member.qualifying = {
+            lapTimeMs,
+            lapTime: formatLapTime(lapTimeMs),
+            position: null,
+            raceNumber,
+            updatedAt: new Date()
+        };
+
+        const participants = buildRaceCenterParticipants(league);
+        participants.forEach((participant) => {
+            const idx = league.members.findIndex(memberEntry => getMemberUserId(memberEntry) === participant.userId);
+            if (idx !== -1) {
+                league.members[idx].qualifying.position = participant.gridPosition;
+                league.members[idx].qualifying.raceNumber = raceNumber;
+            }
+        });
+
+        await league.save();
+
+        const myParticipant = participants.find(participant => participant.userId === req.user.id);
+
+        res.json({
+            success: true,
+            raceNumber,
+            track,
+            lapTime: member.qualifying.lapTime,
+            lapTimeMs: member.qualifying.lapTimeMs,
+            position: myParticipant?.gridPosition || null,
+            participants,
+            schedule
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// POST /api/online/leagues/:id/race/strategy - Save strategy for current race
+router.post('/leagues/:id/race/strategy', auth, saveRaceStrategyHandler);
+// Compatibility aliases
+router.post('/leagues/:id/strategy', auth, saveRaceStrategyHandler);
+
+// POST /api/online/leagues/:id/race/qualify - Save one-lap qualifying for the manager
+router.post('/leagues/:id/race/qualify', auth, qualifyRaceHandler);
+// Compatibility aliases
+router.post('/leagues/:id/race/qualifying', auth, qualifyRaceHandler);
+router.post('/leagues/:id/qualify', auth, qualifyRaceHandler);
+
+// POST /api/online/leagues/:id/race/complete-multiplayer - Apply multiplayer race results
+router.post('/leagues/:id/race/complete-multiplayer', auth, async (req, res) => {
+    try {
+        const { results, trackId, laps } = req.body;
+        const league = await League.findById(req.params.id)
+            .populate('members.user', 'username displayName teamName avatar country');
+
+        if (!league) {
+            return res.status(404).json({ success: false, message: 'League not found' });
+        }
+
+        const requesterMemberIndex = league.members.findIndex(member => getMemberUserId(member) === req.user.id);
+        if (requesterMemberIndex === -1) {
+            return res.status(403).json({ success: false, message: 'Not a member of this league' });
+        }
+
+        const schedule = getLeagueRaceScheduleStatus(league);
+        if (!schedule.canRaceNow) {
+            return res.status(403).json({
+                success: false,
+                message: schedule.message,
+                schedule
+            });
+        }
+
+        const maxRacesPerDay = 1;
+        const requesterRacesToday = getMemberRacesToday(league.members[requesterMemberIndex], schedule.timezone);
+        if (requesterRacesToday >= maxRacesPerDay) {
+            return res.status(403).json({
+                success: false,
+                message: `Has alcanzado el limite de ${maxRacesPerDay} carrera diaria`,
+                reason: 'daily_limit',
+                racesToday: requesterRacesToday,
+                maxRacesPerDay,
+                schedule
+            });
+        }
+
+        const participants = buildRaceCenterParticipants(league);
+        if (participants.length < 2) {
+            return res.status(400).json({ success: false, message: 'Se necesitan al menos 2 managers para cerrar la carrera' });
+        }
+
+        const finishOrder = normalizeFinishOrder(results, participants);
+        const users = await User.find({ _id: { $in: finishOrder } });
+        const usersById = new Map(users.map(user => [user._id.toString(), user]));
+
+        const raceNumber = schedule.currentRaceNumber;
+        const track = TRACK_CATALOG[trackId] || getTrackForLeague(league);
+        const raceResults = [];
+
+        finishOrder.forEach((userId, index) => {
+            const position = index + 1;
+            const points = F1_POINTS_TABLE[index] || 0;
+            const xpEarned = getXpForRacePosition(position, finishOrder.length);
+            const moneyEarned = RACE_MONEY_TABLE[index] || 75000;
+
+            const memberIndex = league.members.findIndex(member => getMemberUserId(member) === userId);
+            if (memberIndex !== -1) {
+                const member = league.members[memberIndex];
+                member.stats.points = (member.stats.points || 0) + points;
+                member.stats.racesCompleted = (member.stats.racesCompleted || 0) + 1;
+                member.dailyRacesCount = {
+                    date: new Date(),
+                    count: 1
+                };
+                if (position === 1) {
+                    member.stats.wins = (member.stats.wins || 0) + 1;
+                }
+                if (position <= 3) {
+                    member.stats.podiums = (member.stats.podiums || 0) + 1;
+                }
+            }
+
+            const standingIndex = ensureStandingEntry(league, userId);
+            if (standingIndex !== -1) {
+                league.currentSeason.standings[standingIndex].points += points;
+                if (position === 1) {
+                    league.currentSeason.standings[standingIndex].wins += 1;
+                }
+                if (position <= 3) {
+                    league.currentSeason.standings[standingIndex].podiums += 1;
+                }
+            }
+
+            const user = usersById.get(userId);
+            if (user) {
+                const xpUpdate = addXpToOnlineData(user.gameData.online || {}, xpEarned);
+                user.gameData.online = xpUpdate.online;
+                user.gameData.online.totalRaces = (user.gameData.online.totalRaces || 0) + 1;
+                if (position === 1) {
+                    user.gameData.online.onlineWins = (user.gameData.online.onlineWins || 0) + 1;
+                }
+                if (position <= 3) {
+                    user.gameData.online.onlinePodiums = (user.gameData.online.onlinePodiums || 0) + 1;
+                }
+
+                user.gameData.budget = (user.gameData.budget || 0) + moneyEarned;
+
+                user.gameData.globalRanking = user.gameData.globalRanking || { rank: 'learner', totalWins: 0, currentSeason: { wins: 0, races: 0 } };
+                user.gameData.globalRanking.currentSeason = user.gameData.globalRanking.currentSeason || { wins: 0, races: 0 };
+                user.gameData.globalRanking.currentSeason.races = (user.gameData.globalRanking.currentSeason.races || 0) + 1;
+                if (position === 1) {
+                    user.gameData.globalRanking.totalWins = (user.gameData.globalRanking.totalWins || 0) + 1;
+                    user.gameData.globalRanking.currentSeason.wins = (user.gameData.globalRanking.currentSeason.wins || 0) + 1;
+                }
+            }
+
+            const participantInfo = participants.find(participant => participant.userId === userId);
+            raceResults.push({
+                position,
+                user: userId,
+                points,
+                xpEarned,
+                time: null,
+                displayName: participantInfo?.displayName || 'Manager',
+                teamName: participantInfo?.teamName || 'Sin equipo'
+            });
+        });
+
+        league.updateStandings();
+        league.currentSeason.currentRace = raceNumber;
+
+        league.members.forEach((member) => {
+            member.qualifying = {
+                lapTimeMs: null,
+                lapTime: null,
+                position: null,
+                raceNumber: raceNumber + 1,
+                updatedAt: null
+            };
+        });
+
+        league.raceHistory.push({
+            raceNumber,
+            circuit: track.name,
+            date: new Date(),
+            results: raceResults.map(result => ({
+                position: result.position,
+                user: result.user,
+                points: result.points,
+                time: result.time,
+                xpEarned: result.xpEarned
+            }))
+        });
+        if (league.raceHistory.length > 120) {
+            league.raceHistory = league.raceHistory.slice(-120);
+        }
+
+        await Promise.all(users.map(async (user) => {
+            user.markModified('gameData');
+            await user.save();
+        }));
+        await league.save();
+
+        const standings = buildLeagueStandings(league);
+
+        res.json({
+            success: true,
+            raceNumber,
+            track,
+            laps: Number.isFinite(Number(laps)) ? Number(laps) : track.laps,
+            results: raceResults,
+            standings,
+            schedule: getLeagueRaceScheduleStatus(league)
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -336,6 +1391,7 @@ router.post('/leagues', auth, async (req, res) => {
     try {
         const { name, description, logo, country, schedule, settings } = req.body;
         const user = await User.findById(req.user.id);
+        const safeSchedule = sanitizeLeagueScheduleInput(schedule || {}, true);
         
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
@@ -367,7 +1423,11 @@ router.post('/leagues', auth, async (req, res) => {
             description,
             logo,
             country: country || user.country,
-            schedule: schedule || {},
+            schedule: safeSchedule,
+            dailyRaces: {
+                maxRacesPerDay: 1,
+                restDays: [0, 6]
+            },
             settings: settings || {},
             creator: user._id,
             members: [{
@@ -427,7 +1487,7 @@ router.post('/leagues/:id/join', auth, async (req, res) => {
         }
         
         // Check level requirement
-        const userLevel = calculateLevel(user.gameData.online?.xp || 0).level;
+        const userLevel = mergeOnlineData(user.gameData.online || {}, {}).level;
         if (userLevel < league.settings.minLevel) {
             return res.status(403).json({
                 success: false,
@@ -516,7 +1576,14 @@ router.put('/leagues/:id', auth, async (req, res) => {
         if (name) league.name = name;
         if (description !== undefined) league.description = description;
         if (logo !== undefined) league.logo = logo;
-        if (schedule) league.schedule = { ...league.schedule, ...schedule };
+        if (schedule) {
+            league.schedule = {
+                ...league.schedule,
+                ...sanitizeLeagueScheduleInput(schedule, true)
+            };
+            league.dailyRaces.maxRacesPerDay = 1;
+            league.dailyRaces.restDays = [0, 6];
+        }
         if (settings) {
             // Only owner can change certain settings
             if (member.role === 'owner') {
@@ -602,7 +1669,7 @@ router.get('/my-leagues', auth, async (req, res) => {
 // LEAGUE HQ ROUTES
 // ===========================================
 
-// HQ Upgrade costs (base cost * 1.2^level)
+// HQ Upgrade costs (base cost * 1.35^(nextLevel-1))
 const HQ_CONFIG = {
     components: {
         engine: { baseCost: 500000, maxLevel: 50 },
@@ -613,7 +1680,8 @@ const HQ_CONFIG = {
     },
     calculateCost: (component, level) => {
         const base = HQ_CONFIG.components[component]?.baseCost || 500000;
-        return Math.floor(base * Math.pow(1.2, level - 1));
+        const safeLevel = Math.max(1, Number(level) || 1);
+        return Math.floor(base * Math.pow(1.35, safeLevel - 1));
     }
 };
 
@@ -642,21 +1710,22 @@ router.get('/leagues/:id/hq', auth, async (req, res) => {
             market: { level: 1 }
         };
         
-        // Calculate next upgrade costs
+        // Calculate next upgrade costs using known components only
         const hqWithCosts = {};
-        for (const [component, data] of Object.entries(userHQ)) {
+        Object.keys(HQ_CONFIG.components).forEach((component) => {
+            const level = sanitizeLevel(userHQ?.[component]?.level);
             hqWithCosts[component] = {
-                level: data.level,
-                nextCost: HQ_CONFIG.calculateCost(component, data.level + 1),
+                level,
+                nextCost: HQ_CONFIG.calculateCost(component, level + 1),
                 maxLevel: HQ_CONFIG.components[component]?.maxLevel || 50
             };
-        }
+        });
         
         res.json({
             success: true,
             hq: hqWithCosts,
             pilot: memberData.currentPilot || null,
-            accountLevel: user.gameData?.online?.level || 1
+            accountLevel: mergeOnlineData(user.gameData?.online || {}, {}).level
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -695,8 +1764,8 @@ router.post('/leagues/:id/hq/upgrade', auth, async (req, res) => {
             };
         }
         
-        const currentLevel = league.members[memberIndex].hq[component]?.level || 1;
-        const accountLevel = user.gameData?.online?.level || 1;
+        const currentLevel = sanitizeLevel(league.members[memberIndex].hq[component]?.level);
+        const accountLevel = mergeOnlineData(user.gameData?.online || {}, {}).level;
         
         // Check level limit
         if (currentLevel >= accountLevel) {
@@ -851,15 +1920,40 @@ router.get('/leagues/:id/daily-status', auth, async (req, res) => {
         if (!league) {
             return res.status(404).json({ success: false, message: 'League not found' });
         }
-        
-        const raceStatus = league.canUserRaceToday(req.user.id);
+
+        const memberIndex = league.members.findIndex(m => m.user.toString() === req.user.id);
+        if (memberIndex === -1) {
+            return res.status(403).json({ success: false, message: 'Not a member of this league' });
+        }
+
+        const schedule = getLeagueRaceScheduleStatus(league);
+        const maxRacesPerDay = 1;
+
+        const member = league.members[memberIndex];
+        const racesToday = getMemberRacesToday(member, schedule.timezone);
+        const dailyLimitReached = racesToday >= maxRacesPerDay;
+        const canRace = schedule.canRaceNow && !dailyLimitReached;
+        const racesRemaining = canRace ? (maxRacesPerDay - racesToday) : 0;
+        const reason = canRace
+            ? null
+            : (schedule.canRaceNow ? 'daily_limit' : 'scheduled_window');
+        const message = canRace
+            ? `Carrera ${schedule.currentRaceNumber} disponible`
+            : (dailyLimitReached
+                ? `Has alcanzado el limite de ${maxRacesPerDay} carrera diaria`
+                : schedule.message);
         
         res.json({
             success: true,
-            ...raceStatus,
-            maxRacesPerDay: league.dailyRaces.maxRacesPerDay,
+            canRace,
+            racesToday,
+            racesRemaining,
+            maxRacesPerDay,
             restDays: league.dailyRaces.restDays,
-            isRestDay: league.dailyRaces.restDays.includes(new Date().getDay())
+            isRestDay: schedule.isRestDay,
+            reason,
+            message,
+            schedule
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -881,23 +1975,39 @@ router.post('/leagues/:id/race/complete', auth, async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
         
-        // Check if can race today
-        const raceStatus = league.canUserRaceToday(req.user.id);
-        if (!raceStatus.canRace) {
+        const memberIndex = league.members.findIndex(m => m.user.toString() === req.user.id);
+        if (memberIndex === -1) {
             return res.status(403).json({
                 success: false,
-                message: raceStatus.message,
-                reason: raceStatus.reason
+                message: 'Not a member of this league',
+                reason: 'not_member'
+            });
+        }
+
+        const schedule = getLeagueRaceScheduleStatus(league);
+        const maxRacesPerDay = 1;
+        const racesToday = getMemberRacesToday(league.members[memberIndex], schedule.timezone);
+
+        if (!schedule.canRaceNow || racesToday >= maxRacesPerDay) {
+            return res.status(403).json({
+                success: false,
+                message: !schedule.canRaceNow
+                    ? schedule.message
+                    : `Has alcanzado el limite de ${maxRacesPerDay} carrera diaria`,
+                reason: !schedule.canRaceNow ? 'scheduled_window' : 'daily_limit',
+                schedule
             });
         }
         
-        // Calculate XP based on position
-        const xpEarned = XP_CONFIG.getXpForPosition(position);
-        
+        // XP progresivo: P1 = 100, bajando por posición
+        const xpEarned = getXpForRacePosition(position, Math.max(2, league.members.length));
+
         // Update user's XP
-        const oldLevel = calculateLevel(user.gameData.online?.xp || 0).level;
-        user.gameData.online = user.gameData.online || {};
-        user.gameData.online.xp = (user.gameData.online.xp || 0) + xpEarned;
+        const currentOnline = mergeOnlineData(user.gameData.online || {}, {});
+        const oldLevel = currentOnline.level;
+        const xpUpdate = addXpToOnlineData(currentOnline, xpEarned);
+
+        user.gameData.online = xpUpdate.online;
         user.gameData.online.totalRaces = (user.gameData.online.totalRaces || 0) + 1;
         
         if (position === 1) {
@@ -907,14 +2017,15 @@ router.post('/leagues/:id/race/complete', auth, async (req, res) => {
             user.gameData.online.onlinePodiums = (user.gameData.online.onlinePodiums || 0) + 1;
         }
         
-        const newLevelData = calculateLevel(user.gameData.online.xp);
-        user.gameData.online.level = newLevelData.level;
+        const newLevelData = {
+            ...xpUpdate.levelData,
+            level: user.gameData.online.level
+        };
         
         // Increment daily race count
         await league.incrementDailyRaceCount(req.user.id);
         
         // Update league standings
-        const memberIndex = league.members.findIndex(m => m.user.toString() === req.user.id);
         if (memberIndex !== -1) {
             league.members[memberIndex].stats.racesCompleted++;
             if (position === 1) league.members[memberIndex].stats.wins++;
@@ -936,29 +2047,25 @@ router.post('/leagues/:id/race/complete', auth, async (req, res) => {
             }
             league.updateStandings();
             
-            // Check if season complete (15 races)
-            league.currentSeason.currentRace++;
-            if (league.currentSeason.currentRace >= 15) {
-                // Announce winner in chat
-                await league.announceSeasonWinner();
-            }
         }
         
         await user.save();
         await league.save();
         
-        const leveledUp = newLevelData.level > oldLevel;
-        const raceStatusAfter = league.canUserRaceToday(req.user.id);
+        const leveledUp = user.gameData.online.level > oldLevel;
+        const scheduleAfter = getLeagueRaceScheduleStatus(league);
+        const racesTodayAfter = getMemberRacesToday(league.members[memberIndex], scheduleAfter.timezone);
         
         res.json({
             success: true,
             xpEarned,
             position,
             leveledUp,
-            newLevel: newLevelData.level,
+            newLevel: user.gameData.online.level,
             xpProgress: newLevelData,
-            racesRemaining: raceStatusAfter.racesRemaining,
-            racesToday: raceStatusAfter.racesToday
+            racesRemaining: Math.max(0, maxRacesPerDay - racesTodayAfter),
+            racesToday: racesTodayAfter,
+            schedule: scheduleAfter
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -1047,7 +2154,7 @@ router.post('/leagues/:id/chat', auth, async (req, res) => {
 // ===========================================
 
 // POST /api/online/shop/buy-coins-simulated - Simulate coin purchase (DEMO MODE)
-router.post('/shop/buy-coins-simulated', auth, async (req, res) => {
+router.post('/shop/buy-coins-simulated', auth, enforceShopPurchaseCooldown, async (req, res) => {
     try {
         const { packageId } = req.body;
         const user = await User.findById(req.user.id);
@@ -1062,8 +2169,9 @@ router.post('/shop/buy-coins-simulated', auth, async (req, res) => {
         }
         
         // SIMULATED PURCHASE - Add coins immediately
-        user.gameData.online = user.gameData.online || {};
-        user.gameData.online.coins = (user.gameData.online.coins || 0) + package_.coins;
+        user.gameData.online = mergeOnlineData(user.gameData.online || {}, {
+            coins: (user.gameData.online?.coins || 0) + package_.coins
+        });
         await user.save();
         
         res.json({

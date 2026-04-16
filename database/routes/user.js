@@ -6,6 +6,7 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const { protect } = require('../middleware/auth');
 const User = require('../models/User');
+const { mergeOnlineData } = require('../utils/onlineProgression');
 
 // ===========================================
 // @route   GET /api/user/profile
@@ -84,7 +85,9 @@ router.put('/profile', protect, [
             if (gameData.racesCompleted !== undefined) user.gameData.racesCompleted = gameData.racesCompleted;
             if (gameData.careerMode !== undefined) user.gameData.careerMode = gameData.careerMode;
             if (gameData.raceHistory !== undefined) user.gameData.raceHistory = gameData.raceHistory;
-            if (gameData.online !== undefined) user.gameData.online = gameData.online;
+            if (gameData.online !== undefined) {
+                user.gameData.online = mergeOnlineData(user.gameData.online || {}, gameData.online || {});
+            }
             if (gameData.onlineLeagues !== undefined) user.gameData.onlineLeagues = gameData.onlineLeagues;
             if (gameData.hqLevels !== undefined) user.gameData.hqLevels = gameData.hqLevels;
             if (gameData.currentPilot !== undefined) user.gameData.currentPilot = gameData.currentPilot;
@@ -141,7 +144,9 @@ router.put('/gamedata', protect, async (req, res) => {
         if (racesCompleted !== undefined) user.gameData.racesCompleted = racesCompleted;
         if (careerMode !== undefined) user.gameData.careerMode = careerMode;
         if (raceHistory !== undefined) user.gameData.raceHistory = raceHistory;
-        if (online !== undefined) user.gameData.online = online;
+        if (online !== undefined) {
+            user.gameData.online = mergeOnlineData(user.gameData.online || {}, online || {});
+        }
         if (onlineLeagues !== undefined) user.gameData.onlineLeagues = onlineLeagues;
 
         user.markModified('gameData');

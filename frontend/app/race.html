@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MS Manager - Carrera Offline</title>
+    <title>MS Manager - Carrera</title>
     <link rel="stylesheet" href="css/race.css">
 </head>
 
@@ -12,7 +12,7 @@
     <div class="race-container">
         <header class="top-bar">
             <div class="top-left">
-                <a href="offline.html" class="back-link">← Volver</a>
+                <a href="offline.html" class="back-link" id="race-back-link">← Volver</a>
                 <span class="top-label">Vuelta</span>
                 <span class="top-value" id="lap-display">0/0</span>
             </div>
@@ -98,8 +98,8 @@
             <h2>🏁 Resultados</h2>
             <table id="results-table"></table>
             <div class="results-actions">
-                <button class="results-btn" onclick="window.location.href='offline.html'">Volver</button>
-                <button class="results-btn primary" onclick="window.location.href='dashboard.html'">Dashboard</button>
+                <button class="results-btn" id="results-back-btn">Volver</button>
+                <button class="results-btn primary" id="results-dashboard-btn">Dashboard</button>
             </div>
         </div>
     </div>

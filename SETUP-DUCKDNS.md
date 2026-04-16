@@ -11,6 +11,10 @@ nano .env
 
 Obtén tu token desde: https://www.duckdns.org/
 
+Importante:
+- `DUCKDNS_TOKEN` debe ser solo el token (texto), no una URL.
+- `DOMAIN` debe ser el dominio completo (ej: `msmanager.duckdns.org`).
+
 ### 2. Abrir puertos en el firewall
 ```bash
 sudo ufw allow 80/tcp
@@ -38,6 +42,8 @@ Este script:
 ```bash
 docker compose up -d
 ```
+
+Incluye `frontend`, `backend` y `certbot` (renovación automática cada 12h).
 
 ### 6. Verificar que todo funciona
 ```bash

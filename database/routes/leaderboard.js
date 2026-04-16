@@ -43,8 +43,34 @@ const RANK_CONFIG = {
     }
 };
 
-// Season duration in days
-const SEASON_DURATION_DAYS = 30;
+// Season duration in days (weekly seasons)
+const SEASON_DURATION_DAYS = 7;
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function getCurrentWeekWindow(baseDate = new Date()) {
+    const now = new Date(baseDate);
+    const day = (now.getDay() + 6) % 7; // Monday=0 ... Sunday=6
+
+    const startDate = new Date(now);
+    startDate.setHours(0, 0, 0, 0);
+    startDate.setDate(startDate.getDate() - day);
+
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 6);
+    endDate.setHours(23, 59, 59, 999);
+
+    return { startDate, endDate };
+}
+
+function getWeeklySeasonNumber(baseDate = new Date()) {
+    const date = new Date(baseDate);
+    const startOfYear = new Date(date.getFullYear(), 0, 1);
+    startOfYear.setHours(0, 0, 0, 0);
+
+    const diffDays = Math.floor((date - startOfYear) / DAY_MS);
+    return Math.floor(diffDays / SEASON_DURATION_DAYS) + 1;
+}
 
 // @route   GET /api/leaderboard
 // @desc    Get global leaderboard
@@ -104,9 +130,8 @@ router.get('/global', async (req, res) => {
         
         // Calculate current season info
         const now = new Date();
-        const seasonStart = new Date(now.getFullYear(), now.getMonth(), 1);
-        const seasonEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        const daysRemaining = Math.ceil((seasonEnd - now) / (1000 * 60 * 60 * 24));
+        const weekWindow = getCurrentWeekWindow(now);
+        const daysRemaining = Math.max(0, Math.ceil((weekWindow.endDate - now) / DAY_MS));
         
         // Group by rank tiers
         const tiers = {
@@ -145,9 +170,9 @@ router.get('/global', async (req, res) => {
         res.json({
             success: true,
             season: {
-                current: Math.floor((now - new Date(now.getFullYear(), 0, 1)) / (1000 * 60 * 60 * 24 * 30)) + 1,
-                startDate: seasonStart,
-                endDate: seasonEnd,
+                current: getWeeklySeasonNumber(now),
+                startDate: weekWindow.startDate,
+                endDate: weekWindow.endDate,
                 daysRemaining,
                 durationDays: SEASON_DURATION_DAYS
             },
@@ -312,7 +337,7 @@ router.post('/global/process-season-end', async (req, res) => {
             tierUsers[tier] = allUsers.filter(u => u.gameData.globalRanking.rank === tier);
         });
         
-        const seasonNumber = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 1)) / (1000 * 60 * 60 * 24 * 30)) + 1;
+        const seasonNumber = getWeeklySeasonNumber(new Date());
         
         // Process each tier
         for (const tier of rankTiers) {

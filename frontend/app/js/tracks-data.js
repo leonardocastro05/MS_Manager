@@ -227,6 +227,7 @@ const TRACKS_DATA = {
         id: 'bahrain',
         name: 'Bahrain International Circuit (Real Layout)',
         shortName: 'Bahrain',
+        invertProgress: true,
         country: 'Bahréin',
         flag: '🇧🇭',
         length: 5.412,
@@ -466,7 +467,7 @@ const TRACKS_DATA = {
             { id: 3, name: 'Last Hook', waypoint: 13, type: 'hairpin', angle: 165, speed: 82 }
         ],
         waypoints: [
-            { id: 0, x: 252, y: 342, type: 'start', speed: 0, throttle: 1.0, brake: 0 },
+            { id: 0, x: 67, y: 375, type: 'start', speed: 0, throttle: 1.0, brake: 0 },
             { id: 1, x: 378, y: 338, type: 'drs-start', speed: 290, throttle: 1.0, brake: 0, drs: true },
             { id: 2, x: 468, y: 328, type: 'drs-end', speed: 305, throttle: 1.0, brake: 0 },
             { id: 3, x: 468, y: 274, type: 'brake', speed: 212, throttle: 0, brake: 0.82 },
@@ -481,10 +482,13 @@ const TRACKS_DATA = {
             { id: 12, x: 248, y: 242, type: 'exit', speed: 155, throttle: 0.86, brake: 0 },
             { id: 13, x: 170, y: 304, type: 'apex', speed: 82, throttle: 0.30, brake: 0.34, corner: 'Last Hook' },
             { id: 14, x: 190, y: 338, type: 'exit', speed: 145, throttle: 0.84, brake: 0 },
-            { id: 15, x: 252, y: 342, type: 'finish', speed: 260, throttle: 1.0, brake: 0 }
+                    { id: 15, x: 67, y: 375, type: 'finish', speed: 260, throttle: 1.0, brake: 0 }
         ],
-        racingLinePath: `M 252,342 L 378,338 L 468,328 Q 468,274 426,238 Q 360,220 384,166 Q 456,154 470,98
-          Q 364,66 288,102 Q 268,176 248,242 Q 170,304 190,338 L 252,342`,
+                racingLinePath: `M 67,375 L 10,375 L 6,370 L 4,365 L 6,363 L 18,353 L 79,346 L 131,342 L 138,331
+                    L 188,170 L 215,85 L 221,65 L 226,48 L 246,12 L 282,10 L 294,51 L 278,59 L 256,42 L 252,66 L 274,82
+                    L 304,78 L 323,75 L 346,72 L 376,67 L 425,79 L 470,101 L 444,118 L 388,118 L 334,120 L 310,152
+                    L 321,206 L 323,273 L 270,278 L 265,299 L 273,320 L 296,323 L 368,327 L 399,328 L 439,330 L 445,315
+                    L 447,294 L 483,295 L 489,349 L 480,361 L 462,372 L 324,375 L 218,375 L 155,374 L 67,375`,
         referenceTimes: { pole: 91.234, fastestLap: 92.480, average: 94.1 },
         pitLane: {
             entry: { x: 268, y: 350 },

@@ -27,6 +27,12 @@ fi
 
 source .env
 
+if ! command -v openssl >/dev/null 2>&1; then
+    echo -e "${RED}Error: openssl no está instalado${NC}"
+    echo -e "${YELLOW}Instálalo con: sudo apt install openssl${NC}"
+    exit 1
+fi
+
 # Verificar variables requeridas
 if [ -z "$DOMAIN" ] || [ -z "$SSL_EMAIL" ]; then
     echo -e "${RED}Error: DOMAIN y SSL_EMAIL deben estar configurados en .env${NC}"
@@ -43,6 +49,15 @@ echo -e "${YELLOW}Dominio: ${DOMAIN}${NC}"
 echo -e "${YELLOW}Email: ${SSL_EMAIL}${NC}"
 echo ""
 
+# Generar nginx.conf desde plantilla usando el dominio
+if [ ! -f ./nginx/nginx.conf.template ]; then
+    echo -e "${RED}Error: Archivo nginx/nginx.conf.template no encontrado${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}[0/6] Generando configuración de Nginx para ${DOMAIN}...${NC}"
+sed "s/__DOMAIN__/${DOMAIN}/g" ./nginx/nginx.conf.template > ./nginx/nginx.conf
+
 # Actualizar DuckDNS con la IP actual
 echo -e "${GREEN}[1/5] Actualizando DuckDNS con IP actual...${NC}"
 RESPONSE=$(curl -s "https://www.duckdns.org/update?domains=${DOMAIN%%.*}&token=${DUCKDNS_TOKEN}&ip=")
@@ -55,16 +70,28 @@ else
 fi
 
 # Crear directorios para certificados si no existen
-echo -e "${GREEN}[2/5] Creando directorios...${NC}"
+echo -e "${GREEN}[2/6] Creando directorios...${NC}"
 mkdir -p ./certbot/conf
 mkdir -p ./certbot/www
+mkdir -p ./certbot/conf/live/${DOMAIN}
+
+# Crear certificado dummy para que Nginx pueda iniciar con SSL antes de emitir el certificado real
+if [ ! -f "./certbot/conf/live/${DOMAIN}/fullchain.pem" ] || [ ! -f "./certbot/conf/live/${DOMAIN}/privkey.pem" ]; then
+    echo -e "${GREEN}[3/6] Generando certificado temporal (dummy)...${NC}"
+    openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
+        -keyout ./certbot/conf/live/${DOMAIN}/privkey.pem \
+        -out ./certbot/conf/live/${DOMAIN}/fullchain.pem \
+        -subj "/CN=${DOMAIN}" >/dev/null 2>&1
+else
+    echo -e "${GREEN}[3/6] Certificado existente detectado, omitiendo dummy...${NC}"
+fi
 
 # Detener contenedores si están corriendo
-echo -e "${GREEN}[3/5] Deteniendo contenedores existentes...${NC}"
+echo -e "${GREEN}[4/6] Deteniendo contenedores existentes...${NC}"
 docker compose down 2>/dev/null || true
 
 # Crear un servidor temporal de Nginx para validación
-echo -e "${GREEN}[4/5] Iniciando servidor temporal para validación ACME...${NC}"
+echo -e "${GREEN}[5/6] Iniciando servidor temporal para validación ACME...${NC}"
 docker compose up -d frontend
 
 # Esperar a que Nginx esté listo
@@ -72,7 +99,7 @@ echo "Esperando a que Nginx inicie..."
 sleep 5
 
 # Solicitar certificado SSL
-echo -e "${GREEN}[5/5] Solicitando certificado SSL de Let's Encrypt...${NC}"
+echo -e "${GREEN}[6/6] Solicitando certificado SSL de Let's Encrypt...${NC}"
 docker compose run --rm certbot certonly \
     --webroot \
     --webroot-path=/var/www/certbot \
@@ -82,11 +109,14 @@ docker compose run --rm certbot certonly \
     -d ${DOMAIN}
 
 if [ $? -eq 0 ]; then
+    echo -e "${GREEN}✓ Recargando Nginx con certificado real...${NC}"
+    docker compose restart frontend
+
     echo -e "${GREEN}========================================${NC}"
     echo -e "${GREEN}✓ ¡Certificado SSL obtenido con éxito!${NC}"
     echo -e "${GREEN}========================================${NC}"
     echo ""
-    echo -e "${YELLOW}Ahora puedes iniciar todos los servicios con:${NC}"
+    echo -e "${YELLOW}Ahora inicia todos los servicios (incluyendo renovación):${NC}"
     echo -e "${GREEN}docker compose up -d${NC}"
     echo ""
     echo -e "${YELLOW}Tu aplicación estará disponible en:${NC}"

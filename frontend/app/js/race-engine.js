@@ -516,7 +516,11 @@ class RaceVisualizer {
         if (!car || !this.racingPath) return;
         
         // Progress es 0-1 representando el porcentaje de la vuelta
-        const point = this.racingPath.getPointAtLength(progress * this.pathLength);
+        const normalizedProgress = ((progress % 1) + 1) % 1;
+        const adjustedProgress = this.track.invertProgress
+            ? ((1 - normalizedProgress) + 1) % 1
+            : normalizedProgress;
+        const point = this.racingPath.getPointAtLength(adjustedProgress * this.pathLength);
         
         car.element.setAttribute('cx', point.x);
         car.element.setAttribute('cy', point.y);

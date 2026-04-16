@@ -33,12 +33,41 @@
    SECTION: HOME
    ========================================== */
 
+#section-home {
+    max-width: 1700px;
+}
+
+.home-overview-layout {
+    display: grid;
+    grid-template-columns: minmax(720px, 1.1fr) minmax(420px, 0.9fr);
+    gap: 26px;
+    align-items: start;
+}
+
+.home-overview-main,
+.home-overview-side {
+    min-width: 0;
+}
+
+.home-overview-main {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.home-overview-side {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
 .league-info-card {
     background: linear-gradient(145deg, rgba(30, 30, 50, 0.9), rgba(20, 20, 35, 0.95));
     border-radius: 20px;
-    padding: 30px;
-    margin-bottom: 30px;
+    padding: 34px;
+    margin-bottom: 0;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.22);
 }
 
 .league-banner {
@@ -67,14 +96,15 @@
 
 .league-details h1 {
     font-family: 'Orbitron', sans-serif;
-    font-size: 1.8rem;
+    font-size: 2.2rem;
     color: #fff;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .league-desc-short {
-    color: rgba(255, 255, 255, 0.6);
-    margin-bottom: 15px;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 1rem;
+    margin-bottom: 16px;
 }
 
 .league-meta {
@@ -184,20 +214,21 @@
 /* Quick Stats Row */
 .quick-stats-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 20px;
-    margin-bottom: 30px;
+    margin-bottom: 0;
 }
 
 .quick-stat-card {
     background: rgba(30, 30, 50, 0.8);
     border-radius: 15px;
-    padding: 20px;
+    padding: 22px;
     display: flex;
     align-items: center;
     gap: 15px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
+    min-height: 102px;
 }
 
 .quick-stat-card:hover {
@@ -212,7 +243,7 @@
 .qs-value {
     display: block;
     font-family: 'Orbitron', sans-serif;
-    font-size: 1.5rem;
+    font-size: 1.65rem;
     color: #fff;
 }
 
@@ -224,16 +255,41 @@
 /* Quick Actions */
 .home-quick-actions {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 15px;
-    margin-bottom: 30px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 0;
+}
+
+.home-actions-card {
+    min-height: 0;
+}
+
+.home-actions-card .section-card-header {
+    margin-bottom: 14px;
+}
+
+.home-actions-grid .quick-action-btn {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    min-height: 70px;
+    padding: 16px;
+    border-radius: 12px;
+}
+
+.home-actions-grid .qa-icon {
+    font-size: 1.4rem;
+}
+
+.home-actions-grid .qa-text {
+    font-size: 1rem;
 }
 
 .quick-action-btn {
     background: linear-gradient(145deg, rgba(0, 200, 255, 0.2), rgba(0, 150, 200, 0.1));
     border: 1px solid rgba(0, 200, 255, 0.3);
     border-radius: 15px;
-    padding: 20px;
+    padding: 22px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -262,8 +318,16 @@
 .section-card {
     background: rgba(30, 30, 50, 0.8);
     border-radius: 20px;
-    padding: 25px;
+    padding: 26px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.home-overview-side .section-card {
+    min-height: 260px;
+}
+
+.home-leaderboard-card {
+    min-height: 330px;
 }
 
 .section-card-header {
@@ -295,7 +359,7 @@
     display: grid;
     grid-template-columns: 40px 1fr 1fr 80px;
     align-items: center;
-    padding: 12px 15px;
+    padding: 14px 16px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
     gap: 15px;
@@ -1316,7 +1380,8 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 30px;
+    margin: 0 auto 30px;
+    max-width: 1700px;
     flex-wrap: wrap;
     gap: 20px;
 }
@@ -1363,17 +1428,36 @@
     margin: 0;
 }
 
+.race-overview-layout {
+    display: grid;
+    grid-template-columns: minmax(620px, 1.1fr) minmax(500px, 0.9fr);
+    gap: 28px;
+    max-width: 1700px;
+    margin: 0 auto 36px;
+    align-items: start;
+}
+
+.race-overview-column {
+    min-width: 0;
+}
+
+.race-overview-column.strategy-column {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
 /* Current Race Card */
 .current-race-card {
     display: grid;
-    grid-template-columns: 200px 1fr auto;
-    gap: 30px;
+    grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+    gap: 26px;
     background: linear-gradient(145deg, rgba(30, 30, 50, 0.95), rgba(20, 20, 35, 0.98));
     border-radius: 20px;
-    padding: 25px;
-    margin-bottom: 40px;
+    padding: 30px;
+    margin-bottom: 0;
     border: 1px solid rgba(0, 200, 255, 0.3);
-    align-items: center;
+    align-items: start;
 }
 
 .track-image-placeholder {
@@ -1389,14 +1473,15 @@
 
 .race-track-info h3 {
     font-family: 'Orbitron', sans-serif;
-    font-size: 1.5rem;
+    font-size: 1.9rem;
     color: #fff;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .track-location {
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 15px;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 1.05rem;
+    margin-bottom: 18px;
 }
 
 .track-stats {
@@ -1491,8 +1576,9 @@
 
 /* Track Preview Container */
 .race-track-preview {
-    width: 300px;
-    height: 240px;
+    width: 100%;
+    max-width: 360px;
+    height: 300px;
     background: linear-gradient(145deg, rgba(26, 71, 42, 0.9), rgba(10, 40, 20, 0.95));
     border-radius: 15px;
     overflow: hidden;
@@ -1500,6 +1586,7 @@
     align-items: center;
     justify-content: center;
     position: relative;
+    justify-self: center;
 }
 
 .race-track-preview svg {
@@ -1600,20 +1687,23 @@
 
 /* Race Status Panel */
 .race-status-panel {
+    grid-column: 1 / -1;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
     align-items: center;
     gap: 15px;
-    padding: 20px;
+    padding: 16px 18px;
     background: rgba(20, 20, 40, 0.5);
     border-radius: 15px;
+    flex-wrap: wrap;
 }
 
 .weather-info {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 5px;
+    gap: 10px;
 }
 
 .weather-icon {
@@ -1627,19 +1717,21 @@
 
 .race-actions {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 10px;
-    width: 100%;
+    width: auto;
+    margin-left: auto;
 }
 
 .btn-race {
-    width: 100%;
+    width: auto;
+    min-width: 170px;
     padding: 12px 20px;
     border: none;
     border-radius: 10px;
     font-family: 'Rajdhani', sans-serif;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 1.05rem;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -1693,6 +1785,221 @@
     50% {
         box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
     }
+}
+
+/* League race center panels */
+.league-race-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin-bottom: 0;
+}
+
+.league-race-panel {
+    background: linear-gradient(145deg, rgba(26, 26, 45, 0.92), rgba(14, 14, 28, 0.97));
+    border: 1px solid rgba(0, 200, 255, 0.2);
+    border-radius: 16px;
+    padding: 18px;
+}
+
+.panel-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.panel-title-row h3 {
+    margin: 0;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.race-chip {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #00c8ff;
+    background: rgba(0, 200, 255, 0.12);
+    border: 1px solid rgba(0, 200, 255, 0.35);
+}
+
+.manager-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+.manager-main {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.manager-pilot {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.05rem;
+    color: #fff;
+}
+
+.manager-level {
+    font-size: 0.86rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.manager-overall {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.68);
+}
+
+.manager-overall strong {
+    color: #00ffd5;
+}
+
+.car-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.car-stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(7, 7, 19, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.car-stat-item span {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.82rem;
+}
+
+.car-stat-item strong {
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.car-rating-box {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(0, 200, 255, 0.12);
+    border: 1px solid rgba(0, 200, 255, 0.3);
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.85rem;
+}
+
+.car-rating-box strong {
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.strategy-form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.strategy-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.strategy-field span {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.strategy-field select,
+.strategy-field input {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(10, 10, 22, 0.82);
+    color: #fff;
+    border-radius: 8px;
+    padding: 9px 10px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.95rem;
+}
+
+.strategy-actions {
+    margin-top: 14px;
+    display: flex;
+    gap: 10px;
+}
+
+.strategy-btn {
+    flex: 1;
+    padding: 12px 14px;
+    font-size: 1rem;
+}
+
+.qualifying-panel {
+    margin-bottom: 0;
+}
+
+.strategy-column .league-race-panel {
+    padding: 22px;
+}
+
+.strategy-column .panel-title-row h3 {
+    font-size: 1.15rem;
+}
+
+.strategy-column .strategy-field span {
+    font-size: 0.84rem;
+}
+
+.strategy-column .strategy-field select,
+.strategy-column .strategy-field input {
+    padding: 12px 12px;
+    font-size: 1.02rem;
+}
+
+.qualifying-table-wrap {
+    overflow-x: auto;
+}
+
+.qualifying-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 620px;
+}
+
+.qualifying-table th,
+.qualifying-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.qualifying-table th {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.62);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.qualifying-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.empty-qualy {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.55);
+    font-style: italic;
 }
 
 /* ==========================================
@@ -2602,9 +2909,65 @@
    ========================================== */
 
 @media (max-width: 1024px) {
+    .home-overview-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .home-overview-main,
+    .home-overview-side {
+        gap: 18px;
+    }
+
+    .home-quick-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .quick-stats-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .races-header {
+        max-width: none;
+    }
+
+    .race-overview-layout {
+        grid-template-columns: 1fr;
+        max-width: none;
+        gap: 20px;
+    }
+
     .current-race-card {
         grid-template-columns: 1fr;
         text-align: center;
+    }
+
+    .race-status-panel {
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .weather-info {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .race-actions {
+        width: 100%;
+        margin-left: 0;
+        flex-direction: column;
+    }
+
+    .btn-race {
+        width: 100%;
+    }
+
+    .league-race-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .strategy-form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     
     .track-image-placeholder {
@@ -2617,6 +2980,23 @@
 }
 
 @media (max-width: 768px) {
+    .league-info-card {
+        padding: 24px;
+    }
+
+    .league-details h1 {
+        font-size: 1.8rem;
+    }
+
+    .home-quick-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .home-actions-grid .quick-action-btn {
+        min-height: 64px;
+        padding: 14px;
+    }
+
     .league-banner {
         flex-direction: column;
         text-align: center;
@@ -2646,15 +3026,35 @@
         flex-wrap: wrap;
         justify-content: center;
     }
+
+    .race-overview-layout {
+        gap: 16px;
+    }
+
+    .strategy-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .strategy-actions {
+        flex-direction: column;
+    }
 }
 
 @media (max-width: 480px) {
     .content-section {
         padding: 15px;
     }
+
+    .league-info-card {
+        padding: 20px;
+    }
     
     .quick-stats-row {
         grid-template-columns: 1fr 1fr;
+    }
+
+    .home-quick-actions {
+        grid-template-columns: 1fr;
     }
     
     .shop-tabs {
