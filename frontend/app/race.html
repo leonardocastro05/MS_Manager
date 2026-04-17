@@ -46,6 +46,16 @@
             <div class="section-title">Mensajes</div>
             <div id="messages-panel"></div>
 
+            <div class="section-title hidden" id="friendly-chat-title">Chat Managers</div>
+            <div id="friendly-chat-panel" class="friendly-chat hidden">
+                <div id="friendly-chat-messages" class="friendly-chat-messages"></div>
+                <form id="friendly-chat-form" class="friendly-chat-form">
+                    <input id="friendly-chat-input" type="text" maxlength="300" placeholder="Escribe a los managers..."
+                        autocomplete="off">
+                    <button type="submit" id="friendly-chat-send">Enviar</button>
+                </form>
+            </div>
+
             <div class="section-title">Mapa</div>
             <canvas id="minimap-canvas" width="260" height="150"></canvas>
         </aside>

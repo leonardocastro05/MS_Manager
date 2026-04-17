@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MS Manager - Amistoso Online</title>
+    <link rel="stylesheet" href="css/friendly-online.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/mobile-landscape.css">
+</head>
+
+<body>
+    <div class="bg-layer bg-stars"></div>
+    <div class="bg-layer bg-grid"></div>
+
+    <header class="friendly-header">
+        <a href="dashboard.html" class="header-back">← Dashboard</a>
+        <div class="header-title-wrap">
+            <h1>Amistoso Online</h1>
+            <p>Salas rapidas entre managers con condiciones iguales</p>
+        </div>
+        <div class="header-user" id="friendly-user">Manager</div>
+    </header>
+
+    <main class="friendly-main">
+        <section class="entry-panel" id="entry-panel">
+            <article class="entry-card">
+                <h2>Crear sala</h2>
+                <p>Configura pista y vueltas. Luego invita amigos o comparte el codigo de 5 cifras.</p>
+                <label for="track-select">Pista</label>
+                <select id="track-select">
+                    <option value="monza">Monza</option>
+                    <option value="bahrain">Bahrain</option>
+                    <option value="melbourne">Melbourne</option>
+                    <option value="shanghai">Shanghai</option>
+                    <option value="montmelo">Montmelo</option>
+                    <option value="leoverse">Leoverse</option>
+                </select>
+
+                <label for="laps-select">Vueltas</label>
+                <select id="laps-select">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                </select>
+
+                <button class="primary-btn" id="create-room-btn">Crear Sala</button>
+            </article>
+
+            <article class="entry-card">
+                <h2>Unirme por codigo</h2>
+                <p>Escribe el codigo de sala para entrar directamente con otros managers.</p>
+                <label for="join-room-code">Codigo de sala</label>
+                <input id="join-room-code" type="text" maxlength="5" placeholder="12345" inputmode="numeric"
+                    autocomplete="off">
+                <button class="secondary-btn" id="join-room-btn">Entrar</button>
+            </article>
+        </section>
+
+        <section class="pending-invites hidden" id="pending-invites-card">
+            <div class="section-head">
+                <h3>Invitaciones pendientes</h3>
+                <span id="pending-invites-count">0</span>
+            </div>
+            <div id="pending-invites-list" class="stack-list"></div>
+        </section>
+
+        <section class="room-panel hidden" id="room-panel">
+            <div class="room-head">
+                <div class="room-meta">
+                    <h2>Sala #<span id="room-code-value">00000</span></h2>
+                    <p>
+                        Host: <strong id="room-host">-</strong> ·
+                        Pista: <strong id="room-track">-</strong> ·
+                        Vueltas: <strong id="room-laps">-</strong>
+                    </p>
+                </div>
+                <div class="room-head-actions">
+                    <button class="ghost-btn" id="copy-room-code-btn">Copiar codigo</button>
+                    <button class="ghost-btn danger" id="leave-room-btn">Salir</button>
+                </div>
+            </div>
+
+            <div class="room-status-row">
+                <span class="status-pill" id="room-status-pill">Esperando managers</span>
+                <span class="countdown-text" id="countdown-text"></span>
+            </div>
+
+            <div class="participants-card">
+                <div class="section-head">
+                    <h3>Managers en sala</h3>
+                    <span id="participants-count">0</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Manager</th>
+                            <th>Neumatico</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="participants-body"></tbody>
+                </table>
+            </div>
+
+            <div class="room-footer-actions">
+                <button class="primary-btn" id="toggle-ready-btn">CORRER</button>
+            </div>
+        </section>
+
+        <section class="invite-panel hidden" id="invite-panel">
+            <div class="section-head">
+                <h3>Invitar amigos</h3>
+                <span id="invite-friends-count">0</span>
+            </div>
+            <p class="invite-helper">Solo el host puede invitar. Tambien puedes compartir el codigo de sala.</p>
+            <div id="invite-friends-list" class="stack-list"></div>
+            <p class="empty-message hidden" id="invite-empty-message">No hay amigos disponibles para invitar.</p>
+        </section>
+    </main>
+
+    <div class="countdown-overlay hidden" id="countdown-overlay">
+        <div class="countdown-content">
+            <p>Todos listos</p>
+            <h2 id="countdown-number">3</h2>
+            <span>La carrera comienza automaticamente</span>
+        </div>
+    </div>
+
+    <div class="toast hidden" id="friendly-toast"></div>
+
+    <script src="js/friendly-online.js"></script>
+    <script src="js/mobile-landscape.js"></script>
+    <script src="js/auto-refresh.js"></script>
+</body>
+
+</html>

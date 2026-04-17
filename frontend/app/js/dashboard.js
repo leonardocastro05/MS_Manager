@@ -8,6 +8,15 @@ class DashboardController {
         this.apiBaseUrl = this.getApiUrl();
         this.user = null;
         this.token = localStorage.getItem('authToken');
+        this.socialOverview = {
+            friendCode: '',
+            friends: [],
+            incomingRequests: [],
+            outgoingRequests: [],
+            raceInvites: []
+        };
+        this.socialPollInterval = null;
+        this.feedbackTimeout = null;
         
         this.init();
     }
@@ -30,9 +39,11 @@ class DashboardController {
         
         // Cargar datos del usuario
         await this.loadUserData();
+        await this.loadSocialOverview();
         
         // Inicializar eventos
         this.bindEvents();
+        this.startSocialPolling();
         
         // Animaciones de entrada
         this.playEntryAnimations();
@@ -76,6 +87,7 @@ class DashboardController {
         try {
             const payload = JSON.parse(atob(this.token.split('.')[1]));
             this.user = {
+                id: payload.id,
                 username: payload.username || 'Usuario',
                 teamName: 'Mi Equipo',
                 gameData: { budget: 0 },
@@ -134,6 +146,319 @@ class DashboardController {
             ? `#${stats.rank}` 
             : '#---';
     }
+
+    async apiRequest(path, options = {}) {
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.token}`,
+            ...(options.headers || {})
+        };
+
+        const response = await fetch(`${this.apiBaseUrl}${path}`, {
+            ...options,
+            headers
+        });
+
+        let data = null;
+        try {
+            data = await response.json();
+        } catch (error) {
+            data = null;
+        }
+
+        if (!response.ok) {
+            const error = new Error(data?.message || 'Request failed');
+            error.status = response.status;
+            throw error;
+        }
+
+        return data;
+    }
+
+    async loadSocialOverview(silent = false) {
+        try {
+            const data = await this.apiRequest('/social/friends/overview');
+            this.socialOverview = {
+                friendCode: data.friendCode || '',
+                friends: Array.isArray(data.friends) ? data.friends : [],
+                incomingRequests: Array.isArray(data.incomingRequests) ? data.incomingRequests : [],
+                outgoingRequests: Array.isArray(data.outgoingRequests) ? data.outgoingRequests : [],
+                raceInvites: Array.isArray(data.raceInvites) ? data.raceInvites : []
+            };
+            this.renderSocialOverview();
+        } catch (error) {
+            if (error.status === 401) {
+                this.redirectToLogin();
+                return;
+            }
+
+            if (!silent) {
+                this.showFriendsFeedback('No se pudo cargar la seccion de amigos', 'error');
+            }
+            console.error('Error loading social overview:', error);
+        }
+    }
+
+    renderSocialOverview() {
+        const friendCodeValue = document.getElementById('friend-code-value');
+        const incomingCount = document.getElementById('incoming-requests-count');
+        const incomingList = document.getElementById('incoming-requests-list');
+        const incomingEmpty = document.getElementById('incoming-empty');
+        const friendsList = document.getElementById('friends-list');
+        const friendsEmpty = document.getElementById('friends-empty');
+        const raceInvitesList = document.getElementById('race-invites-list');
+        const raceInvitesEmpty = document.getElementById('race-invites-empty');
+        const friendsDot = document.getElementById('friends-dot');
+
+        const incomingRequests = this.socialOverview.incomingRequests || [];
+        const friends = this.socialOverview.friends || [];
+        const raceInvites = this.socialOverview.raceInvites || [];
+
+        if (friendCodeValue) {
+            friendCodeValue.textContent = this.socialOverview.friendCode || '------';
+        }
+
+        if (incomingCount) {
+            incomingCount.textContent = String(incomingRequests.length);
+        }
+
+        if (friendsDot) {
+            friendsDot.classList.toggle('hidden', incomingRequests.length === 0);
+        }
+
+        if (incomingList) {
+            incomingList.innerHTML = incomingRequests.map((request) => {
+                const from = request.from || {};
+                const displayName = this.escapeHtml(from.displayName || from.username || 'Manager');
+                const teamName = this.escapeHtml(from.teamName || 'Sin equipo');
+                const userId = this.escapeHtml(from.id || '');
+                return `
+                    <div class="friend-item">
+                        <div class="friend-item-main">
+                            <span class="friend-item-name">${displayName}</span>
+                            <span class="friend-item-sub">${teamName}</span>
+                        </div>
+                        <div class="friend-item-actions">
+                            <button class="friend-mini-btn accept" data-action="accept-request" data-user-id="${userId}">Aceptar</button>
+                            <button class="friend-mini-btn reject" data-action="reject-request" data-user-id="${userId}">Rechazar</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        if (incomingEmpty) {
+            incomingEmpty.classList.toggle('hidden', incomingRequests.length > 0);
+        }
+
+        if (friendsList) {
+            friendsList.innerHTML = friends.map((friend) => {
+                const friendId = this.escapeHtml(friend.id || '');
+                const displayName = this.escapeHtml(friend.displayName || friend.username || 'Manager');
+                const teamName = this.escapeHtml(friend.teamName || 'Sin equipo');
+                return `
+                    <div class="friend-item">
+                        <div class="friend-item-main">
+                            <span class="friend-item-name">${displayName}</span>
+                            <span class="friend-item-sub">${teamName}</span>
+                        </div>
+                        <div class="friend-item-actions">
+                            <button class="friend-mini-btn remove" data-action="remove-friend" data-user-id="${friendId}">Quitar</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        if (friendsEmpty) {
+            friendsEmpty.classList.toggle('hidden', friends.length > 0);
+        }
+
+        if (raceInvitesList) {
+            raceInvitesList.innerHTML = raceInvites.map((invite) => {
+                const hostName = this.escapeHtml(invite.host?.displayName || invite.host?.username || 'Manager');
+                const track = this.escapeHtml((invite.trackId || 'pista').toUpperCase());
+                const laps = Number(invite.laps || 10);
+                const roomCode = this.escapeHtml(invite.roomCode || '');
+                return `
+                    <div class="friend-item">
+                        <div class="friend-item-main">
+                            <span class="friend-item-name">${hostName}</span>
+                            <span class="friend-item-sub">${track} · ${laps} vueltas · #${roomCode}</span>
+                        </div>
+                        <div class="friend-item-actions">
+                            <button class="friend-mini-btn join" data-action="join-race-invite" data-room-code="${roomCode}">Unirme</button>
+                            <button class="friend-mini-btn reject" data-action="reject-race-invite" data-room-code="${roomCode}">Rechazar</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        if (raceInvitesEmpty) {
+            raceInvitesEmpty.classList.toggle('hidden', raceInvites.length > 0);
+        }
+    }
+
+    openFriendsDrawer() {
+        const drawer = document.getElementById('friends-drawer');
+        const overlay = document.getElementById('friends-overlay');
+        const profileBtn = document.getElementById('user-profile-btn');
+        const profileDropdown = document.getElementById('profile-dropdown');
+
+        if (drawer) {
+            drawer.classList.add('show');
+            drawer.setAttribute('aria-hidden', 'false');
+        }
+        if (overlay) overlay.classList.add('show');
+
+        if (profileBtn && profileDropdown) {
+            profileBtn.classList.remove('open');
+            profileDropdown.classList.remove('show');
+        }
+
+        this.loadSocialOverview(true);
+    }
+
+    closeFriendsDrawer() {
+        const drawer = document.getElementById('friends-drawer');
+        const overlay = document.getElementById('friends-overlay');
+
+        if (drawer) {
+            drawer.classList.remove('show');
+            drawer.setAttribute('aria-hidden', 'true');
+        }
+        if (overlay) overlay.classList.remove('show');
+    }
+
+    showFriendsFeedback(message, type = 'success') {
+        const feedback = document.getElementById('friends-feedback');
+        if (!feedback) return;
+
+        feedback.textContent = message;
+        feedback.classList.remove('hidden', 'success', 'error');
+        feedback.classList.add(type === 'error' ? 'error' : 'success');
+
+        if (this.feedbackTimeout) {
+            clearTimeout(this.feedbackTimeout);
+        }
+
+        this.feedbackTimeout = setTimeout(() => {
+            feedback.classList.add('hidden');
+        }, 3200);
+    }
+
+    async sendFriendRequest() {
+        const input = document.getElementById('friend-code-input');
+        if (!input) return;
+
+        const friendCode = String(input.value || '').trim().toUpperCase();
+        if (!friendCode) {
+            this.showFriendsFeedback('Introduce un codigo de usuario valido', 'error');
+            return;
+        }
+
+        try {
+            const data = await this.apiRequest('/social/friends/request', {
+                method: 'POST',
+                body: JSON.stringify({ friendCode })
+            });
+
+            input.value = '';
+            this.showFriendsFeedback(data.message || 'Solicitud enviada');
+            await this.loadSocialOverview(true);
+        } catch (error) {
+            this.showFriendsFeedback(error.message || 'No se pudo enviar la solicitud', 'error');
+        }
+    }
+
+    async copyFriendCode() {
+        const friendCode = this.socialOverview.friendCode;
+        if (!friendCode) {
+            this.showFriendsFeedback('Aun no tienes un codigo generado', 'error');
+            return;
+        }
+
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(friendCode);
+            } else {
+                const temp = document.createElement('textarea');
+                temp.value = friendCode;
+                document.body.appendChild(temp);
+                temp.select();
+                document.execCommand('copy');
+                document.body.removeChild(temp);
+            }
+            this.showFriendsFeedback('Codigo copiado al portapapeles');
+        } catch (error) {
+            this.showFriendsFeedback('No se pudo copiar el codigo', 'error');
+        }
+    }
+
+    async handleFriendAction(target) {
+        const action = target?.dataset?.action;
+        if (!action) return;
+
+        try {
+            if (action === 'accept-request') {
+                const userId = target.dataset.userId;
+                await this.apiRequest(`/social/friends/request/${encodeURIComponent(userId)}/accept`, {
+                    method: 'POST'
+                });
+                this.showFriendsFeedback('Solicitud aceptada');
+            } else if (action === 'reject-request') {
+                const userId = target.dataset.userId;
+                await this.apiRequest(`/social/friends/request/${encodeURIComponent(userId)}/reject`, {
+                    method: 'POST'
+                });
+                this.showFriendsFeedback('Solicitud rechazada');
+            } else if (action === 'remove-friend') {
+                const userId = target.dataset.userId;
+                await this.apiRequest(`/social/friends/${encodeURIComponent(userId)}`, {
+                    method: 'DELETE'
+                });
+                this.showFriendsFeedback('Amigo eliminado');
+            } else if (action === 'join-race-invite') {
+                const roomCode = target.dataset.roomCode;
+                await this.apiRequest('/social/quick-races/join', {
+                    method: 'POST',
+                    body: JSON.stringify({ roomCode })
+                });
+                window.location.href = `friendly-online.html?room=${encodeURIComponent(roomCode)}`;
+                return;
+            } else if (action === 'reject-race-invite') {
+                const roomCode = target.dataset.roomCode;
+                await this.apiRequest(`/social/quick-races/${encodeURIComponent(roomCode)}/reject-invite`, {
+                    method: 'POST'
+                });
+                this.showFriendsFeedback('Invitacion rechazada');
+            }
+
+            await this.loadSocialOverview(true);
+        } catch (error) {
+            this.showFriendsFeedback(error.message || 'No se pudo completar la accion', 'error');
+        }
+    }
+
+    startSocialPolling() {
+        if (this.socialPollInterval) {
+            clearInterval(this.socialPollInterval);
+        }
+
+        this.socialPollInterval = setInterval(() => {
+            this.loadSocialOverview(true);
+        }, 15000);
+    }
+
+    escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
     
     /**
      * Formatea números grandes (1000 -> 1K)
@@ -155,6 +480,13 @@ class DashboardController {
         // Profile dropdown
         const profileBtn = document.getElementById('user-profile-btn');
         const profileDropdown = document.getElementById('profile-dropdown');
+        const friendsMenuItem = document.getElementById('friends-menu-item');
+        const friendsCloseBtn = document.getElementById('friends-close-btn');
+        const friendsOverlay = document.getElementById('friends-overlay');
+        const sendFriendRequestBtn = document.getElementById('send-friend-request-btn');
+        const copyFriendCodeBtn = document.getElementById('copy-friend-code-btn');
+        const friendCodeInput = document.getElementById('friend-code-input');
+        const friendsDrawer = document.getElementById('friends-drawer');
         
         if (profileBtn && profileDropdown) {
             profileBtn.addEventListener('click', (e) => {
@@ -167,6 +499,47 @@ class DashboardController {
             document.addEventListener('click', () => {
                 profileBtn.classList.remove('open');
                 profileDropdown.classList.remove('show');
+            });
+        }
+
+        if (friendsMenuItem) {
+            friendsMenuItem.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.openFriendsDrawer();
+            });
+        }
+
+        if (friendsCloseBtn) {
+            friendsCloseBtn.addEventListener('click', () => this.closeFriendsDrawer());
+        }
+
+        if (friendsOverlay) {
+            friendsOverlay.addEventListener('click', () => this.closeFriendsDrawer());
+        }
+
+        if (sendFriendRequestBtn) {
+            sendFriendRequestBtn.addEventListener('click', () => this.sendFriendRequest());
+        }
+
+        if (copyFriendCodeBtn) {
+            copyFriendCodeBtn.addEventListener('click', () => this.copyFriendCode());
+        }
+
+        if (friendCodeInput) {
+            friendCodeInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.sendFriendRequest();
+                }
+            });
+        }
+
+        if (friendsDrawer) {
+            friendsDrawer.addEventListener('click', (e) => {
+                const target = e.target.closest('[data-action]');
+                if (!target) return;
+                this.handleFriendAction(target);
             });
         }
         
@@ -182,13 +555,34 @@ class DashboardController {
         // Game mode cards
         const offlineCard = document.getElementById('mode-offline');
         const onlineCard = document.getElementById('mode-online');
+        const onlineCompetitiveBtn = document.getElementById('btn-online-competitive');
+        const onlineFriendlyBtn = document.getElementById('btn-online-friendly');
         
         if (offlineCard) {
             offlineCard.addEventListener('click', () => this.selectGameMode('offline'));
         }
+
+        if (onlineCompetitiveBtn) {
+            onlineCompetitiveBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.selectGameMode('online');
+            });
+        }
+
+        if (onlineFriendlyBtn) {
+            onlineFriendlyBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.selectGameMode('friendly');
+            });
+        }
         
         if (onlineCard) {
-            onlineCard.addEventListener('click', () => {
+            onlineCard.addEventListener('click', (e) => {
+                if (e.target.closest('#btn-online-competitive') || e.target.closest('#btn-online-friendly')) {
+                    return;
+                }
                 if (onlineCard.classList.contains('locked')) return;
                 this.selectGameMode('online');
             });
@@ -212,7 +606,10 @@ class DashboardController {
         console.log(`Selecting game mode: ${mode}`);
         
         // Efecto visual de selección
-        const card = document.getElementById(`mode-${mode}`);
+        const card = mode === 'friendly'
+            ? document.getElementById('mode-online')
+            : document.getElementById(`mode-${mode}`);
+
         if (card) {
             card.style.transform = 'scale(0.98)';
             setTimeout(async () => {
@@ -221,11 +618,16 @@ class DashboardController {
                 // Navegar a la página del modo
                 if (mode === 'offline') {
                     window.location.href = 'offline.html';
-                } else {
+                } else if (mode === 'online') {
                     // Verificar acceso al modo online
                     const canAccess = await this.checkOnlineAccess();
                     if (canAccess) {
                         window.location.href = 'online.html';
+                    }
+                } else if (mode === 'friendly') {
+                    const canAccess = await this.checkOnlineAccess();
+                    if (canAccess) {
+                        window.location.href = 'friendly-online.html';
                     }
                 }
             }, 150);

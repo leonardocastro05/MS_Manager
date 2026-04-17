@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MS Manager - Home</title>
     <link rel="stylesheet" href="css/dashboard.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="css/mobile-landscape.css">
 </head>
+
 <body>
     <!-- Fondo animado -->
     <div class="bg-stars"></div>
@@ -23,7 +27,7 @@
                 <span class="logo-text">MANAGER</span>
             </div>
         </div>
-        
+
         <nav class="header-nav">
             <a href="#" class="nav-item active" data-section="home">
                 <span class="nav-icon">🏠</span>
@@ -42,7 +46,7 @@
                 <span class="nav-text">Ajustes</span>
             </a>
         </nav>
-        
+
         <div class="header-right">
             <div class="user-stats">
                 <div class="stat-item money">
@@ -64,10 +68,14 @@
                 </div>
                 <span class="dropdown-arrow">▼</span>
             </div>
-            
+
             <!-- Dropdown del perfil -->
             <div class="profile-dropdown" id="profile-dropdown">
                 <div class="dropdown-divider"></div>
+                <a href="#" class="dropdown-item friends-trigger" id="friends-menu-item">
+                    <img src="img/anadir-grupo.png" alt="Icono amigos" class="dropdown-icon"> Amigos
+                    <span class="friends-dot hidden" id="friends-dot"></span>
+                </a>
                 <a href="#" class="dropdown-item logout" id="logout-btn">
                     <span>🚪</span> Cerrar Sesión
                 </a>
@@ -102,7 +110,7 @@
                     </div>
                     <h2 class="mode-title">Modo Offline</h2>
                     <p class="mode-description">
-                        Aprende a jugar a tu ritmo. Practica estrategias, 
+                        Aprende a jugar a tu ritmo. Practica estrategias,
                         conoce los controles y mejora tus habilidades.
                     </p>
                     <ul class="mode-features">
@@ -112,7 +120,7 @@
                         <li><span class="check">✓</span> Experimenta libremente</li>
                     </ul>
                     <button class="mode-btn">
-                        <span>Jugar Solo</span>
+                        <span>Acceder al Modo Offline</span>
                         <div class="btn-arrow">→</div>
                     </button>
                 </div>
@@ -140,19 +148,25 @@
                     </div>
                     <h2 class="mode-title">Modo Online</h2>
                     <p class="mode-description">
-                        Compite contra otros managers. Crea ligas con amigos 
+                        Compite contra otros managers. Crea ligas con amigos
                         y demuestra quién es el mejor estratega.
                     </p>
                     <ul class="mode-features">
-                        <li><span class="check">✓</span> Ligas privadas con amigos</li>
-                        <li><span class="check">✓</span> Ranking competitivo</li>
-                        <li><span class="check">✓</span> Recompensas exclusivas</li>
-                        <li><span class="check">✓</span> Torneos semanales</li>
+                        <li><span class="check">✓</span> Competitivo para ligas y ranking</li>
+                        <li><span class="check">✓</span> Amistoso online para carreras rápidas</li>
+                        <li><span class="check">✓</span> Invitaciones por amigos o código</li>
+                        <li><span class="check">✓</span> Cuenta atrás global antes de correr</li>
                     </ul>
-                    <button class="mode-btn">
-                        <span>Jugar Online</span>
-                        <div class="btn-arrow">→</div>
-                    </button>
+                    <div class="mode-btn-group">
+                        <button class="mode-btn" id="btn-online-competitive">
+                            <span>Competitivo</span>
+                            <div class="btn-arrow">→</div>
+                        </button>
+                        <button class="mode-btn mode-btn-friendly" id="btn-online-friendly">
+                            <span>Amistoso Online</span>
+                            <div class="btn-arrow">→</div>
+                        </button>
+                    </div>
                 </div>
                 <div class="card-decoration">
                     <div class="deco-circle"></div>
@@ -174,7 +188,7 @@
                     <span class="stat-label">Victorias</span>
                 </div>
             </div>
-            
+
             <div class="stat-card">
                 <div class="stat-icon-wrapper">
                     <span>⚔️</span>
@@ -184,7 +198,7 @@
                     <span class="stat-label">Partidas</span>
                 </div>
             </div>
-            
+
             <div class="stat-card">
                 <div class="stat-icon-wrapper">
                     <span>📈</span>
@@ -194,7 +208,7 @@
                     <span class="stat-label">Ranking</span>
                 </div>
             </div>
-            
+
             <div class="stat-card">
                 <div class="stat-icon-wrapper">
                     <span>🎯</span>
@@ -207,6 +221,55 @@
         </section>
 
     </main>
+
+    <div class="friends-overlay" id="friends-overlay"></div>
+    <aside class="friends-drawer" id="friends-drawer" aria-hidden="true">
+        <div class="friends-drawer-header">
+            <h3>Amigos</h3>
+            <button type="button" class="friends-close" id="friends-close-btn" aria-label="Cerrar panel de amigos">✕</button>
+        </div>
+
+        <div class="friends-drawer-content">
+            <div class="friends-feedback hidden" id="friends-feedback"></div>
+
+            <section class="friends-block">
+                <p class="friends-label">Tu código de usuario</p>
+                <div class="friend-code-row">
+                    <strong id="friend-code-value">------</strong>
+                    <button class="drawer-btn" id="copy-friend-code-btn">Copiar</button>
+                </div>
+            </section>
+
+            <section class="friends-block">
+                <p class="friends-label">Enviar solicitud</p>
+                <div class="friend-add-row">
+                    <input type="text" id="friend-code-input" maxlength="12" placeholder="Código de amigo" autocomplete="off">
+                    <button class="drawer-btn primary" id="send-friend-request-btn">Enviar</button>
+                </div>
+            </section>
+
+            <section class="friends-block">
+                <div class="friends-title-row">
+                    <p class="friends-label">Solicitudes recibidas</p>
+                    <span class="friends-count" id="incoming-requests-count">0</span>
+                </div>
+                <div id="incoming-requests-list" class="friends-list compact"></div>
+                <p class="friends-empty-message" id="incoming-empty">No tienes solicitudes pendientes.</p>
+            </section>
+
+            <section class="friends-block">
+                <p class="friends-label">Invitaciones a amistosos</p>
+                <div id="race-invites-list" class="friends-list compact"></div>
+                <p class="friends-empty-message" id="race-invites-empty">No tienes invitaciones activas.</p>
+            </section>
+
+            <section class="friends-block">
+                <p class="friends-label">Lista de amigos</p>
+                <div id="friends-list" class="friends-list"></div>
+                <p class="friends-empty-message" id="friends-empty">Aun no tienes amigos. Usa un codigo para empezar.</p>
+            </section>
+        </div>
+    </aside>
 
     <!-- ==========================================
          FOOTER
@@ -224,4 +287,5 @@
     <script src="js/mobile-landscape.js"></script>
     <script src="js/auto-refresh.js"></script>
 </body>
+
 </html>

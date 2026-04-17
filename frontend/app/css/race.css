@@ -193,6 +193,75 @@ body {
     gap: 6px;
 }
 
+.hidden {
+    display: none !important;
+}
+
+.friendly-chat {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 150px;
+}
+
+.friendly-chat-messages {
+    max-height: 140px;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.friendly-chat-line {
+    padding: 6px 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+.friendly-chat-line.self {
+    border-left: 3px solid var(--accent);
+}
+
+.friendly-chat-user {
+    display: block;
+    color: var(--muted);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 2px;
+}
+
+.friendly-chat-form {
+    display: flex;
+    gap: 6px;
+}
+
+#friendly-chat-input {
+    flex: 1;
+    border: 1px solid var(--border);
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 12px;
+}
+
+#friendly-chat-input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+#friendly-chat-send {
+    padding: 8px 10px;
+    font-size: 11px;
+}
+
 .msg {
     background: rgba(255, 255, 255, 0.04);
     border-left: 3px solid #4f5d92;

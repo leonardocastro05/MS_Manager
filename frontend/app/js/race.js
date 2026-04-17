@@ -2,6 +2,7 @@
     const DEFAULT_CONFIG = {
         mode: 'offline',
         leagueId: null,
+        roomCode: null,
         trackId: 'monza',
         laps: 12,
         weather: 'dry',
@@ -144,10 +145,13 @@
         constructor() {
             this.config = this._loadConfig();
             this.isLeagueMode = this.config.mode === 'league';
+            this.isFriendlyMode = this.config.mode === 'friendly';
+            this.isMultiplayerMode = this.isLeagueMode || this.isFriendlyMode;
             this.track = TRACKS[this.config.trackId] || TRACKS.monza;
             this.apiBaseUrl = this._getApiUrl();
             this.token = localStorage.getItem('authToken');
             this.resultsPersisted = false;
+            this.roomCode = this.config.roomCode || null;
 
             this.canvas = document.getElementById('race-canvas');
             this.ctx = this.canvas.getContext('2d');
@@ -162,6 +166,11 @@
             this.elTiming = document.getElementById('timing-board');
             this.elDriverInfo = document.getElementById('driver-info');
             this.elMessages = document.getElementById('messages-panel');
+            this.elFriendlyChatTitle = document.getElementById('friendly-chat-title');
+            this.elFriendlyChatPanel = document.getElementById('friendly-chat-panel');
+            this.elFriendlyChatMessages = document.getElementById('friendly-chat-messages');
+            this.elFriendlyChatForm = document.getElementById('friendly-chat-form');
+            this.elFriendlyChatInput = document.getElementById('friendly-chat-input');
             this.elResultsModal = document.getElementById('results-modal');
             this.elResultsTable = document.getElementById('results-table');
             this.elPitTyreSelect = document.getElementById('pit-tyre-select');
@@ -193,12 +202,16 @@
 
             this.cars = [];
             this.messages = [];
+            this.friendlyChatMessages = [];
+            this.friendlyChatPollInterval = null;
+            this.friendlyChatRequestInFlight = false;
 
             this._configureModeUI();
             this._resize();
             this._sampleTrack();
             this._initCars();
             this._bindControls();
+            this._initFriendlyChat();
             this._pushMessage(`🏁 ${this.track.name} cargado`, true);
             this._renderStaticUI();
             this._updateZoomUI();
@@ -283,7 +296,7 @@
                 ? [...this.config.participants]
                 : [];
 
-            if (this.isLeagueMode && configuredParticipants.length) {
+            if (this.isMultiplayerMode && configuredParticipants.length) {
                 configuredParticipants.sort((a, b) => {
                     const positionA = Number(a?.gridPosition || 999);
                     const positionB = Number(b?.gridPosition || 999);
@@ -401,11 +414,18 @@
             const leagueBackUrl = this.config.leagueId
                 ? `league.html?id=${encodeURIComponent(this.config.leagueId)}`
                 : 'online.html';
-            const backUrl = this.isLeagueMode ? leagueBackUrl : 'offline.html';
+            const friendlyBackUrl = this.roomCode
+                ? `friendly-online.html?room=${encodeURIComponent(this.roomCode)}`
+                : 'friendly-online.html';
+            const backUrl = this.isLeagueMode
+                ? leagueBackUrl
+                : (this.isFriendlyMode ? friendlyBackUrl : 'offline.html');
 
             if (backLink) {
                 backLink.href = backUrl;
-                backLink.textContent = this.isLeagueMode ? '← Volver a la liga' : '← Volver';
+                backLink.textContent = this.isLeagueMode
+                    ? '← Volver a la liga'
+                    : (this.isFriendlyMode ? '← Volver al amistoso' : '← Volver');
             }
 
             if (resultsBackButton) {
@@ -420,7 +440,13 @@
                 });
             }
 
-            document.title = this.isLeagueMode ? 'MS Manager - Carrera de Liga' : 'MS Manager - Carrera Offline';
+            if (this.isLeagueMode) {
+                document.title = 'MS Manager - Carrera de Liga';
+            } else if (this.isFriendlyMode) {
+                document.title = 'MS Manager - Carrera Amistosa';
+            } else {
+                document.title = 'MS Manager - Carrera Offline';
+            }
         }
 
         _basePaceFromData(isPlayer, pilot, car) {
@@ -553,6 +579,130 @@
             const pitMain = document.getElementById('pit-btn-main');
             if (pitMain) {
                 pitMain.addEventListener('click', () => this._requestPit());
+            }
+        }
+
+        _initFriendlyChat() {
+            if (!this.isFriendlyMode || !this.roomCode || !this.token) {
+                return;
+            }
+
+            if (this.elFriendlyChatTitle) {
+                this.elFriendlyChatTitle.classList.remove('hidden');
+            }
+
+            if (this.elFriendlyChatPanel) {
+                this.elFriendlyChatPanel.classList.remove('hidden');
+            }
+
+            if (this.elFriendlyChatForm) {
+                this.elFriendlyChatForm.addEventListener('submit', (event) => {
+                    event.preventDefault();
+                    this._sendFriendlyChatMessage();
+                });
+            }
+
+            this._loadFriendlyChat();
+            this.friendlyChatPollInterval = setInterval(() => {
+                this._loadFriendlyChat();
+            }, 2000);
+
+            window.addEventListener('beforeunload', () => this._destroyFriendlyChat());
+        }
+
+        _destroyFriendlyChat() {
+            if (this.friendlyChatPollInterval) {
+                clearInterval(this.friendlyChatPollInterval);
+                this.friendlyChatPollInterval = null;
+            }
+        }
+
+        async _loadFriendlyChat() {
+            if (!this.isFriendlyMode || !this.roomCode || !this.token || this.friendlyChatRequestInFlight) {
+                return;
+            }
+
+            this.friendlyChatRequestInFlight = true;
+
+            try {
+                const response = await fetch(
+                    `${this.apiBaseUrl}/social/quick-races/${encodeURIComponent(this.roomCode)}/chat`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${this.token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const data = await response.json();
+                const nextMessages = Array.isArray(data.messages) ? data.messages : [];
+                this.friendlyChatMessages = nextMessages;
+                this._renderFriendlyChatMessages();
+            } catch (error) {
+                console.error('Friendly chat load error:', error);
+            } finally {
+                this.friendlyChatRequestInFlight = false;
+            }
+        }
+
+        _renderFriendlyChatMessages() {
+            if (!this.elFriendlyChatMessages) return;
+
+            const myUserId = (this.config.playerProfile?.userId || '').toString();
+            const nearBottom = this.elFriendlyChatMessages.scrollHeight - this.elFriendlyChatMessages.scrollTop - this.elFriendlyChatMessages.clientHeight < 40;
+
+            this.elFriendlyChatMessages.innerHTML = this.friendlyChatMessages.slice(-60).map((entry) => {
+                const userId = (entry?.userId || '').toString();
+                const isSelf = userId && myUserId && userId === myUserId;
+                const username = this._escapeHtml(entry?.username || 'Manager');
+                const message = this._escapeHtml(entry?.message || '');
+
+                return `
+                    <div class="friendly-chat-line${isSelf ? ' self' : ''}">
+                        <span class="friendly-chat-user">${username}</span>
+                        <span>${message}</span>
+                    </div>
+                `;
+            }).join('');
+
+            if (nearBottom || !this.elFriendlyChatMessages.scrollTop) {
+                this.elFriendlyChatMessages.scrollTop = this.elFriendlyChatMessages.scrollHeight;
+            }
+        }
+
+        async _sendFriendlyChatMessage() {
+            if (!this.elFriendlyChatInput || !this.roomCode || !this.token) return;
+
+            const message = (this.elFriendlyChatInput.value || '').trim();
+            if (!message) return;
+
+            try {
+                const response = await fetch(
+                    `${this.apiBaseUrl}/social/quick-races/${encodeURIComponent(this.roomCode)}/chat`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${this.token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ message })
+                    }
+                );
+
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    throw new Error(data?.message || 'No se pudo enviar el mensaje');
+                }
+
+                this.elFriendlyChatInput.value = '';
+                await this._loadFriendlyChat();
+            } catch (error) {
+                this._pushMessage(`⚠️ Chat: ${error.message}`, true);
             }
         }
 
@@ -1686,6 +1836,10 @@
         }
 
         _showResults() {
+            if (this.isFriendlyMode) {
+                this._destroyFriendlyChat();
+            }
+
             const sorted = [...this.cars].sort((a, b) => a.position - b.position);
             const rows = sorted.slice(0, 10).map((car) => `
                 <tr>
@@ -1720,6 +1874,11 @@
 
             if (this.isLeagueMode) {
                 await this._persistLeagueRaceResults(sorted);
+                return;
+            }
+
+            if (this.isFriendlyMode) {
+                this._pushMessage('🤝 Carrera amistosa completada', true);
                 return;
             }
 
@@ -2008,6 +2167,15 @@
             const mins = Math.floor(s / 60);
             const rest = (s % 60).toFixed(3).padStart(6, '0');
             return `${mins}:${rest}`;
+        }
+
+        _escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
 
         _abbr(name) {

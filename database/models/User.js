@@ -61,6 +61,50 @@ const UserSchema = new mongoose.Schema({
         type: String,
         default: 'ES'
     },
+
+    // ===== Social / Friends =====
+    friendCode: {
+        type: String,
+        unique: true,
+        sparse: true,
+        trim: true,
+        uppercase: true,
+        minlength: [6, 'Friend code must be at least 6 characters'],
+        maxlength: [12, 'Friend code cannot exceed 12 characters']
+    },
+    friends: [{
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
+        since: {
+            type: Date,
+            default: Date.now
+        }
+    }],
+    incomingFriendRequests: [{
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now
+        }
+    }],
+    outgoingFriendRequests: [{
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now
+        }
+    }],
     
     // ===== Game Data =====
     gameData: {
@@ -183,6 +227,7 @@ UserSchema.index({ 'gameData.wins': -1 });
 UserSchema.index({ 'gameData.points': -1 });
 UserSchema.index({ 'gameData.globalRanking.totalWins': -1 });
 UserSchema.index({ 'gameData.globalRanking.rank': 1 });
+UserSchema.index({ friendCode: 1 }, { unique: true, sparse: true });
 
 // ===========================================
 // MIDDLEWARE

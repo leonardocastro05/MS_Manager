@@ -14,6 +14,9 @@ const connectDB = require('./config/db');
 // Initialize express app
 const app = express();
 
+// Trust first reverse proxy (nginx / docker proxy chain) so IP-based middleware works correctly.
+app.set('trust proxy', 1);
+
 // ===========================================
 // CONNECT TO DATABASE
 // ===========================================
@@ -63,8 +66,21 @@ const raceLimiter = rateLimit({
     legacyHeaders: false
 });
 
+// Friendly online quick-race endpoints also poll frequently.
+const socialQuickRaceLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 120,
+    message: {
+        success: false,
+        message: 'Too many quick-race requests, please slow down'
+    },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
 // Apply race limiter first (more specific)
 app.use('/api/race/', raceLimiter);
+app.use('/api/social/quick-races/', socialQuickRaceLimiter);
 // General limiter for other endpoints
 app.use('/api/', limiter);
 
@@ -119,6 +135,7 @@ app.use('/api/user', require('./routes/user'));
 app.use('/api/leaderboard', require('./routes/leaderboard'));
 app.use('/api/online', require('./routes/online'));
 app.use('/api/race', require('./routes/race'));
+app.use('/api/social', require('./routes/social'));
 
 // ===========================================
 // HEALTH CHECK
