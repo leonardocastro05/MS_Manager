@@ -80,6 +80,7 @@
                 </div>
                 <div class="room-head-actions">
                     <button class="ghost-btn" id="copy-room-code-btn">Copiar codigo</button>
+                    <button class="ghost-btn danger hidden" id="delete-room-btn">Salir y eliminar</button>
                     <button class="ghost-btn danger" id="leave-room-btn">Salir</button>
                 </div>
             </div>
@@ -119,6 +120,16 @@
             <p class="invite-helper">Solo el host puede invitar. Tambien puedes compartir el codigo de sala.</p>
             <div id="invite-friends-list" class="stack-list"></div>
             <p class="empty-message hidden" id="invite-empty-message">No hay amigos disponibles para invitar.</p>
+        </section>
+
+        <section class="history-panel" id="history-panel">
+            <div class="section-head">
+                <h3>Carreras guardadas</h3>
+                <span id="history-count">0</span>
+            </div>
+            <p class="invite-helper">Limpia salas antiguas o cierra activas que ya no utilices.</p>
+            <div id="history-list" class="stack-list"></div>
+            <p class="empty-message hidden" id="history-empty-message">No hay carreras para limpiar.</p>
         </section>
     </main>
 

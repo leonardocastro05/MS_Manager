@@ -149,6 +149,9 @@ const TYRE_QUALIFYING_BONUS_MS = {
 const WEEKDAY_SCHEDULE_DAYS = new Set([1, 2, 3, 4, 5]);
 const WEEKDAY_LABELS_ES = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
+const LEAGUE_LIVE_STATE_TTL_MS = 15 * 60 * 1000;
+const LEAGUE_LIVE_MEMBERS_CACHE_MS = 30 * 1000;
+const leagueLiveRaceStateByLeague = new Map();
 
 // ===========================================
 // HELPER FUNCTIONS
@@ -526,6 +529,118 @@ const getTrackForLeague = (league) => {
 const getMemberUserId = (member) => {
     const raw = member?.user?._id || member?.user?.id || member?.user;
     return raw ? raw.toString() : null;
+};
+
+const normalizeLeagueLiveProgress = (value) => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return 0;
+    return ((parsed % 1) + 1) % 1;
+};
+
+const normalizeLeagueLiveCarState = (carState = {}) => {
+    const progress = normalizeLeagueLiveProgress(carState.progress);
+    const lap = Math.max(0, Math.floor(Number(carState.lap) || 0));
+    const totalProgressParsed = Number(carState.totalProgress);
+    const totalProgress = Number.isFinite(totalProgressParsed)
+        ? Math.max(0, totalProgressParsed)
+        : (lap + progress);
+    const tire = ['soft', 'medium', 'hard'].includes(String(carState.tire || '').toLowerCase())
+        ? String(carState.tire || '').toLowerCase()
+        : 'medium';
+    const nextPitTyre = ['soft', 'medium', 'hard'].includes(String(carState.nextPitTyre || '').toLowerCase())
+        ? String(carState.nextPitTyre || '').toLowerCase()
+        : 'medium';
+    const tireLifeParsed = Number(carState.tireLife);
+    const pitTimeParsed = Number(carState.pitTime);
+    const lastLapParsed = Number(carState.lastLap);
+    const bestLapParsed = Number(carState.bestLap);
+
+    return {
+        progress,
+        lap,
+        totalProgress,
+        inPit: Boolean(carState.inPit),
+        pitRequested: Boolean(carState.pitRequested),
+        pitTime: Number.isFinite(pitTimeParsed) ? Math.max(0, Math.min(20, pitTimeParsed)) : 0,
+        tire,
+        nextPitTyre,
+        tireLife: Number.isFinite(tireLifeParsed) ? Math.max(0, Math.min(100, tireLifeParsed)) : 100,
+        finished: Boolean(carState.finished),
+        retired: Boolean(carState.retired),
+        lastLap: Number.isFinite(lastLapParsed) && lastLapParsed > 0 ? lastLapParsed : null,
+        bestLap: Number.isFinite(bestLapParsed) && bestLapParsed > 0 ? bestLapParsed : null
+    };
+};
+
+const pruneStaleLeagueLiveStates = () => {
+    const now = Date.now();
+    for (const [leagueId, entry] of leagueLiveRaceStateByLeague.entries()) {
+        if (!entry || now - entry.updatedAt > LEAGUE_LIVE_STATE_TTL_MS) {
+            leagueLiveRaceStateByLeague.delete(leagueId);
+        }
+    }
+};
+
+const ensureLeagueLiveStateEntry = (leagueId) => {
+    const existing = leagueLiveRaceStateByLeague.get(leagueId);
+    if (existing) return existing;
+
+    const created = {
+        updatedAt: Date.now(),
+        participants: new Map(),
+        memberUserIds: new Set(),
+        membersCheckedAt: 0
+    };
+
+    leagueLiveRaceStateByLeague.set(leagueId, created);
+    return created;
+};
+
+const clearLeagueLiveState = (leagueId) => {
+    leagueLiveRaceStateByLeague.delete(leagueId);
+};
+
+const upsertLeagueLiveParticipantState = (leagueId, userId, carState) => {
+    const entry = ensureLeagueLiveStateEntry(leagueId);
+    const normalized = normalizeLeagueLiveCarState(carState);
+    const safeUserId = userId.toString();
+
+    entry.participants.set(safeUserId, {
+        userId: safeUserId,
+        ...normalized,
+        updatedAt: new Date().toISOString()
+    });
+    entry.memberUserIds.add(safeUserId);
+    entry.updatedAt = Date.now();
+};
+
+const cacheLeagueLiveMembership = (leagueId, league) => {
+    const entry = ensureLeagueLiveStateEntry(leagueId);
+    entry.memberUserIds = new Set((league.members || []).map(member => getMemberUserId(member)).filter(Boolean));
+    entry.membersCheckedAt = Date.now();
+    entry.updatedAt = Date.now();
+};
+
+const hasFreshLeagueLiveMembership = (leagueId, userId) => {
+    const entry = leagueLiveRaceStateByLeague.get(leagueId);
+    if (!entry) return false;
+
+    const age = Date.now() - Number(entry.membersCheckedAt || 0);
+    if (age > LEAGUE_LIVE_MEMBERS_CACHE_MS) return false;
+
+    return entry.memberUserIds.has(userId.toString());
+};
+
+const serializeLeagueLiveStates = (leagueId) => {
+    const entry = leagueLiveRaceStateByLeague.get(leagueId);
+    if (!entry) return [];
+
+    return [...entry.participants.values()]
+        .sort((a, b) => (b.totalProgress || 0) - (a.totalProgress || 0))
+        .map((state, index) => ({
+            ...state,
+            position: index + 1
+        }));
 };
 
 const sanitizeLevel = (value, fallback = 1) => {
@@ -1215,6 +1330,70 @@ router.post('/leagues/:id/race/qualify', auth, qualifyRaceHandler);
 router.post('/leagues/:id/race/qualifying', auth, qualifyRaceHandler);
 router.post('/leagues/:id/qualify', auth, qualifyRaceHandler);
 
+// GET /api/online/leagues/:id/race/live-state - Get synchronized live race states
+router.get('/leagues/:id/race/live-state', auth, async (req, res) => {
+    try {
+        const leagueId = req.params.id;
+        pruneStaleLeagueLiveStates();
+
+        if (!hasFreshLeagueLiveMembership(leagueId, req.user.id)) {
+            const league = await League.findById(leagueId).select('members status');
+            if (!league) {
+                return res.status(404).json({ success: false, message: 'League not found' });
+            }
+
+            const isMember = league.members.some(member => getMemberUserId(member) === req.user.id);
+            if (!isMember) {
+                return res.status(403).json({ success: false, message: 'Not a member of this league' });
+            }
+
+            cacheLeagueLiveMembership(leagueId, league);
+        }
+
+        res.json({
+            success: true,
+            serverTime: new Date().toISOString(),
+            states: serializeLeagueLiveStates(leagueId)
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// POST /api/online/leagues/:id/race/live-state - Upsert member live car state and return synchronized states
+router.post('/leagues/:id/race/live-state', auth, async (req, res) => {
+    try {
+        const leagueId = req.params.id;
+        pruneStaleLeagueLiveStates();
+
+        if (!hasFreshLeagueLiveMembership(leagueId, req.user.id)) {
+            const league = await League.findById(leagueId).select('members status');
+            if (!league) {
+                return res.status(404).json({ success: false, message: 'League not found' });
+            }
+
+            const isMember = league.members.some(member => getMemberUserId(member) === req.user.id);
+            if (!isMember) {
+                return res.status(403).json({ success: false, message: 'Not a member of this league' });
+            }
+
+            cacheLeagueLiveMembership(leagueId, league);
+        }
+
+        if (req.body && typeof req.body.carState === 'object' && req.body.carState) {
+            upsertLeagueLiveParticipantState(leagueId, req.user.id, req.body.carState);
+        }
+
+        res.json({
+            success: true,
+            serverTime: new Date().toISOString(),
+            states: serializeLeagueLiveStates(leagueId)
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // POST /api/online/leagues/:id/race/complete-multiplayer - Apply multiplayer race results
 router.post('/leagues/:id/race/complete-multiplayer', auth, async (req, res) => {
     try {
@@ -1369,6 +1548,7 @@ router.post('/leagues/:id/race/complete-multiplayer', auth, async (req, res) => 
             await user.save();
         }));
         await league.save();
+        clearLeagueLiveState(req.params.id);
 
         const standings = buildLeagueStandings(league);
 

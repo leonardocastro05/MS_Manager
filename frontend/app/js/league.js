@@ -2569,7 +2569,7 @@ class LeagueController {
         };
 
         localStorage.setItem('raceConfig', JSON.stringify(raceConfig));
-        window.location.href = 'race.html';
+        window.location.href = 'online-raceMode.html';
     }
     
     /**

@@ -1,0 +1,77 @@
+.race-container.online-race-mode {
+    grid-template-columns: 300px 250px 1fr 300px;
+}
+
+.chat-panel {
+    background: rgba(7, 11, 29, 0.95);
+    border-right: 1px solid var(--border);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    overflow: auto;
+}
+
+.chat-panel .friendly-chat {
+    flex: 1;
+    min-height: 220px;
+}
+
+.chat-panel .friendly-chat-messages {
+    max-height: none;
+    flex: 1;
+    min-height: 140px;
+}
+
+.chat-hint {
+    margin: 0;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.35;
+}
+
+.online-race-mode .timing-panel {
+    border-right: 1px solid var(--border);
+}
+
+.online-race-mode .info-panel {
+    border-left: 1px solid var(--border);
+}
+
+@media (max-width: 1400px) {
+    .race-container.online-race-mode {
+        grid-template-columns: 260px 220px 1fr 270px;
+    }
+}
+
+@media (max-width: 1180px) {
+    .race-container.online-race-mode {
+        grid-template-columns: 250px 1fr 270px;
+    }
+
+    .online-race-mode .timing-panel {
+        display: none;
+    }
+}
+
+@media (max-width: 980px) {
+    .race-container.online-race-mode {
+        grid-template-columns: 1fr;
+        grid-template-rows: 48px minmax(180px, 28vh) 1fr 230px 66px;
+    }
+
+    .chat-panel {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .online-race-mode .info-panel {
+        border-left: none;
+        border-top: 1px solid var(--border);
+    }
+
+    .chat-panel .friendly-chat {
+        min-height: 120px;
+    }
+}

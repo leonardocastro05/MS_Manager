@@ -34,6 +34,7 @@
 }
 
 body {
+    
     font-family: 'Rajdhani', sans-serif;
     background: var(--bg-dark);
     color: var(--text-primary);
@@ -57,10 +58,16 @@ body {
     pointer-events: none;
 }
 
+/* DESPUÉS */
 .bg-stars {
-    background: url('../img/ms-manager-background.png') center/cover no-repeat fixed,
-        var(--bg-dark);
+    background: var(--bg-dark);
     z-index: 0;
+}
+
+/* Solo en la página del dashboard */
+body.page-dashboard .bg-stars {
+    background: url('../img/ms-manager-dashboard.png') center/cover no-repeat fixed,
+        var(--bg-dark);
 }
 
 .bg-twinkling {
@@ -68,6 +75,13 @@ body {
     background-size: 200px 200px;
     z-index: 1;
     animation: twinkle 4s ease-in-out infinite;
+}
+
+body.page-dashboard .bg-stars::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5); /* 0.5 = 50% oscuro, ajusta a tu gusto */
 }
 
 @keyframes twinkle {

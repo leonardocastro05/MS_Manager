@@ -12,11 +12,10 @@
     <link rel="stylesheet" href="css/mobile-landscape.css">
 </head>
 
-<body>
+<body class="page-dashboard">
     <!-- Fondo animado -->
     <div class="bg-stars"></div>
     <div class="bg-twinkling"></div>
-
     <!-- ==========================================
          HEADER / NAVBAR
          ========================================== -->
@@ -33,17 +32,22 @@
                 <span class="nav-icon">🏠</span>
                 <span class="nav-text">Inicio</span>
             </a>
-            <a href="#" class="nav-item" data-section="team">
+            <a href="#" class="nav-item" data-section="offline">
                 <span class="nav-icon">⚽</span>
-                <span class="nav-text">Mi Equipo</span>
+                <span class="nav-text">Offline</span>
             </a>
-            <a href="#" class="nav-item" data-section="shop">
+            <a href="#" class="nav-item" data-section="online">
                 <span class="nav-icon">🛒</span>
-                <span class="nav-text">Tienda</span>
+                <span class="nav-text">Online</span>
             </a>
-            <a href="#" class="nav-item" data-section="settings">
+            <a href="#" class="nav-item" data-section="friendly">
                 <span class="nav-icon">⚙️</span>
-                <span class="nav-text">Ajustes</span>
+                <span class="nav-text">Amistoso</span>
+            </a>
+
+            <a href="#" class="nav-item" data-section="shop">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-text">Tienda</span>
             </a>
         </nav>
 
@@ -226,7 +230,8 @@
     <aside class="friends-drawer" id="friends-drawer" aria-hidden="true">
         <div class="friends-drawer-header">
             <h3>Amigos</h3>
-            <button type="button" class="friends-close" id="friends-close-btn" aria-label="Cerrar panel de amigos">✕</button>
+            <button type="button" class="friends-close" id="friends-close-btn"
+                aria-label="Cerrar panel de amigos">✕</button>
         </div>
 
         <div class="friends-drawer-content">
@@ -243,7 +248,8 @@
             <section class="friends-block">
                 <p class="friends-label">Enviar solicitud</p>
                 <div class="friend-add-row">
-                    <input type="text" id="friend-code-input" maxlength="12" placeholder="Código de amigo" autocomplete="off">
+                    <input type="text" id="friend-code-input" maxlength="12" placeholder="Código de amigo"
+                        autocomplete="off">
                     <button class="drawer-btn primary" id="send-friend-request-btn">Enviar</button>
                 </div>
             </section>
@@ -266,7 +272,8 @@
             <section class="friends-block">
                 <p class="friends-label">Lista de amigos</p>
                 <div id="friends-list" class="friends-list"></div>
-                <p class="friends-empty-message" id="friends-empty">Aun no tienes amigos. Usa un codigo para empezar.</p>
+                <p class="friends-empty-message" id="friends-empty">Aun no tienes amigos. Usa un codigo para empezar.
+                </p>
             </section>
         </div>
     </aside>

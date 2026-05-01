@@ -592,9 +592,14 @@ class DashboardController {
         const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach(item => {
             item.addEventListener('click', (e) => {
-                e.preventDefault();
                 const section = item.dataset.section;
-                this.navigateTo(section);
+                if (section) {
+                    e.preventDefault();
+                    this.navigateTo(section);
+                } else if (item.getAttribute('href') === '#') {
+                    // Solo prevenir default si el href es '#'
+                    e.preventDefault();
+                }
             });
         });
     }
@@ -700,29 +705,26 @@ class DashboardController {
         
         console.log(`Navigating to: ${section}`);
         
-        // TODO: Implementar navegación real o SPA routing
-        switch(section) {
-            case 'home':
-                // Ya estamos en home
-                break;
-            case 'team':
-                // window.location.href = '/team.html';
-                this.showComingSoon('Mi Equipo');
-                break;
-            case 'shop':
-                // TODO: Implementar tienda en dashboard cuando sea necesario
-                // El sistema de compras simuladas ya está implementado en:
-                // - frontend/js/online.js (método buyCoinPackage)
-                // - frontend/js/league.js (método buyCoinPackage)
-                // - database/routes/online.js (endpoint /shop/buy-coins-simulated)
-                // Ver COMPRAS_SIMULADAS.md para más información
-                this.showComingSoon('Tienda');
-                break;
-            case 'settings':
-                // window.location.href = '/settings.html';
-                this.showComingSoon('Ajustes');
-                break;
-        }
+        // Redirección suave
+        setTimeout(() => {
+            switch(section) {
+                case 'home':
+                    // Ya estamos en home
+                    break;
+                case 'offline':
+                    window.location.href = 'offline.html';
+                    break;
+                case 'online':
+                    window.location.href = 'online.html';
+                    break;
+                case 'friendly':
+                    window.location.href = 'friendly-online.html';
+                    break;
+                case 'shop':
+                    window.location.href = 'https://msmanager.duckdns.org/app/online.html#shop';
+                    break;
+            }
+        }, 100);
     }
     
     /**

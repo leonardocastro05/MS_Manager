@@ -121,6 +121,10 @@ const QuickRaceRoomSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
+    raceFinishedAt: {
+        type: Date,
+        default: null
+    },
     participants: {
         type: [QuickRaceParticipantSchema],
         default: []

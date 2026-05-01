@@ -197,7 +197,8 @@ body {
 
 .pending-invites,
 .room-panel,
-.invite-panel {
+.invite-panel,
+.history-panel {
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 18px;
@@ -391,6 +392,11 @@ td {
 .stack-action.reject {
     border-color: rgba(255, 90, 110, 0.5);
     background: rgba(255, 90, 110, 0.16);
+}
+
+.stack-action.neutral {
+    border-color: rgba(4, 197, 255, 0.45);
+    background: rgba(4, 197, 255, 0.18);
 }
 
 .stack-action:disabled,

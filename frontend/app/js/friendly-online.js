@@ -9,6 +9,7 @@ class FriendlyOnlineController {
             friends: [],
             raceInvites: []
         };
+        this.historyRooms = [];
         this.roomPollInterval = null;
         this.socialPollInterval = null;
         this.countdownInterval = null;
@@ -82,6 +83,8 @@ class FriendlyOnlineController {
                 await this.loadActiveRoom();
             }
 
+            await this.loadRaceHistory(true);
+
             this.startSocialPolling();
         } catch (error) {
             console.error('Friendly online init error:', error);
@@ -94,11 +97,13 @@ class FriendlyOnlineController {
         const joinRoomBtn = document.getElementById('join-room-btn');
         const joinRoomInput = document.getElementById('join-room-code');
         const copyRoomCodeBtn = document.getElementById('copy-room-code-btn');
+        const deleteRoomBtn = document.getElementById('delete-room-btn');
         const leaveRoomBtn = document.getElementById('leave-room-btn');
         const toggleReadyBtn = document.getElementById('toggle-ready-btn');
         const participantsBody = document.getElementById('participants-body');
         const inviteFriendsList = document.getElementById('invite-friends-list');
         const pendingInvitesList = document.getElementById('pending-invites-list');
+        const historyList = document.getElementById('history-list');
 
         if (createRoomBtn) {
             createRoomBtn.addEventListener('click', () => this.createRoom());
@@ -123,6 +128,10 @@ class FriendlyOnlineController {
 
         if (copyRoomCodeBtn) {
             copyRoomCodeBtn.addEventListener('click', () => this.copyRoomCode());
+        }
+
+        if (deleteRoomBtn) {
+            deleteRoomBtn.addEventListener('click', () => this.deleteCurrentRoom());
         }
 
         if (leaveRoomBtn) {
@@ -161,6 +170,30 @@ class FriendlyOnlineController {
                     this.joinRoom(roomCode);
                 } else if (button.dataset.action === 'reject-invite') {
                     this.rejectInvite(roomCode);
+                }
+            });
+        }
+
+        if (historyList) {
+            historyList.addEventListener('click', (event) => {
+                const button = event.target.closest('[data-action]');
+                if (!button) return;
+
+                const roomCode = button.dataset.roomCode;
+                if (!roomCode) return;
+
+                if (button.dataset.action === 'open-history-room') {
+                    this.joinRoom(roomCode, true);
+                    return;
+                }
+
+                if (button.dataset.action === 'leave-history-room') {
+                    this.leaveRoomByCode(roomCode);
+                    return;
+                }
+
+                if (button.dataset.action === 'delete-history-room') {
+                    this.deleteRoomByCode(roomCode);
                 }
             });
         }
@@ -229,6 +262,7 @@ class FriendlyOnlineController {
             this.showToast(`Sala #${data.room.roomCode} creada`);
             this.setRoomState(data.room, true);
             await this.loadSocialOverview(true);
+            await this.loadRaceHistory(true);
         } catch (error) {
             this.showToast(error.message || 'No se pudo crear la sala', 'error');
         }
@@ -259,6 +293,7 @@ class FriendlyOnlineController {
 
             this.setRoomState(data.room, true);
             await this.loadSocialOverview(true);
+            await this.loadRaceHistory(true);
         } catch (error) {
             this.showToast(error.message || 'No se pudo unir a la sala', 'error');
         }
@@ -268,12 +303,17 @@ class FriendlyOnlineController {
         if (!this.roomCode) return;
 
         try {
-            await this.apiRequest(`/social/quick-races/${encodeURIComponent(this.roomCode)}/leave`, {
+            const data = await this.apiRequest(`/social/quick-races/${encodeURIComponent(this.roomCode)}/leave`, {
                 method: 'POST'
             });
             this.showToast('Has salido de la sala');
-            this.clearRoomState();
+            if (data?.room) {
+                this.setRoomState(data.room, true);
+            } else {
+                this.clearRoomState();
+            }
             await this.loadSocialOverview(true);
+            await this.loadRaceHistory(true);
         } catch (error) {
             this.showToast(error.message || 'No se pudo salir de la sala', 'error');
         }
@@ -292,6 +332,7 @@ class FriendlyOnlineController {
                 this.showToast('La sala ya no esta disponible', 'error');
                 this.clearRoomState();
                 await this.loadSocialOverview(true);
+                await this.loadRaceHistory(true);
                 return;
             }
             console.error('Refresh room error:', error);
@@ -369,6 +410,12 @@ class FriendlyOnlineController {
             return;
         }
 
+        if (room.status === 'finished' || room.status === 'cancelled') {
+            this.clearRoomState();
+            this.loadRaceHistory(true);
+            return;
+        }
+
         const roomChanged = this.roomCode !== room.roomCode;
         this.room = room;
         this.roomCode = room.roomCode;
@@ -430,6 +477,7 @@ class FriendlyOnlineController {
         const participantsCount = document.getElementById('participants-count');
         const participantsBody = document.getElementById('participants-body');
         const toggleReadyBtn = document.getElementById('toggle-ready-btn');
+        const deleteRoomBtn = document.getElementById('delete-room-btn');
 
         if (roomCodeValue) roomCodeValue.textContent = this.room.roomCode;
         if (roomHost) roomHost.textContent = this.room.host?.displayName || this.room.host?.username || 'Manager';
@@ -508,6 +556,15 @@ class FriendlyOnlineController {
                 toggleReadyBtn.disabled = true;
                 toggleReadyBtn.textContent = 'En carrera';
             }
+        }
+
+        if (deleteRoomBtn) {
+            const isHost = Boolean(this.room.currentUser?.isHost);
+            deleteRoomBtn.classList.toggle('hidden', !isHost);
+            deleteRoomBtn.disabled = !isHost;
+            deleteRoomBtn.textContent = this.room.status === 'waiting'
+                ? 'Salir y eliminar'
+                : 'Eliminar sala';
         }
 
         this.syncCountdownOverlay();
@@ -614,6 +671,157 @@ class FriendlyOnlineController {
         pendingInvitesCard.classList.remove('hidden');
     }
 
+    async loadRaceHistory(silent = false) {
+        try {
+            const data = await this.apiRequest('/social/quick-races/history/me');
+            this.historyRooms = Array.isArray(data.rooms) ? data.rooms : [];
+            this.renderRaceHistory();
+        } catch (error) {
+            if (error.status === 401) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            if (!silent) {
+                this.showToast(error.message || 'No se pudo cargar el historial de salas', 'error');
+            }
+        }
+    }
+
+    renderRaceHistory() {
+        const historyList = document.getElementById('history-list');
+        const historyCount = document.getElementById('history-count');
+        const historyEmptyMessage = document.getElementById('history-empty-message');
+
+        if (!historyList || !historyCount || !historyEmptyMessage) return;
+
+        historyCount.textContent = String(this.historyRooms.length);
+
+        if (!this.historyRooms.length) {
+            historyList.innerHTML = '';
+            historyEmptyMessage.classList.remove('hidden');
+            return;
+        }
+
+        historyEmptyMessage.classList.add('hidden');
+        historyList.innerHTML = this.historyRooms.map((room) => {
+            const roomCode = this.escapeHtml(room.roomCode || '');
+            const hostName = this.escapeHtml(room.host?.displayName || room.host?.username || 'Manager');
+            const status = this.escapeHtml(this.getHistoryStatusLabel(room.status));
+            const trackName = this.escapeHtml(this.getTrackName(room.trackId));
+            const laps = Number(room.laps || 10);
+            const participantCount = Number(room.participantCount || 0);
+            const dateLabel = this.escapeHtml(this.formatHistoryDate(room.raceFinishedAt || room.updatedAt || room.createdAt));
+
+            const actions = [];
+            if (room.isActive) {
+                actions.push(`<button class="stack-action neutral" data-action="open-history-room" data-room-code="${roomCode}">Abrir</button>`);
+                actions.push(`<button class="stack-action" data-action="leave-history-room" data-room-code="${roomCode}">Salir</button>`);
+            }
+            if (room.canDelete) {
+                actions.push(`<button class="stack-action reject" data-action="delete-history-room" data-room-code="${roomCode}">Eliminar</button>`);
+            }
+
+            return `
+                <div class="stack-item">
+                    <div class="stack-main">
+                        <span class="stack-title">Sala #${roomCode} · ${status}</span>
+                        <span class="stack-sub">${trackName} · ${laps} vueltas · ${participantCount} managers</span>
+                        <span class="stack-sub">Host: ${hostName} · ${dateLabel}</span>
+                    </div>
+                    <div class="stack-actions">${actions.join('')}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    async leaveRoomByCode(roomCode) {
+        const normalizedCode = this.sanitizeRoomCode(roomCode);
+        if (!normalizedCode) return;
+
+        try {
+            const data = await this.apiRequest(`/social/quick-races/${encodeURIComponent(normalizedCode)}/leave`, {
+                method: 'POST'
+            });
+
+            if (this.roomCode === normalizedCode) {
+                if (data?.room) {
+                    this.setRoomState(data.room, true);
+                } else {
+                    this.clearRoomState();
+                }
+            }
+
+            this.showToast(`Has salido de la sala #${normalizedCode}`);
+            await this.loadSocialOverview(true);
+            await this.loadRaceHistory(true);
+        } catch (error) {
+            this.showToast(error.message || 'No se pudo salir de la sala', 'error');
+        }
+    }
+
+    async deleteCurrentRoom() {
+        if (!this.roomCode) return;
+        await this.deleteRoomByCode(this.roomCode);
+    }
+
+    async deleteRoomByCode(roomCode) {
+        const normalizedCode = this.sanitizeRoomCode(roomCode);
+        if (!normalizedCode) return;
+
+        const shouldDelete = window.confirm(`¿Eliminar la sala #${normalizedCode}? Esta accion no se puede deshacer.`);
+        if (!shouldDelete) return;
+
+        try {
+            const data = await this.apiRequest(`/social/quick-races/${encodeURIComponent(normalizedCode)}`, {
+                method: 'DELETE'
+            });
+
+            if (this.roomCode === normalizedCode) {
+                this.clearRoomState();
+            }
+
+            this.showToast(data?.message || `Sala #${normalizedCode} eliminada`);
+            await this.loadSocialOverview(true);
+            await this.loadRaceHistory(true);
+            await this.loadActiveRoom();
+        } catch (error) {
+            this.showToast(error.message || 'No se pudo eliminar la sala', 'error');
+        }
+    }
+
+    getHistoryStatusLabel(status) {
+        switch (status) {
+            case 'waiting':
+                return 'Esperando';
+            case 'countdown':
+                return 'Cuenta atras';
+            case 'racing':
+                return 'En carrera';
+            case 'finished':
+                return 'Finalizada';
+            case 'cancelled':
+                return 'Cancelada';
+            default:
+                return 'Desconocido';
+        }
+    }
+
+    formatHistoryDate(value) {
+        if (!value) return 'Sin fecha';
+
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return 'Sin fecha';
+
+        return new Intl.DateTimeFormat('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }).format(date);
+    }
+
     syncCountdownOverlay() {
         const overlay = document.getElementById('countdown-overlay');
         const number = document.getElementById('countdown-number');
@@ -675,6 +883,7 @@ class FriendlyOnlineController {
         this.stopSocialPolling();
         this.socialPollInterval = setInterval(() => {
             this.loadSocialOverview(true);
+            this.loadRaceHistory(true);
         }, 12000);
     }
 
@@ -775,7 +984,7 @@ class FriendlyOnlineController {
         };
 
         localStorage.setItem('raceConfig', JSON.stringify(raceConfig));
-        window.location.href = 'race.html';
+        window.location.href = 'online-raceMode.html';
     }
 
     showToast(message, type = 'success') {

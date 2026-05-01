@@ -78,8 +78,22 @@ const socialQuickRaceLimiter = rateLimit({
     legacyHeaders: false
 });
 
+// Dedicated limiter for frequent multiplayer live-state sync endpoints.
+const multiplayerLiveStateLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 600, // up to 10 sync req/s per IP
+    message: {
+        success: false,
+        message: 'Too many live race sync requests, please slow down'
+    },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
 // Apply race limiter first (more specific)
 app.use('/api/race/', raceLimiter);
+app.use(/^\/api\/social\/quick-races\/\d{5}\/live-state$/, multiplayerLiveStateLimiter);
+app.use(/^\/api\/online\/leagues\/[^/]+\/race\/live-state$/, multiplayerLiveStateLimiter);
 app.use('/api/social/quick-races/', socialQuickRaceLimiter);
 // General limiter for other endpoints
 app.use('/api/', limiter);

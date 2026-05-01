@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MS Manager - Carrera Online</title>
+    <link rel="stylesheet" href="css/race.css">
+    <link rel="stylesheet" href="css/online-raceMode.css">
+</head>
+
+<body>
+    <div class="race-container online-race-mode">
+        <header class="top-bar">
+            <div class="top-left">
+                <a href="dashboard.html" class="back-link" id="race-back-link">← Volver</a>
+                <span class="top-label">Vuelta</span>
+                <span class="top-value" id="lap-display">0/0</span>
+            </div>
+            <div class="top-center">
+                <span class="top-label">Estado</span>
+                <span class="top-value status" id="race-status">Preparando</span>
+                <span class="top-label">Tiempo</span>
+                <span class="top-value timer" id="race-timer">0:00.000</span>
+                <span class="top-label">Ritmo</span>
+                <span class="top-value" id="speed-display">1x</span>
+            </div>
+            <div class="top-right" id="fastest-lap">Sin vuelta rapida</div>
+        </header>
+
+        <aside class="chat-panel">
+            <div class="section-title">Chat de Carrera</div>
+            <div id="friendly-chat-panel" class="friendly-chat">
+                <div id="friendly-chat-messages" class="friendly-chat-messages"></div>
+                <form id="friendly-chat-form" class="friendly-chat-form">
+                    <input id="friendly-chat-input" type="text" maxlength="300" placeholder="Escribe a los managers..."
+                        autocomplete="off">
+                    <button type="submit" id="friendly-chat-send">Enviar</button>
+                </form>
+            </div>
+            <div class="section-title" id="friendly-chat-title">Canal Online</div>
+            <p class="chat-hint">En carreras online el ritmo es fijo para todos los jugadores.</p>
+        </aside>
+
+        <aside class="timing-panel">
+            <div class="panel-header">
+                <span>Clasificacion</span>
+                <span>Int.</span>
+            </div>
+            <div id="timing-board"></div>
+        </aside>
+
+        <main class="canvas-area">
+            <canvas id="race-canvas"></canvas>
+        </main>
+
+        <aside class="info-panel">
+            <div class="section-title">Tu Equipo</div>
+            <div id="driver-info"></div>
+
+            <div class="section-title">Mensajes</div>
+            <div id="messages-panel"></div>
+
+            <div class="section-title">Mapa</div>
+            <canvas id="minimap-canvas" width="260" height="150"></canvas>
+        </aside>
+
+        <footer class="bottom-controls">
+            <div class="control-group" id="camera-controls">
+                <span class="control-label">Camara</span>
+                <button class="cam-btn active" id="cam-full">Completa</button>
+                <button class="cam-btn" id="cam-follow">Seguir</button>
+                <button class="cam-btn" id="cam-tv">TV</button>
+            </div>
+
+            <div class="separator"></div>
+
+            <div class="control-group" id="zoom-controls">
+                <span class="control-label">Zoom</span>
+                <button class="zoom-btn" id="zoom-toggle" title="Lupa: clic en pista para acercar">🔍</button>
+                <button class="zoom-btn" id="zoom-reset" title="Reset zoom">Reset</button>
+                <span id="zoom-level">1.0x</span>
+            </div>
+
+            <div class="separator"></div>
+
+            <div class="control-group" id="pit-controls">
+                <span class="control-label">Boxes</span>
+                <label class="pit-tyre-label" for="pit-tyre-select">Neumatico</label>
+                <select id="pit-tyre-select" class="pit-tyre-select">
+                    <option value="soft">S - Blando</option>
+                    <option value="medium" selected>M - Medio</option>
+                    <option value="hard">H - Duro</option>
+                </select>
+                <button class="pit-btn" id="pit-btn-main">PIT</button>
+            </div>
+        </footer>
+    </div>
+
+    <div id="results-modal" class="results-modal hidden">
+        <div class="results-content">
+            <h2>🏁 Resultados</h2>
+            <table id="results-table"></table>
+            <div class="results-actions">
+                <button class="results-btn" id="results-back-btn">Volver</button>
+                <button class="results-btn primary" id="results-dashboard-btn">Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/race.js"></script>
+    <script src="js/mobile-landscape.js"></script>
+    <script src="js/auto-refresh.js"></script>
+</body>
+
+</html>

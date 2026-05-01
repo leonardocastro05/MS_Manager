@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="500" height="380" viewBox="0 0 500 380" version="1.1">
+  <defs>
+    <linearGradient id="bgSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d7efff"/>
+      <stop offset="48%" stop-color="#90c1f2"/>
+      <stop offset="100%" stop-color="#2f6840"/>
+    </linearGradient>
+    <radialGradient id="lakeGlow" cx="50%" cy="48%" r="38%">
+      <stop offset="0%" stop-color="#b9e0f2" stop-opacity="0.95"/>
+      <stop offset="65%" stop-color="#5d8eb1" stop-opacity="0.82"/>
+      <stop offset="100%" stop-color="#355e7f" stop-opacity="0.5"/>
+    </radialGradient>
+    <linearGradient id="runoff" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#d8c37a" stop-opacity="0.38"/>
+      <stop offset="100%" stop-color="#efe0a0" stop-opacity="0.55"/>
+    </linearGradient>
+  </defs>
+  <filter id="blurGolf">
+    <feGaussianBlur stdDeviation="12.5"/>
+  </filter>
+
+  <!-- Grass Base Gradient -->
+  <radialGradient id="grassGlow" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#2d5a3f"/>
+    <stop offset="70%" stop-color="#1f402c"/>
+    <stop offset="100%" stop-color="#152b1d"/>
+  </radialGradient>
+  <rect x="0" y="0" width="500" height="380" fill="url(#grassGlow)"/>
+
+  <!-- The Golf Course -->
+  <g filter="url(#blurGolf)">
+    <ellipse cx="225" cy="95" rx="100" ry="57" fill="#3a6642" transform="rotate(-11 225 95)"/>
+    <ellipse cx="400" cy="76" rx="75" ry="38" fill="#3a6642" transform="rotate(17 400 76)"/>
+  </g>
+
+  <!-- Bunkers -->
+  <ellipse cx="225" cy="95" rx="7.5" ry="3" fill="#bfa571" transform="rotate(17 225 95)"/>
+  <ellipse cx="260" cy="106" rx="10" ry="3.8" fill="#bfa571" transform="rotate(17 260 106)"/>
+  <ellipse cx="275" cy="133" rx="5" ry="3" fill="#bfa571" transform="rotate(17 275 133)"/>
+  <ellipse cx="200" cy="125" rx="12.5" ry="4.5" fill="#bfa571" transform="rotate(17 200 125)"/>
+  <ellipse cx="390" cy="68" rx="7.5" ry="3.8" fill="#bfa571" transform="rotate(17 390 68)"/>
+  <ellipse cx="410" cy="95" rx="10" ry="3.4" fill="#bfa571" transform="rotate(17 410 95)"/>
+
+  <!-- Albert Park Lake -->
+  <radialGradient id="lakeGrad" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#51819c"/>
+    <stop offset="50%" stop-color="#355b73"/>
+    <stop offset="100%" stop-color="#203947"/>
+  </radialGradient>
+  <path d="M 325 114 C 400 133, 460 152, 450 209 C 400 247, 200 266, 125 258 C 60 190, 75 133, 125 95 C 200 38, 250 95, 325 114 Z" fill="url(#lakeGrad)"/>
+
+  <!-- The Island -->
+  <ellipse cx="140" cy="144" rx="20" ry="7.6" fill="#224a2f" transform="rotate(23 140 144)"/>
+
+  <!-- Lake Ripples -->
+  <path d="M 125 133 C 250 125, 350 133, 425 121" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1.5"/>
+  <path d="M 125 142 C 250 135, 350 142, 425 131" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1.5"/>
+  <path d="M 125 152 C 250 144, 350 152, 425 140" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1.5"/>
+  <path d="M 125 161 C 250 154, 350 161, 425 150" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1.5"/>
+  <path d="M 125 171 C 250 163, 350 171, 425 159" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1.5"/>
+  <path d="M 125 180 C 250 173, 350 180, 425 169" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1.5"/>
+  <path d="M 125 190 C 250 182, 350 190, 425 178" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1.5"/>
+  <path d="M 125 199 C 250 192, 350 199, 425 188" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1.5"/>
+  <path d="M 125 209 C 250 201, 350 209, 425 197" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1.5"/>
+  <path d="M 125 218 C 250 211, 350 218, 425 207" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1.5"/>
+  <path d="M 125 228 C 250 220, 350 228, 425 216" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1.5"/>
+
+  <!-- Urban Areas & Paddock -->
+  <rect x="200" y="304" width="150" height="11" fill="rgba(200,200,210,0.1)"/>
+  <rect x="250" y="319" width="50" height="15" fill="rgba(200,200,210,0.1)"/>
+  
+  <!-- Outer roads -->
+  <path d="M 25 38 L 50 342" fill="none" stroke="rgba(120,125,130,0.15)" stroke-width="5"/>
+  <path d="M 475 38 L 425 342" fill="none" stroke="rgba(120,125,130,0.15)" stroke-width="5"/>
+
+  <!-- Lauda Stadium -->
+  <g transform="translate(65 171) rotate(-5.7)">
+    <rect x="0" y="0" width="30" height="30" fill="rgba(160,160,160,0.15)"/>
+    <rect x="5" y="5" width="20" height="20" fill="none" stroke="rgba(250,250,250,0.25)" stroke-width="1"/>
+  </g>
+
+
+  <path d="M 250.0,294.5 L 272.2,294.5 L 294.4,294.5 L 316.7,294.5 L 330.6,294.5 L 344.4,294.5 L 358.3,294.5 L 363.9,294.5 L 369.4,294.5 L 375.0,294.5 L 379.2,288.2 L 383.3,281.8 L 387.5,275.5 L 383.3,269.2 L 379.2,262.8 L 375.0,256.5 L 372.2,253.3 L 369.4,250.2 L 366.7,247.0 L 369.4,240.7 L 372.2,234.3 L 375.0,228.0 L 380.6,224.8 L 386.1,221.7 L 391.7,218.5 L 397.2,215.3 L 402.8,212.2 L 408.3,209.0 L 413.9,205.8 L 419.4,202.7 L 425.0,199.5 L 425.0,193.2 L 425.0,186.8 L 425.0,180.5 L 419.4,177.3 L 413.9,174.2 L 408.3,171.0 L 402.8,169.4 L 397.2,167.8 L 391.7,166.2 L 377.8,169.4 L 363.9,172.6 L 350.0,175.8 L 336.1,180.5 L 322.2,185.2 L 308.3,190.0 L 294.4,193.2 L 280.6,196.3 L 266.7,199.5 L 252.8,199.5 L 238.9,199.5 L 225.0,199.5 L 216.7,196.3 L 208.3,193.2 L 200.0,190.0 L 194.4,183.7 L 188.9,177.3 L 183.3,171.0 L 177.8,174.2 L 172.2,177.3 L 166.7,180.5 L 158.3,186.8 L 150.0,193.2 L 141.7,199.5 L 130.6,209.0 L 119.4,218.5 L 108.3,228.0 L 100.0,234.3 L 91.7,240.7 L 83.3,247.0 L 80.6,253.3 L 77.8,259.7 L 75.0,266.0 L 80.6,272.3 L 86.1,278.7 L 91.7,285.0 L 97.2,288.2 L 102.8,291.3 L 108.3,294.5 L 111.1,300.8 L 113.9,307.2 L 116.7,313.5 L 111.1,316.7 L 105.6,319.8 L 100.0,323.0 L 94.4,323.0 L 88.9,323.0 L 83.3,323.0 L 80.6,316.7 L 77.8,310.3 L 75.0,304.0 L 83.3,300.8 L 91.7,297.7 L 100.0,294.5 L 116.7,294.5 L 133.3,294.5 L 150.0,294.5 L 166.7,294.5 L 183.3,294.5 L 200.0,294.5 L 216.7,294.5 L 233.3,294.5 Z" fill="none" stroke="#1d212b" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 250.0,294.5 L 272.2,294.5 L 294.4,294.5 L 316.7,294.5 L 330.6,294.5 L 344.4,294.5 L 358.3,294.5 L 363.9,294.5 L 369.4,294.5 L 375.0,294.5 L 379.2,288.2 L 383.3,281.8 L 387.5,275.5 L 383.3,269.2 L 379.2,262.8 L 375.0,256.5 L 372.2,253.3 L 369.4,250.2 L 366.7,247.0 L 369.4,240.7 L 372.2,234.3 L 375.0,228.0 L 380.6,224.8 L 386.1,221.7 L 391.7,218.5 L 397.2,215.3 L 402.8,212.2 L 408.3,209.0 L 413.9,205.8 L 419.4,202.7 L 425.0,199.5 L 425.0,193.2 L 425.0,186.8 L 425.0,180.5 L 419.4,177.3 L 413.9,174.2 L 408.3,171.0 L 402.8,169.4 L 397.2,167.8 L 391.7,166.2 L 377.8,169.4 L 363.9,172.6 L 350.0,175.8 L 336.1,180.5 L 322.2,185.2 L 308.3,190.0 L 294.4,193.2 L 280.6,196.3 L 266.7,199.5 L 252.8,199.5 L 238.9,199.5 L 225.0,199.5 L 216.7,196.3 L 208.3,193.2 L 200.0,190.0 L 194.4,183.7 L 188.9,177.3 L 183.3,171.0 L 177.8,174.2 L 172.2,177.3 L 166.7,180.5 L 158.3,186.8 L 150.0,193.2 L 141.7,199.5 L 130.6,209.0 L 119.4,218.5 L 108.3,228.0 L 100.0,234.3 L 91.7,240.7 L 83.3,247.0 L 80.6,253.3 L 77.8,259.7 L 75.0,266.0 L 80.6,272.3 L 86.1,278.7 L 91.7,285.0 L 97.2,288.2 L 102.8,291.3 L 108.3,294.5 L 111.1,300.8 L 113.9,307.2 L 116.7,313.5 L 111.1,316.7 L 105.6,319.8 L 100.0,323.0 L 94.4,323.0 L 88.9,323.0 L 83.3,323.0 L 80.6,316.7 L 77.8,310.3 L 75.0,304.0 L 83.3,300.8 L 91.7,297.7 L 100.0,294.5 L 116.7,294.5 L 133.3,294.5 L 150.0,294.5 L 166.7,294.5 L 183.3,294.5 L 200.0,294.5 L 216.7,294.5 L 233.3,294.5 Z" fill="none" stroke="#f6f7fb" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" id="racing-line"/>
+
+  <path d="M 126,309 L 150,314 L 188,320 L 230,325 L 276,328 L 320,329" fill="none" stroke="#ffffff" stroke-width="3" stroke-opacity="0.18" stroke-linecap="round"/>
+  <rect x="200.0" y="304" width="2.5" height="11" fill="#fff" opacity="0.7"/>
+  <rect x="207.5" y="304" width="2.5" height="11" fill="#111" opacity="0.7"/>
+  <rect x="215.0" y="304" width="2.5" height="11" fill="#fff" opacity="0.7"/>
+  <rect x="222.5" y="304" width="2.5" height="11" fill="#111" opacity="0.7"/>
+  <rect x="230.0" y="304" width="2.5" height="11" fill="#fff" opacity="0.7"/>
+  <rect x="237.5" y="304" width="2.5" height="11" fill="#111" opacity="0.7"/>
+  </svg>

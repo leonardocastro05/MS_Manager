@@ -16,12 +16,143 @@ const ROOM_COUNTDOWN_MS = 3000;
 const ALLOWED_TRACK_IDS = new Set(['monza', 'bahrain', 'melbourne', 'shanghai', 'montmelo', 'leoverse']);
 const ALLOWED_LAPS = new Set([10, 20, 30]);
 const ALLOWED_TYRES = new Set(['soft', 'medium', 'hard']);
+const QUICK_RACE_ACTIVE_STATUSES = ['waiting', 'countdown', 'racing'];
+const QUICK_RACE_LIVE_STATE_TTL_MS = 15 * 60 * 1000;
+const QUICK_RACE_LIVE_MEMBERS_CACHE_MS = 30 * 1000;
+const quickRaceLiveStateByRoom = new Map();
 
 function toId(value) {
     if (!value) return null;
     if (typeof value === 'string') return value;
     if (value._id) return value._id.toString();
     return value.toString();
+}
+
+function normalizeLiveProgress(value) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return 0;
+    return ((parsed % 1) + 1) % 1;
+}
+
+function normalizeLiveCarState(carState = {}) {
+    const progress = normalizeLiveProgress(carState.progress);
+    const lap = Math.max(0, Math.floor(Number(carState.lap) || 0));
+    const totalProgressParsed = Number(carState.totalProgress);
+    const totalProgress = Number.isFinite(totalProgressParsed)
+        ? Math.max(0, totalProgressParsed)
+        : (lap + progress);
+    const tireLifeParsed = Number(carState.tireLife);
+    const pitTimeParsed = Number(carState.pitTime);
+    const lastLapParsed = Number(carState.lastLap);
+    const bestLapParsed = Number(carState.bestLap);
+
+    return {
+        progress,
+        lap,
+        totalProgress,
+        inPit: Boolean(carState.inPit),
+        pitRequested: Boolean(carState.pitRequested),
+        pitTime: Number.isFinite(pitTimeParsed) ? Math.max(0, Math.min(20, pitTimeParsed)) : 0,
+        tire: normalizeTyreCompound(carState.tire),
+        tireLife: Number.isFinite(tireLifeParsed) ? Math.max(0, Math.min(100, tireLifeParsed)) : 100,
+        finished: Boolean(carState.finished),
+        retired: Boolean(carState.retired),
+        lastLap: Number.isFinite(lastLapParsed) && lastLapParsed > 0 ? lastLapParsed : null,
+        bestLap: Number.isFinite(bestLapParsed) && bestLapParsed > 0 ? bestLapParsed : null,
+        nextPitTyre: normalizeTyreCompound(carState.nextPitTyre)
+    };
+}
+
+function pruneStaleQuickRaceLiveStateEntries() {
+    const now = Date.now();
+    for (const [roomCode, entry] of quickRaceLiveStateByRoom.entries()) {
+        if (!entry || now - entry.updatedAt > QUICK_RACE_LIVE_STATE_TTL_MS) {
+            quickRaceLiveStateByRoom.delete(roomCode);
+        }
+    }
+}
+
+function ensureQuickRaceLiveStateEntry(roomCode) {
+    const existing = quickRaceLiveStateByRoom.get(roomCode);
+    if (existing) return existing;
+
+    const created = {
+        updatedAt: Date.now(),
+        participants: new Map(),
+        allowedUserIds: new Set(),
+        roomStatus: null,
+        membersCheckedAt: 0
+    };
+
+    quickRaceLiveStateByRoom.set(roomCode, created);
+    return created;
+}
+
+function clearQuickRaceLiveState(roomCode) {
+    quickRaceLiveStateByRoom.delete(roomCode);
+}
+
+function removeQuickRaceParticipantLiveState(roomCode, userId) {
+    const entry = quickRaceLiveStateByRoom.get(roomCode);
+    if (!entry) return;
+
+    const targetId = toId(userId);
+    entry.participants.delete(targetId);
+    entry.allowedUserIds.delete(targetId);
+    entry.updatedAt = Date.now();
+
+    if (entry.participants.size === 0) {
+        quickRaceLiveStateByRoom.delete(roomCode);
+    }
+}
+
+function upsertQuickRaceParticipantLiveState(roomCode, userId, carState) {
+    const entry = ensureQuickRaceLiveStateEntry(roomCode);
+    const state = normalizeLiveCarState(carState);
+    const targetId = toId(userId);
+
+    entry.participants.set(targetId, {
+        userId: targetId,
+        ...state,
+        updatedAt: new Date().toISOString()
+    });
+    entry.allowedUserIds.add(targetId);
+    entry.updatedAt = Date.now();
+}
+
+function cacheQuickRaceLiveMembership(roomCode, room) {
+    const entry = ensureQuickRaceLiveStateEntry(roomCode);
+    entry.allowedUserIds = new Set((room.participants || []).map((participant) => toId(participant.user)));
+    entry.roomStatus = room.status || null;
+    entry.membersCheckedAt = Date.now();
+    entry.updatedAt = Date.now();
+}
+
+function hasFreshQuickRaceLiveMembership(roomCode, userId) {
+    const entry = quickRaceLiveStateByRoom.get(roomCode);
+    if (!entry) return false;
+
+    const age = Date.now() - Number(entry.membersCheckedAt || 0);
+    if (age > QUICK_RACE_LIVE_MEMBERS_CACHE_MS) return false;
+
+    return entry.allowedUserIds.has(toId(userId));
+}
+
+function getCachedQuickRaceLiveStatus(roomCode) {
+    const entry = quickRaceLiveStateByRoom.get(roomCode);
+    return entry?.roomStatus || null;
+}
+
+function serializeQuickRaceLiveStates(roomCode) {
+    const entry = quickRaceLiveStateByRoom.get(roomCode);
+    if (!entry) return [];
+
+    return [...entry.participants.values()]
+        .sort((a, b) => (b.totalProgress || 0) - (a.totalProgress || 0))
+        .map((state, index) => ({
+            ...state,
+            position: index + 1
+        }));
 }
 
 function mapUserSummary(userDoc) {
@@ -186,6 +317,7 @@ function serializeQuickRaceRoom(room, currentUserId) {
         countdownStartAt: room.countdownStartAt,
         countdownRemainingMs,
         raceStartedAt: room.raceStartedAt,
+        raceFinishedAt: room.raceFinishedAt,
         participants,
         pendingInvitations,
         chatCount: Array.isArray(room.chat) ? room.chat.length : 0,
@@ -198,10 +330,40 @@ function serializeQuickRaceRoom(room, currentUserId) {
     };
 }
 
+function serializeQuickRaceHistoryRoom(room, currentUserId) {
+    const currentId = toId(currentUserId);
+    const hostId = toId(room.host?._id || room.host);
+    const participantCount = Array.isArray(room.participants) ? room.participants.length : 0;
+    const isHost = hostId === currentId;
+    const isParticipant = isRoomParticipant(room, currentId);
+    const isActive = QUICK_RACE_ACTIVE_STATUSES.includes(room.status);
+
+    return {
+        roomCode: room.roomCode,
+        trackId: room.trackId,
+        laps: room.laps,
+        status: room.status,
+        host: mapUserSummary(room.host),
+        participantCount,
+        isHost,
+        isParticipant,
+        isActive,
+        canDelete: isHost || !isActive,
+        raceStartedAt: room.raceStartedAt,
+        raceFinishedAt: room.raceFinishedAt,
+        updatedAt: room.updatedAt,
+        createdAt: room.createdAt
+    };
+}
+
 async function loadRoomOr404(roomCode) {
     return QuickRaceRoom.findOne({ roomCode })
         .populate('host', FRIEND_SUMMARY_FIELDS)
         .populate('invitations.user', FRIEND_SUMMARY_FIELDS);
+}
+
+function canAccessQuickRaceLiveState(room, userId) {
+    return isRoomParticipant(room, userId);
 }
 
 // ===========================================
@@ -550,6 +712,34 @@ router.get('/quick-races/active/me', protect, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Server error while loading active room'
+        });
+    }
+});
+
+// @route   GET /api/social/quick-races/history/me
+// @desc    Get quick-race history/rooms for current user
+// @access  Private
+router.get('/quick-races/history/me', protect, async (req, res) => {
+    try {
+        const rooms = await QuickRaceRoom.find({
+            $or: [
+                { host: req.user.id },
+                { 'participants.user': req.user.id }
+            ]
+        })
+            .sort({ updatedAt: -1 })
+            .limit(40)
+            .populate('host', FRIEND_SUMMARY_FIELDS);
+
+        res.json({
+            success: true,
+            rooms: rooms.map((room) => serializeQuickRaceHistoryRoom(room, req.user.id))
+        });
+    } catch (error) {
+        console.error('Get quick-race history error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while loading quick-race history'
         });
     }
 });
@@ -976,8 +1166,174 @@ router.post('/quick-races/:roomCode/ready', protect, async (req, res) => {
     }
 });
 
+// @route   GET /api/social/quick-races/:roomCode/live-state
+// @desc    Get live synchronized race states for participants
+// @access  Private
+router.get('/quick-races/:roomCode/live-state', protect, async (req, res) => {
+    try {
+        const roomCode = sanitizeRoomCode(req.params.roomCode);
+        if (!/^\d{5}$/.test(roomCode)) {
+            return res.status(400).json({ success: false, message: 'Invalid room code' });
+        }
+
+        pruneStaleQuickRaceLiveStateEntries();
+
+        let status = getCachedQuickRaceLiveStatus(roomCode);
+        if (!hasFreshQuickRaceLiveMembership(roomCode, req.user.id) || !status) {
+            const room = await QuickRaceRoom.findOne({ roomCode }).select('roomCode status participants');
+            if (!room) {
+                return res.status(404).json({ success: false, message: 'Room not found' });
+            }
+
+            if (!canAccessQuickRaceLiveState(room, req.user.id)) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'You are not participating in this room'
+                });
+            }
+
+            cacheQuickRaceLiveMembership(roomCode, room);
+            status = room.status;
+        }
+
+        if (['finished', 'cancelled'].includes(status)) {
+            clearQuickRaceLiveState(roomCode);
+        }
+
+        res.json({
+            success: true,
+            status,
+            serverTime: new Date().toISOString(),
+            states: serializeQuickRaceLiveStates(roomCode)
+        });
+    } catch (error) {
+        console.error('Get quick-race live state error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while loading live race state'
+        });
+    }
+});
+
+// @route   POST /api/social/quick-races/:roomCode/live-state
+// @desc    Upsert current participant live race state and return synchronized states
+// @access  Private
+router.post('/quick-races/:roomCode/live-state', protect, async (req, res) => {
+    try {
+        const roomCode = sanitizeRoomCode(req.params.roomCode);
+        if (!/^\d{5}$/.test(roomCode)) {
+            return res.status(400).json({ success: false, message: 'Invalid room code' });
+        }
+
+        pruneStaleQuickRaceLiveStateEntries();
+
+        let status = getCachedQuickRaceLiveStatus(roomCode);
+        if (!hasFreshQuickRaceLiveMembership(roomCode, req.user.id) || !status) {
+            const room = await QuickRaceRoom.findOne({ roomCode }).select('roomCode status participants');
+            if (!room) {
+                return res.status(404).json({ success: false, message: 'Room not found' });
+            }
+
+            if (!canAccessQuickRaceLiveState(room, req.user.id)) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'You are not participating in this room'
+                });
+            }
+
+            cacheQuickRaceLiveMembership(roomCode, room);
+            status = room.status;
+        }
+
+        if (['finished', 'cancelled'].includes(status)) {
+            clearQuickRaceLiveState(roomCode);
+            return res.json({
+                success: true,
+                status,
+                serverTime: new Date().toISOString(),
+                states: []
+            });
+        }
+
+        if (req.body && typeof req.body.carState === 'object' && req.body.carState) {
+            upsertQuickRaceParticipantLiveState(roomCode, req.user.id, req.body.carState);
+        }
+
+        res.json({
+            success: true,
+            status,
+            serverTime: new Date().toISOString(),
+            states: serializeQuickRaceLiveStates(roomCode)
+        });
+    } catch (error) {
+        console.error('Update quick-race live state error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while synchronizing live race state'
+        });
+    }
+});
+
+// @route   POST /api/social/quick-races/:roomCode/complete
+// @desc    Mark quick-race room as finished
+// @access  Private
+router.post('/quick-races/:roomCode/complete', protect, async (req, res) => {
+    try {
+        const roomCode = sanitizeRoomCode(req.params.roomCode);
+        if (!/^\d{5}$/.test(roomCode)) {
+            return res.status(400).json({ success: false, message: 'Invalid room code' });
+        }
+
+        const room = await QuickRaceRoom.findOne({ roomCode });
+        if (!room) {
+            return res.status(404).json({ success: false, message: 'Room not found' });
+        }
+
+        const currentUserId = toId(req.user.id);
+        const isHost = toId(room.host) === currentUserId;
+        const isParticipant = isRoomParticipant(room, currentUserId);
+
+        if (!isHost && !isParticipant) {
+            return res.status(403).json({
+                success: false,
+                message: 'You are not participating in this room'
+            });
+        }
+
+        if (!['finished', 'cancelled'].includes(room.status)) {
+            room.status = 'finished';
+            room.countdownStartAt = null;
+            if (!room.raceStartedAt) {
+                room.raceStartedAt = new Date();
+            }
+            room.raceFinishedAt = new Date();
+            (room.participants || []).forEach((participant) => {
+                participant.ready = false;
+            });
+            await room.save();
+        }
+
+        clearQuickRaceLiveState(roomCode);
+
+        await room.populate('host', FRIEND_SUMMARY_FIELDS);
+        await room.populate('invitations.user', FRIEND_SUMMARY_FIELDS);
+
+        res.json({
+            success: true,
+            message: 'Room marked as finished',
+            room: serializeQuickRaceRoom(room, req.user.id)
+        });
+    } catch (error) {
+        console.error('Complete quick-race room error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while completing room'
+        });
+    }
+});
+
 // @route   POST /api/social/quick-races/:roomCode/leave
-// @desc    Leave room before countdown starts
+// @desc    Leave room and update room state accordingly
 // @access  Private
 router.post('/quick-races/:roomCode/leave', protect, async (req, res) => {
     try {
@@ -989,13 +1345,6 @@ router.post('/quick-races/:roomCode/leave', protect, async (req, res) => {
         const room = await loadRoomOr404(roomCode);
         if (!room) {
             return res.status(404).json({ success: false, message: 'Room not found' });
-        }
-
-        if (room.status !== 'waiting') {
-            return res.status(409).json({
-                success: false,
-                message: 'You cannot leave once countdown or race has started'
-            });
         }
 
         const currentUserId = toId(req.user.id);
@@ -1013,19 +1362,56 @@ router.post('/quick-races/:roomCode/leave', protect, async (req, res) => {
         );
 
         room.invitations = (room.invitations || []).filter(
-            (invitation) => !(toId(invitation.user) === currentUserId && invitation.status === 'pending')
+            (invitation) => toId(invitation.user) !== currentUserId
         );
 
-        if (toId(room.host) === currentUserId) {
-            if (room.participants.length > 0) {
-                room.host = room.participants[0].user;
-            } else {
-                room.status = 'cancelled';
+        removeQuickRaceParticipantLiveState(roomCode, currentUserId);
+
+        if (toId(room.host) === currentUserId && room.participants.length > 0) {
+            room.host = room.participants[0].user;
+        }
+
+        if (room.status === 'countdown') {
+            const hasEnoughParticipants = room.participants.length >= 2;
+            const allReady = hasEnoughParticipants && room.participants.every((participant) => participant.ready === true);
+
+            if (!allReady) {
+                room.status = 'waiting';
+                room.countdownStartAt = null;
+                room.participants.forEach((participant) => {
+                    participant.ready = false;
+                });
             }
         }
 
+        if (room.status === 'racing' && room.participants.length <= 1) {
+            room.status = 'finished';
+            room.raceFinishedAt = new Date();
+        }
+
+        if (room.participants.length === 0 && room.status !== 'finished') {
+            room.status = 'cancelled';
+            room.countdownStartAt = null;
+        }
+
+        if (room.status !== 'countdown') {
+            room.countdownStartAt = null;
+        }
+
         await room.save();
+
+        if (room.status === 'cancelled' && room.participants.length === 0) {
+            await QuickRaceRoom.deleteOne({ _id: room._id });
+            clearQuickRaceLiveState(roomCode);
+            return res.json({
+                success: true,
+                message: 'Room closed',
+                room: null
+            });
+        }
+
         await room.populate('host', FRIEND_SUMMARY_FIELDS);
+        await room.populate('invitations.user', FRIEND_SUMMARY_FIELDS);
 
         res.json({
             success: true,
@@ -1036,6 +1422,56 @@ router.post('/quick-races/:roomCode/leave', protect, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Server error while leaving room'
+        });
+    }
+});
+
+// @route   DELETE /api/social/quick-races/:roomCode
+// @desc    Delete quick-race room (host can delete active rooms, anyone can delete finished/cancelled)
+// @access  Private
+router.delete('/quick-races/:roomCode', protect, async (req, res) => {
+    try {
+        const roomCode = sanitizeRoomCode(req.params.roomCode);
+        if (!/^\d{5}$/.test(roomCode)) {
+            return res.status(400).json({ success: false, message: 'Invalid room code' });
+        }
+
+        const room = await QuickRaceRoom.findOne({ roomCode });
+        if (!room) {
+            return res.status(404).json({ success: false, message: 'Room not found' });
+        }
+
+        const currentUserId = toId(req.user.id);
+        const isHost = toId(room.host) === currentUserId;
+        const isParticipant = isRoomParticipant(room, currentUserId);
+        const isActive = QUICK_RACE_ACTIVE_STATUSES.includes(room.status);
+
+        if (!isHost && !isParticipant) {
+            return res.status(403).json({
+                success: false,
+                message: 'You are not allowed to delete this room'
+            });
+        }
+
+        if (isActive && !isHost) {
+            return res.status(403).json({
+                success: false,
+                message: 'Only the host can delete an active room'
+            });
+        }
+
+        await QuickRaceRoom.deleteOne({ _id: room._id });
+        clearQuickRaceLiveState(roomCode);
+
+        res.json({
+            success: true,
+            message: 'Room deleted successfully'
+        });
+    } catch (error) {
+        console.error('Delete quick-race room error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while deleting room'
         });
     }
 });
