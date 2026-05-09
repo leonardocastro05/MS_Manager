@@ -74,29 +74,36 @@ router.put('/profile', protect, [
         
         // Update game data if provided
         if (gameData) {
-            // Merge gameData fields
-            if (gameData.budget !== undefined) user.gameData.budget = gameData.budget;
-            if (gameData.drivers !== undefined) user.gameData.drivers = gameData.drivers;
-            if (gameData.managers !== undefined) user.gameData.managers = gameData.managers;
-            if (gameData.upgrades !== undefined) user.gameData.upgrades = gameData.upgrades;
-            if (gameData.wins !== undefined) user.gameData.wins = gameData.wins;
-            if (gameData.podiums !== undefined) user.gameData.podiums = gameData.podiums;
-            if (gameData.points !== undefined) user.gameData.points = gameData.points;
-            if (gameData.racesCompleted !== undefined) user.gameData.racesCompleted = gameData.racesCompleted;
-            if (gameData.careerMode !== undefined) user.gameData.careerMode = gameData.careerMode;
-            if (gameData.raceHistory !== undefined) user.gameData.raceHistory = gameData.raceHistory;
+            let updateOps = { $set: { lastLogin: Date.now() } };
+            
+            if (teamName) updateOps.$set.teamName = teamName;
+            if (displayName) updateOps.$set.displayName = displayName;
+            if (country) updateOps.$set.country = country;
+
+            if (gameData.budget !== undefined) updateOps.$set['gameData.budget'] = gameData.budget;
+            if (gameData.drivers !== undefined) updateOps.$set['gameData.drivers'] = gameData.drivers;
+            if (gameData.managers !== undefined) updateOps.$set['gameData.managers'] = gameData.managers;
+            if (gameData.upgrades !== undefined) updateOps.$set['gameData.upgrades'] = gameData.upgrades;
+            if (gameData.wins !== undefined) updateOps.$set['gameData.wins'] = gameData.wins;
+            if (gameData.podiums !== undefined) updateOps.$set['gameData.podiums'] = gameData.podiums;
+            if (gameData.points !== undefined) updateOps.$set['gameData.points'] = gameData.points;
+            if (gameData.racesCompleted !== undefined) updateOps.$set['gameData.racesCompleted'] = gameData.racesCompleted;
+            if (gameData.careerMode !== undefined) updateOps.$set['gameData.careerMode'] = gameData.careerMode;
+            if (gameData.raceHistory !== undefined) updateOps.$set['gameData.raceHistory'] = gameData.raceHistory;
+            if (gameData.onlineLeagues !== undefined) updateOps.$set['gameData.onlineLeagues'] = gameData.onlineLeagues;
+            if (gameData.hqLevels !== undefined) updateOps.$set['gameData.hqLevels'] = gameData.hqLevels;
+            if (gameData.currentPilot !== undefined) updateOps.$set['gameData.currentPilot'] = gameData.currentPilot;
+            
             if (gameData.online !== undefined) {
                 user.gameData.online = mergeOnlineData(user.gameData.online || {}, gameData.online || {});
+                updateOps.$set['gameData.online'] = user.gameData.online;
             }
-            if (gameData.onlineLeagues !== undefined) user.gameData.onlineLeagues = gameData.onlineLeagues;
-            if (gameData.hqLevels !== undefined) user.gameData.hqLevels = gameData.hqLevels;
-            if (gameData.currentPilot !== undefined) user.gameData.currentPilot = gameData.currentPilot;
-        }
 
-        // Marcar gameData como modificado (necesario para campos Mixed)
-        user.markModified('gameData');
-        user.lastLogin = Date.now();
-        await user.save();
+            user = await User.findByIdAndUpdate(req.user.id, updateOps, { new: true });
+        } else {
+            user.lastLogin = Date.now();
+            await user.save();
+        }
 
         res.json({
             success: true,

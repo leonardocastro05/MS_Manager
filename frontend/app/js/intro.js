@@ -72,6 +72,25 @@ class CinematicIntro3D {
 
     // Called when video ends or is skipped
     onVideoEnd() {
+        // Play bg music when video finishes or is skipped
+        if (!this.bgMusicPlayed) {
+            this.bgMusicPlayed = true;
+            const bgMusic = new Audio('img/videos/Redline_Pursuit.mp3');
+            bgMusic.loop = true;
+            bgMusic.volume = 0.4;
+            
+            const playMusic = () => {
+                bgMusic.play().then(() => {
+                    document.body.removeEventListener('click', playMusic);
+                    document.body.removeEventListener('keydown', playMusic);
+                }).catch(e => console.warn('Audio playback prevented by browser:', e));
+            };
+            
+            playMusic();
+            document.body.addEventListener('click', playMusic);
+            document.body.addEventListener('keydown', playMusic);
+        }
+
         const videoIntro = document.getElementById('video-intro');
         if (!videoIntro) { this.startLoading(); return; }
 
@@ -183,7 +202,7 @@ class CinematicIntro3D {
     
     createTrack() {
         // Single track plane (optimized - one draw call)
-        const trackGeo = new THREE.PlaneGeometry(16, 150, 1, 1);
+        const trackGeo = new THREE.PlaneGeometry(16, 1500, 1, 1);
         const trackMat = new THREE.MeshStandardMaterial({
             color: 0x1a1a1a,
             roughness: 0.9,
@@ -191,7 +210,7 @@ class CinematicIntro3D {
         });
         const track = new THREE.Mesh(trackGeo, trackMat);
         track.rotation.x = -Math.PI / 2;
-        track.position.z = 40;
+        track.position.z = -100;
         track.receiveShadow = true;
         this.scene.add(track);
         
@@ -204,15 +223,15 @@ class CinematicIntro3D {
     
     createTrackLines() {
         // White side lines
-        const lineGeo = new THREE.BoxGeometry(0.3, 0.05, 150);
+        const lineGeo = new THREE.BoxGeometry(0.3, 0.05, 1500);
         const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
         
         const leftLine = new THREE.Mesh(lineGeo, lineMat);
-        leftLine.position.set(-7, 0.03, 40);
+        leftLine.position.set(-7, 0.03, -100);
         this.scene.add(leftLine);
         
         const rightLine = new THREE.Mesh(lineGeo, lineMat);
-        rightLine.position.set(7, 0.03, 40);
+        rightLine.position.set(7, 0.03, -100);
         this.scene.add(rightLine);
         
         // Center dashed line (fewer segments)
@@ -220,7 +239,7 @@ class CinematicIntro3D {
         const dashGeo = new THREE.BoxGeometry(0.2, 0.05, 2);
         const dashMat = new THREE.MeshBasicMaterial({ color: 0xffcc00 });
         
-        for (let z = -30; z < 110; z += 8) {
+        for (let z = -600; z < 400; z += 8) {
             const dash = new THREE.Mesh(dashGeo, dashMat);
             dash.position.set(0, 0.03, z);
             dashGroup.add(dash);
@@ -231,7 +250,7 @@ class CinematicIntro3D {
     createBarriers() {
         // Red/white barriers using instanced rendering concept
         // But simpler - just two long boxes per side
-        const barrierGeo = new THREE.BoxGeometry(0.8, 0.8, 150);
+        const barrierGeo = new THREE.BoxGeometry(0.8, 0.8, 1500);
         
         // Create striped material with canvas texture (lightweight)
         const stripedTexture = this.createStripedTexture();
@@ -241,11 +260,11 @@ class CinematicIntro3D {
         });
         
         const leftBarrier = new THREE.Mesh(barrierGeo, barrierMat);
-        leftBarrier.position.set(-9, 0.4, 40);
+        leftBarrier.position.set(-9, 0.4, -100);
         this.scene.add(leftBarrier);
         
         const rightBarrier = new THREE.Mesh(barrierGeo, barrierMat);
-        rightBarrier.position.set(9, 0.4, 40);
+        rightBarrier.position.set(9, 0.4, -100);
         this.scene.add(rightBarrier);
     }
     

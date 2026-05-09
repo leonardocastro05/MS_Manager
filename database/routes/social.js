@@ -5,6 +5,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
 const { protect } = require('../middleware/auth');
+const { addXpToOnlineData, getXpForRacePosition } = require('../utils/onlineProgression');
 const User = require('../models/User');
 const QuickRaceRoom = require('../models/QuickRaceRoom');
 
@@ -1311,6 +1312,44 @@ router.post('/quick-races/:roomCode/complete', protect, async (req, res) => {
                 participant.ready = false;
             });
             await room.save();
+            
+            // Recompensas de carrera amistosa
+            const { results } = req.body;
+            if (Array.isArray(results) && results.length > 0) {
+                const User = require('../models/User');
+                for (let i = 0; i < results.length; i++) {
+                    const result = results[i];
+                    if (!result.userId) continue;
+                    try {
+                        const participatorUser = await User.findById(result.userId);
+                        if (!participatorUser) continue;
+                        
+                        const position = i + 1;
+                        const participantsCount = results.length;
+                        
+                        // XP
+                        const xpEarned = getXpForRacePosition(position, participantsCount);
+                        const xpUpdate = addXpToOnlineData(participatorUser.gameData.online || {}, xpEarned);
+                        participatorUser.gameData.online = xpUpdate.online;
+                        participatorUser.gameData.online.totalRaces = (participatorUser.gameData.online.totalRaces || 0) + 1;
+                        if (position === 1) participatorUser.gameData.online.onlineWins = (participatorUser.gameData.online.onlineWins || 0) + 1;
+                        if (position <= 3) participatorUser.gameData.online.onlinePodiums = (participatorUser.gameData.online.onlinePodiums || 0) + 1;
+                        
+                        // Monedas (amistosos dan pocas)
+                        const coinsEarned = position === 1 ? 50 : (position <= 3 ? 25 : 10);
+                        participatorUser.gameData.online.coins = (participatorUser.gameData.online.coins || 0) + coinsEarned;
+                        
+                        // Presupuesto
+                        const moneyEarned = position * 10000;
+                        participatorUser.gameData.budget = (participatorUser.gameData.budget || 0) + moneyEarned;
+                        
+                        participatorUser.markModified('gameData');
+                        await participatorUser.save();
+                    } catch (e) {
+                        console.error('Error awarding friendly race xp:', e);
+                    }
+                }
+            }
         }
 
         clearQuickRaceLiveState(roomCode);

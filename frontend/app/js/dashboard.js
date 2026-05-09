@@ -47,6 +47,9 @@ class DashboardController {
         
         // Animaciones de entrada
         this.playEntryAnimations();
+        
+        // Iniciar música del dashboard
+        this.playDashboardMusic();
     }
     
     /**
@@ -753,6 +756,25 @@ class DashboardController {
     /**
      * Animaciones de entrada
      */
+    playDashboardMusic() {
+        const bgMusic = new Audio('img/videos/Apex_Drift.mp3');
+        bgMusic.loop = true;
+        bgMusic.volume = 0.3;
+        
+        // Algunos navegadores bloquean el autoplay, así que intentamos reproducir
+        // y si falla (porque no hay interacción aún), lo atamos a un clic en el body.
+        const playMusic = () => {
+            bgMusic.play().then(() => {
+                document.body.removeEventListener('click', playMusic);
+                document.body.removeEventListener('keydown', playMusic);
+            }).catch(e => console.warn('Autoplay prevented:', e));
+        };
+        
+        playMusic();
+        document.body.addEventListener('click', playMusic);
+        document.body.addEventListener('keydown', playMusic);
+    }
+    
     playEntryAnimations() {
         // Animar elementos con delay escalonado
         const elements = [

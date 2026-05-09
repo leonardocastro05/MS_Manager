@@ -2032,6 +2032,7 @@
 
             if (this.isFriendlyMode) {
                 this._pushMessage('🤝 Carrera amistosa completada', true);
+                this._persistFriendlyRaceResults(sorted);
                 return;
             }
 
