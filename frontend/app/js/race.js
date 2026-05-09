@@ -459,7 +459,7 @@
 
         _basePaceFromData(isPlayer, pilot, car) {
             const randomBase = 0.0102 + Math.random() * 0.0012;
-            if (!isPlayer) return randomBase + 0.00045 + (Math.random() - 0.5) * 0.00055;
+            if (!isPlayer) return randomBase + 0.00020 + (Math.random() - 0.5) * 0.00035;
 
             const pilotFactor = pilot
                 ? ((pilot.speed || 70) + (pilot.control || 70) + (pilot.experience || 70)) / 300
@@ -475,7 +475,7 @@
 
         _aiAggressionFromGrid(gridIndex) {
             const frontBias = 1 - (gridIndex / 19);
-            return 1.04 + frontBias * 0.2 + Math.random() * 0.14;
+            return 0.95 + frontBias * 0.1 + Math.random() * 0.08;
         }
 
         _aiPressureFactor(car, playerCar) {
@@ -505,7 +505,7 @@
                 }
             }
 
-            return Math.min(1.35, factor);
+            return Math.min(1.25, factor);
         }
 
         _tireManagementFromData(isPlayer, pilot, car) {
@@ -1663,14 +1663,14 @@
             });
         }
 
-        
+
         _drawMelbourneDecoration(ctx) {
             // High quality 2D environment based on Albert Park satellite data
             const w = this.width;
             const h = this.height;
 
             // 1. Grass Base Gradient
-            const grassGlow = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w);
+            const grassGlow = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w);
             grassGlow.addColorStop(0, '#2d5a3f');
             grassGlow.addColorStop(0.7, '#1f402c');
             grassGlow.addColorStop(1, '#152b1d');
@@ -1680,12 +1680,12 @@
             // 2. The Golf Course (Center/Top/Right)
             ctx.save();
             ctx.filter = 'blur(' + (w * 0.025) + 'px)';
-            
+
             // Light grass patches
             ctx.fillStyle = 'rgba(74, 128, 85, 0.4)';
             ctx.beginPath(); ctx.ellipse(w * 0.45, h * 0.25, w * 0.2, h * 0.15, -0.2, 0, Math.PI * 2); ctx.fill();
             ctx.beginPath(); ctx.ellipse(w * 0.8, h * 0.2, w * 0.15, h * 0.1, 0.3, 0, Math.PI * 2); ctx.fill();
-            
+
             // Sand bunkers
             ctx.fillStyle = '#bfa571';
             const bunkers = [
@@ -1702,7 +1702,7 @@
 
             // 3. Albert Park Lake (Central huge water body extending Ascari to Lauda)
             ctx.save();
-            const lakeGrad = ctx.createRadialGradient(w*0.5, h*0.5, 0, w*0.5, h*0.5, w*0.5);
+            const lakeGrad = ctx.createRadialGradient(w * 0.5, h * 0.5, 0, w * 0.5, h * 0.5, w * 0.5);
             lakeGrad.addColorStop(0, '#51819c');
             lakeGrad.addColorStop(0.5, '#355b73');
             lakeGrad.addColorStop(1, '#203947');
@@ -1711,10 +1711,10 @@
             // Draw organic lake boundaries simulating the reference completely 
             ctx.beginPath();
             ctx.moveTo(w * 0.65, h * 0.3);
-            ctx.bezierCurveTo(w*0.8, h*0.35, w*0.92, h*0.4, w*0.9, h*0.55); // Ascari edge
-            ctx.bezierCurveTo(w*0.8, h*0.65, w*0.4, h*0.7, w*0.25, h*0.68); // Brabham bottom sweep
-            ctx.bezierCurveTo(w*0.12, h*0.5, w*0.15, h*0.35, w*0.25, h*0.25); // Lauda edge
-            ctx.bezierCurveTo(w*0.4, h*0.1, w*0.5, h*0.25, w*0.65, h*0.3); // Top corner closure
+            ctx.bezierCurveTo(w * 0.8, h * 0.35, w * 0.92, h * 0.4, w * 0.9, h * 0.55); // Ascari edge
+            ctx.bezierCurveTo(w * 0.8, h * 0.65, w * 0.4, h * 0.7, w * 0.25, h * 0.68); // Brabham bottom sweep
+            ctx.bezierCurveTo(w * 0.12, h * 0.5, w * 0.15, h * 0.35, w * 0.25, h * 0.25); // Lauda edge
+            ctx.bezierCurveTo(w * 0.4, h * 0.1, w * 0.5, h * 0.25, w * 0.65, h * 0.3); // Top corner closure
             ctx.fill();
 
             // The Island inside the lake (left side)
@@ -1726,11 +1726,11 @@
             // Very subtle lake ripples
             ctx.strokeStyle = 'rgba(255,255,255,0.06)';
             ctx.lineWidth = 1.5;
-            for(let i=0; i<12; i++) {
+            for (let i = 0; i < 12; i++) {
                 ctx.beginPath();
-                let ly = h * (0.35 + i*0.025);
+                let ly = h * (0.35 + i * 0.025);
                 ctx.moveTo(w * 0.25, ly);
-                ctx.bezierCurveTo(w * 0.5, ly - h*0.02, w * 0.7, ly, w * 0.85, ly - h*0.03);
+                ctx.bezierCurveTo(w * 0.5, ly - h * 0.02, w * 0.7, ly, w * 0.85, ly - h * 0.03);
                 ctx.stroke();
             }
             ctx.restore();
@@ -1740,7 +1740,7 @@
             // Paddock / Pit lane blocks
             ctx.fillRect(w * 0.4, h * 0.8, w * 0.3, h * 0.03); // main paddock
             ctx.fillRect(w * 0.5, h * 0.84, w * 0.1, h * 0.04);
-            
+
             // Outer grey roads (St. Kilda Rd, Kings Way) randomly outlining
             ctx.strokeStyle = 'rgba(120, 125, 130, 0.15)';
             ctx.lineWidth = w * 0.01;
@@ -1790,16 +1790,16 @@
                     const tx = w * (zone[0] + random() * zone[2]);
                     const ty = h * (zone[1] + random() * zone[3]);
                     const tr = w * (0.004 + random() * 0.004);
-                    
+
                     ctx.fillStyle = random() > 0.5 ? '#15291a' : '#1c3e25';
                     ctx.beginPath();
                     ctx.arc(tx, ty, tr, 0, Math.PI * 2);
                     ctx.fill();
-                    
+
                     // Simple highlight dot for 3D look
                     ctx.fillStyle = 'rgba(255,255,255,0.06)';
                     ctx.beginPath();
-                    ctx.arc(tx - tr*0.3, ty - tr*0.3, tr*0.4, 0, Math.PI*2);
+                    ctx.arc(tx - tr * 0.3, ty - tr * 0.3, tr * 0.4, 0, Math.PI * 2);
                     ctx.fill();
                 }
             });
