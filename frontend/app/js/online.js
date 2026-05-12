@@ -676,7 +676,7 @@ class OnlineController {
             rankName.innerHTML = `<span style="font-size: 2rem; margin-right: 10px;">${rankConfig.icon.toUpperCase()}</span>${rankConfig.name}`;
         } else {
             rankIcon.style.display = 'block';
-            rankIcon.src = `img/ranks/${rankConfig.icon}.png`;
+            rankIcon.src = `img/ranks/${rankConfig.icon}.jpg`;
             rankName.textContent = rankConfig.name;
         }
         
