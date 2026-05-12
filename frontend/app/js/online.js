@@ -649,7 +649,7 @@ class OnlineController {
                     </div>
                     ${player.activeBadge ? `
                         <div class="player-badge">
-                            <img src="img/ranks/${player.activeBadge}.png" alt="${player.activeBadge}">
+                            <img src="img/ranks/${player.activeBadge}.jpg" alt="${player.activeBadge}">
                         </div>
                     ` : ''}
                     <div class="player-wins">
