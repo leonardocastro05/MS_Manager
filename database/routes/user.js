@@ -56,7 +56,7 @@ router.put('/profile', protect, [
             });
         }
 
-        const user = await User.findById(req.user.id);
+        let user = await User.findById(req.user.id);
         
         if (!user) {
             return res.status(404).json({

@@ -757,7 +757,7 @@ class DashboardController {
      * Animaciones de entrada
      */
     playDashboardMusic() {
-        const bgMusic = new Audio('img/videos/Apex_Drift.mp3');
+        const bgMusic = new Audio('img/videos/Redline_Pursuit.mp3');
         bgMusic.loop = true;
         bgMusic.volume = 0.3;
         

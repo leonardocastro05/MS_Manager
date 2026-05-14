@@ -1329,7 +1329,8 @@ router.post('/quick-races/:roomCode/complete', protect, async (req, res) => {
                         
                         // XP
                         const xpEarned = getXpForRacePosition(position, participantsCount);
-                        const xpUpdate = addXpToOnlineData(participatorUser.gameData.online || {}, xpEarned);
+                        participatorUser.gameData.online = participatorUser.gameData.online || {};
+                        const xpUpdate = addXpToOnlineData(participatorUser.gameData.online, xpEarned);
                         participatorUser.gameData.online = xpUpdate.online;
                         participatorUser.gameData.online.totalRaces = (participatorUser.gameData.online.totalRaces || 0) + 1;
                         if (position === 1) participatorUser.gameData.online.onlineWins = (participatorUser.gameData.online.onlineWins || 0) + 1;
