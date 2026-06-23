@@ -1,6 +1,3 @@
-// Añadir al principio del fichero (junto a los otros require)
-const path = require("path");
-
 // ===========================================
 // MS MANAGER BACKEND SERVER v2.0
 // ===========================================
@@ -13,6 +10,7 @@ const rateLimit = require("express-rate-limit");
 const session = require("express-session");
 const passport = require("./config/passport");
 const connectDB = require("./config/db");
+const path = require("path");
 
 // Initialize express app
 const app = express();
@@ -156,14 +154,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // ===========================================
-// SERVE FRONTEND STATIC FILES
-// ===========================================
-app.use(express.static(path.join(__dirname, "../frontend")));
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/msmanager.html"));
-});
-
-// ===========================================
 // ROUTES
 // ===========================================
 app.use("/api/auth", require("./routes/auth"));
@@ -187,6 +177,21 @@ app.get("/api/health", (req, res) => {
       facebook: !!process.env.FACEBOOK_APP_ID,
     },
   });
+});
+
+// ===========================================
+// SERVE STATIC FRONTEND
+// ===========================================
+app.use(express.static(path.join(__dirname, "../frontend")));
+
+// Root → landing page
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/msmanager.html"));
+});
+
+// Any other non-API route → landing page (handles direct URL access)
+app.get(/^(?!\/api).*/, (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/msmanager.html"));
 });
 
 // ===========================================
