@@ -28,9 +28,12 @@ connectDB();
 // ===========================================
 
 // Helmet - Security headers
+// CSP disabled: the game uses inline event handlers (onclick, etc.) throughout
+// the HTML which are incompatible with strict CSP. All other security headers remain active.
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: false,
   }),
 );
 
