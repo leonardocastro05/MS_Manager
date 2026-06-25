@@ -192,11 +192,6 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/msmanager.html"));
 });
 
-// Any other non-API route → landing page (handles direct URL access)
-app.get(/^(?!\/api).*/, (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/msmanager.html"));
-});
-
 // ===========================================
 // ERROR HANDLERS
 // ===========================================
